@@ -60,9 +60,9 @@ nav button.on b{filter:none;opacity:1}
   border:2px solid #b6c3ce;border-radius:16px 16px 8px 8px;
   box-shadow:0 12px 28px rgba(18,38,56,.20),inset 0 1px 0 #fff
 }
-.doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:14px;padding-right:28px}
+.doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:14px;padding-right:8px}
 .door{
-  position:relative;border-radius:12px;padding:9px 11px 0;min-width:0;
+  position:relative;border-radius:12px;padding:9px 26px 0 11px;min-width:0;
   background:linear-gradient(165deg,rgba(232,245,255,.62),rgba(198,224,243,.40));
   border:3px solid #c6d2db;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 3px 10px rgba(18,38,56,.14)
@@ -81,17 +81,15 @@ nav button.on b{filter:none;opacity:1}
   background:linear-gradient(115deg,rgba(255,255,255,.8) 0 9%,rgba(255,255,255,0) 30% 100%)
 }
 /* 把手：凸出於門外的握把＋兩支連接支架（避免被誤認為捲軸） */
-.door .handle{
-  position:absolute;top:50%;right:-24px;transform:translateY(-50%);width:13px;height:32%;border-radius:7px;z-index:2;
-  background:linear-gradient(90deg,#7b8891,#333c43 45%,#0a0e11);
-  box-shadow:4px 3px 9px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.18)
+/* 門名（上門／下門）：貼在原本把手的位置（門右緣、垂直置中），直排像門牌 */
+.door-head{
+  position:absolute;top:50%;right:-2px;transform:translateY(-50%);z-index:3;
+  writing-mode:vertical-rl;letter-spacing:4px;font-size:12px;font-weight:700;
+  padding:9px 5px;border-radius:8px;color:#41586a;background:rgba(255,255,255,.66);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 1px 3px rgba(18,38,56,.14)
 }
-.door .handle::before,.door .handle::after{
-  content:"";position:absolute;right:11px;width:16px;height:8px;border-radius:2px;
-  background:linear-gradient(180deg,#96a3ac,#5b666e);box-shadow:0 1px 2px rgba(0,0,0,.35)
-}
-.door .handle::before{top:4px}
-.door .handle::after{bottom:4px}
+.door[data-door="U"] .door-head{color:#0d4a72;background:rgba(31,127,181,.18)}
+.door[data-door="D"] .door-head{color:#0c5642;background:rgba(19,133,103,.18)}
 /* 門鉸鏈 */
 .door .hinge{
   position:absolute;left:-9px;width:10px;height:26px;border-radius:3px 0 0 3px;z-index:0;
@@ -133,10 +131,9 @@ nav button.on b{filter:none;opacity:1}
 .door .tier:last-child::after{bottom:0;border-radius:3px 3px 8px 8px}
 @media (max-width:520px){
   .freezer{padding:8px 9px 0;border-radius:14px 14px 6px 6px}
-  .doors{gap:10px;padding-right:22px}
-  .door{padding:8px 10px 0;border-width:2px}
-  .door .handle{width:11px;right:-19px}
-  .door .handle::before,.door .handle::after{width:13px;height:7px;right:9px}
+  .doors{gap:10px;padding-right:6px}
+  .door{padding:8px 22px 0 10px;border-width:2px}
+  .door-head{font-size:11px;letter-spacing:3px;padding:7px 4px;right:-1px}
   .door .hinge{left:-7px;width:8px;height:20px}
   .door .lock{top:7px;right:11px;width:11px;height:11px}
   .shelves{padding-top:3px}
@@ -246,7 +243,7 @@ nav button.on b{filter:none;opacity:1}
   .freezer{height:calc(100vh - 92px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none}
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
-  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:6px 10px 0}
+  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:6px 24px 0 10px}
   .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(50px,1fr);gap:5px;padding-top:3px}
   .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 18px}
   .freezer .tier .items{overflow:auto;align-content:flex-start}
@@ -269,7 +266,7 @@ nav button.on b{filter:none;opacity:1}
 @media (max-width:759px){
   .freezer{order:-3;max-width:none;height:calc(100vh - 256px);min-height:340px;display:flex;flex-direction:column}
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:7px}
-  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:5px 9px 0}
+  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:5px 22px 0 9px}
   .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(44px,1fr);gap:4px;padding-top:3px}
   .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 18px}
   .freezer .tier .items{overflow:auto;align-content:flex-start}
@@ -564,8 +561,8 @@ const COLL_ITEMS = "frozen_items";
 const COLL_LOG   = "frozen_log";
 /* 門別（上門／下門）；每扇門有幾層、叫什麼，看下面的 FLOORS */
 const DOORS = [
-  { key: "U", label: "上　門" },
-  { key: "D", label: "下　門" }
+  { key: "U", label: "上門" },
+  { key: "D", label: "下門" }
 ];
 /* 食材庫內建常備品項（拖進冰箱就建檔）
    ※ 一定要放在 renderMap() 首次執行之前（它會呼叫 renderOutside()），否則 TDZ 例外會讓整頁掛掉 */
@@ -593,9 +590,9 @@ FLOORS.forEach(f => {
          : `第${i + 1}格`;
 });
 const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id), name: "未指定", door: "", local: Number(id), slot: "" };
-/* 層數一律由最上層往下連續編號（第1層＝最上面那層），不顯示上下門字樣 */
-const floorNo = id => { const i = FLOORS.findIndex(f => f.id === Number(id)); return i >= 0 ? i + 1 : Number(id); };
-const floorLabel = id => `第${floorNo(id)}層`;
+/* 層數：每扇門各自從第1層算起（上門＝1/2/3層、下門＝1/2層）；門名標在門牌（把手位置） */
+const floorNo = id => { const f = floorOf(id); return f.local || Number(id); };
+const floorLabel = id => { const f = floorOf(id); return `${f.door} 第${floorNo(id)}層`; };
 const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.name}`; };
 
 /* ================= Firebase ================= */
@@ -753,8 +750,8 @@ function renderMap() {
       ${doors.map(d => `
         <section class="door" data-door="${d.key}">
           <div class="hinge h1"></div><div class="hinge h2"></div>
+          <div class="door-head">${d.label}</div>
           <div class="shelves">${d.floors.map(tierHTML).join("")}</div>
-          <div class="handle"></div>
           <div class="lock"></div>
         </section>`).join("")}
     </div>`;
@@ -881,7 +878,7 @@ function openChipMenu(it, anchor) {
     <button type="button" data-a="rename">✏️ 修改名稱</button>
     <label class="cm-l">📦 移到
       <select id="cmMove"><option value="">選樓層…</option>
-        ${others.map(f => `<option value="${f.id}">${esc(floorLabel(f.id))} — ${esc(f.name)}</option>`).join("")}
+        ${others.map(f => `<option value="${f.id}">${esc(floorFull(f.id))}</option>`).join("")}
       </select>
     </label>
     <button type="button" class="danger" data-a="del">🗑️ 刪除</button>`;
@@ -1151,7 +1148,7 @@ function applySearch() {
 $("#search").addEventListener("input", applySearch);
 
 /* ================= 樓層選擇器 ================= */
-$("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">${esc(floorLabel(f.id))} — ${esc(f.name)}</option>`).join("");
+$("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">${esc(floorFull(f.id))}</option>`).join("");
 
 /* ================= 編輯視窗 ================= */
 function openEdit(id, presetFloor) {
