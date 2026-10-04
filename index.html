@@ -19,7 +19,10 @@ html,body{margin:0;padding:0}
 body{
   font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",sans-serif;
   background:#eef6fb; color:var(--txt); padding-bottom:16px; font-size:16px;
+  /* 前賢：點/長按品項會跳出「複製、全選」小視窗 → 全站關掉文字選取與長按選單（輸入框另外開放） */
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
 }
+input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
 /* ---------- header ---------- */
 header{
   position:sticky; top:0; z-index:20; background:linear-gradient(160deg,#0b4b6b,#1a7ba8);
@@ -477,6 +480,7 @@ input[type=text],input[type=number],select,textarea{
   .freezer .tier .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:5px;align-content:flex-start}
   .freezer .tier .items .chip{width:100%;max-width:100%;min-height:34px;height:auto;font-size:11px;padding:3px 4px;line-height:1.25}
 }
+input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
 </style>
 </head>
 <body>
@@ -1445,6 +1449,22 @@ async function confirmVoice() {
 }
 
 $("#btnListen").addEventListener("click", () => { listening ? stopListen() : startListen(); });
+
+/* 前賢：點冰箱品項會跳出「複製／全選」小視窗 → 品項與食材庫上不顯示任何右鍵／長按選單 */
+document.addEventListener("contextmenu", e => {
+  if (e.target && e.target.closest && e.target.closest(".chip,.os-chip,.tier,.outside,#freezer,header,.tier-no,.door-head")) e.preventDefault();
+}, true);
+document.addEventListener("selectstart", e => {
+  if (e.target && e.target.closest && e.target.closest(".chip,.os-chip,.tier,.outside,#freezer,header")) e.preventDefault();
+}, true);
+
+/* 前賢：點冰箱品項會跳出「複製／全選」小視窗 → 品項與食材庫上不顯示任何右鍵／長按選單 */
+document.addEventListener("contextmenu", e => {
+  if (e.target && e.target.closest && e.target.closest(".chip,.os-chip,.tier,.outside,#freezer,header,.tier-no,.door-head")) e.preventDefault();
+}, true);
+document.addEventListener("selectstart", e => {
+  if (e.target && e.target.closest && e.target.closest(".chip,.os-chip,.tier,.outside,#freezer,header")) e.preventDefault();
+}, true);
 $("#btnStop").addEventListener("click", stopListen);
 window.addEventListener("pagehide", stopListen);
 /* 進頁面時是「未開始」狀態：一定要按「🎤 開始聽」才會啟動麥克風 */
