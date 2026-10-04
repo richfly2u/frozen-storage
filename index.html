@@ -1053,7 +1053,15 @@ function osEntries() {
   const seen = new Set(outside.map(o => o.id));
   const gone = items.filter(i => (Number(i.qty) || 0) <= 0 && !seen.has(i._id))
     .map(i => ({ id: i._id, name: i.name, qty: 0, unit: i.unit || "", floor: Number(i.floor), gone: true }));
-  return [...outside, ...gone];
+  /* 前賢：食材庫不要有重複 → 同名只留一筆（外面的暫存優先，其次資料庫） */
+  const out = [], byName = new Set();
+  for (const o of [...outside, ...gone]) {
+    const k = (o.name || "").trim();
+    if (!k || byName.has(k)) continue;
+    byName.add(k);
+    out.push(o);
+  }
+  return out;
 }
 /* 常備食材：冰箱裡目前沒有的（同名品項數量 > 0 就不列，避免重複） */
 function stapleEntries() {
