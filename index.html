@@ -671,8 +671,7 @@ function ensureOperator(then) {
   $("#opInput").value = "";
   $("#opMask").classList.add("on");
   setTimeout(() => { try { $("#opInput").focus(); } catch (e) {} }, 90);
-  toast("請先輸入經手人姓名才能操作");
-  return false;
+  return false;                                   // 對話框本身已經寫清楚，不再跳提示蓋住按鈕
 }
 function closeOpDialog() { $("#opMask").classList.remove("on"); }
 function submitOperator() {
