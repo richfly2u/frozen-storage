@@ -402,9 +402,9 @@ input[type=text],input[type=number],select,textarea{
     <aside class="outside" id="outsideZone">
       <button class="btn add" id="btnAdd">＋ 新增物品</button>
       <div class="os-head">📦 食材庫</div>
-      <div class="os-hint">把冰箱裡的東西拖到這兒＝移出；把這兒的東西拖回冰箱層＝放回</div>
+      <div class="os-hint">拖到這兒＝移出冰箱；把這兒的東西拖回冰箱層＝放回。冰箱裡沒有的（用完／已移出）也會列在這兒。</div>
       <div class="os-items" id="osItems"></div>
-      <button type="button" id="osClear">清空</button>
+      <button type="button" id="osClear">清暫存</button>
     </aside>
   </div>
   <p class="vhint">
@@ -696,6 +696,7 @@ function renderMap() {
     if (it) bindChipGestures(el, it);
   });
   refreshByList();
+  renderOutside();   /* 食材庫跟著資料更新：用完／已移出的會自動列進去 */
   /* 重繪後把焦點框補回來（語音/掃碼指定的樓層） */
   if (focusedFloor != null) {
     const ft = box.querySelector(`.tier[data-floor="${focusedFloor}"]`);
@@ -838,14 +839,22 @@ function openChipMenu(it, anchor) {
 /* ================= 冰箱外暫存區：拖出去＝移出冰箱、拖回來＝放回 ================= */
 let outside = [];     // 本次瀏覽的暫存（DB 的移出紀錄已經寫好了）
 
+/* 食材庫＝「冰箱裡沒有的」：本次拖出去的 ＋ 資料庫裡數量 0 的（重整後也還在，可拖回去） */
+function osEntries() {
+  const seen = new Set(outside.map(o => o.id));
+  const gone = items.filter(i => (Number(i.qty) || 0) <= 0 && !seen.has(i._id))
+    .map(i => ({ id: i._id, name: i.name, qty: 0, unit: i.unit || "", floor: Number(i.floor), gone: true }));
+  return [...outside, ...gone];
+}
 function renderOutside() {
   const box = $("#osItems");
   if (!box) return;
-  box.innerHTML = outside.length
-    ? outside.map((o, i) => `<button class="chip os-chip" data-os="${i}" data-name="${esc(o.name)}"
-        title="拖回冰箱任一層＝放回">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}</button>`).join("")
+  const list = osEntries();
+  box.innerHTML = list.length
+    ? list.map((o, i) => `<button class="chip os-chip" data-os="${i}" data-name="${esc(o.name)}"
+        title="拖回冰箱任一層＝放回">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}<span class="more" title="更多">⋯</span></button>`).join("")
     : '<span class="empty">（空）</span>';
-  box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, outside[Number(el.dataset.os)]));
+  box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, list[Number(el.dataset.os)]));
 }
 
 async function takeOut(it) {
@@ -895,7 +904,7 @@ async function putBack(entry, floor) {
 
 $("#osClear").addEventListener("click", () => {
   if (!outside.length) { toast("「冰箱外」是空的"); return; }
-  if (!confirm("清空「冰箱外」清單？\n（只清這份暫存，庫存與紀錄不受影響）")) return;
+  if (!confirm("清掉「剛拖出來」的暫存清單？\n（冰箱裡本來就沒有的那幾樣不會被清掉，庫存與紀錄也不受影響）")) return;
   outside = [];
   renderOutside();
 });
@@ -980,8 +989,12 @@ function endDrag() {
 function bindChipGestures(el, it, kind) {
   el.addEventListener("click", e => {
     if (suppressClick) { suppressClick = false; return; }
+    if (e.target.closest(".more")) {                     // ⋯：改名／移層／刪除
+      const real = kind === "outside" ? items.find(i => i._id === it.id) : it;
+      if (real) { e.stopPropagation(); openChipMenu(real, el); }
+      return;
+    }
     if (kind === "outside") return;
-    if (e.target.closest(".more")) { e.stopPropagation(); openChipMenu(it, el); return; }
     openEdit(it._id);
   });
   el.addEventListener("keydown", e => {
@@ -1018,12 +1031,13 @@ function bindOutsideGestures(el, entry) { bindChipGestures(el, entry, "outside")
 /* ================= 搜尋 ================= */
 function applySearch() {
   const kw = ($("#search").value || "").trim().toLowerCase();
-  document.querySelectorAll(".chip").forEach(el => el.classList.remove("hit"));
+  document.querySelectorAll("#freezer .chip").forEach(el => el.classList.remove("hit"));
   if (!kw) { $("#searchInfo").textContent = ""; return; }
   let hits = 0, floors = new Set();
-  document.querySelectorAll(".chip").forEach(el => {
+  document.querySelectorAll("#freezer .chip").forEach(el => {
     const hit = (el.dataset.name || "").toLowerCase().includes(kw);
-    if (hit) { el.classList.add("hit"); hits++; floors.add(el.closest(".tier").dataset.floor); }
+    const tier = el.closest(".tier");
+    if (hit && tier) { el.classList.add("hit"); hits++; floors.add(tier.dataset.floor); }
   });
   if (hits) {
     $("#searchInfo").textContent = `找到 ${hits} 項，位於：` + [...floors].sort().map(f => `${floorLabel(f)} ${floorOf(f).name}`).join("、");
@@ -1031,7 +1045,7 @@ function applySearch() {
     /* 格層只顯示冰箱還有的；若查的品項剛好已用完，提醒一下（可用語音「放回」補回） */
     const gone = items.filter(i => (Number(i.qty) || 0) <= 0 && (i.name || "").toLowerCase().includes(kw));
     $("#searchInfo").textContent = gone.length
-      ? `「${gone.map(i => i.name).join("、")}」已用完，不在冰箱內（說「放回 ${gone[0].name} 一包」可補回）`
+      ? `「${gone.map(i => i.name).join("、")}」不在冰箱裡（已列在食材庫，可拖回冰箱或用語音「放回 ${gone[0].name} 一包」）`
       : "查無此品名";
   }
 }
