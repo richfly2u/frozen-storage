@@ -26,6 +26,8 @@ header{
   color:#fff; padding:12px 14px 14px; box-shadow:0 3px 14px rgba(11,75,107,.25);
 }
 .hrow{display:flex;align-items:center;gap:8px}
+.hs{display:none}
+.htools{display:none}
 h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.5px;flex:1}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--warn);flex:0 0 auto;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
 .dot.on{background:#4fd39a}.dot.off{background:#ff8a8a}
@@ -273,23 +275,36 @@ nav button.on b{filter:none;opacity:1}
   .freezer .tier{aspect-ratio:auto;min-height:104px;overflow:visible;padding:2px 4px 18px}
   .freezer .tier .items{overflow:visible;align-content:flex-start}
 
-  /* 食材庫：固定底部橫條 */
-  .outside{order:0;position:fixed;left:0;right:0;bottom:0;z-index:28;margin:0;padding:7px 9px 9px;
-    max-height:132px;border-radius:15px 15px 0 0;border:2px solid #b9cddb;border-bottom:none;
-    background:rgba(255,255,255,.97);box-shadow:0 -4px 16px rgba(18,38,56,.14);display:flex;flex-direction:column}
-  .outside .os-head{font-size:12px}
-  .outside #btnAdd{margin:0;position:absolute;right:9px;top:6px;width:auto;padding:3px 9px;font-size:12px;border-radius:8px}
+  /* 最上方：標題＋搜尋＋經手人同一列（搜尋/經手人是 JS 搬進來的） */
+  header{padding:8px 12px 9px}
+  .hrow{gap:6px}
+  h1{font-size:14px;letter-spacing:0;flex:0 0 auto}
+  .hl{display:none}
+  .hs{display:inline}
+  #syncTxt{display:none}
+  .htools{display:flex;align-items:center;gap:6px;margin-top:7px}
+  .htools #search{margin-top:0;width:auto;flex:1 1 0;min-width:74px;font-size:13.5px;padding:7px 9px;border-radius:9px}
+  .htools .opbar{margin-top:0;gap:5px;font-size:11.5px}
+  .htools .opbar > span{display:none}
+  .htools .opbar b{font-size:11.5px;padding:2px 7px}
+  .htools .opbar button{margin-left:0;padding:4px 9px;font-size:11.5px}
+  .htools #searchInfo{flex:1 1 100%;margin-top:5px;font-size:11.5px}
+
+  /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
+  .outside{order:-2;position:static;display:block;max-height:none;margin:0;padding:9px 10px;
+    border-radius:13px;border:2px dashed #b9cddb;background:rgba(255,255,255,.8);box-shadow:none}
+  .outside .os-head{font-size:13px}
+  .outside #btnAdd{position:absolute;right:10px;top:8px;margin:0;width:auto;padding:4px 10px;font-size:12px;border-radius:8px}
   .outside #osClear{display:none}
-  .outside .os-items{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;margin:6px 0 0;
-    padding-bottom:2px;scrollbar-width:thin}
-  .outside .os-chip{flex:0 0 auto;width:62px;height:40px;font-size:11px;padding:2px 13px 2px 3px}
+  .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin:8px 0 0;overflow:visible}
+  .outside .os-chip{width:100%;height:40px;font-size:11px;padding:2px 13px 2px 3px}
   .outside .os-chip .more{width:15px;height:15px;font-size:11px}
-  .side{order:-1;margin-bottom:126px}
+  .side{order:-1;margin-bottom:0}
   /* 手機省空間：長期說明文字收掉（前賢偏好不要說明；操作提示在按鈕與標題上） */
   .side p.legend:not(#focusBar){display:none}
-  .vfrow #vState{max-width:76px}
-  body{padding-bottom:132px}
-  #toast{bottom:142px}   /* 提示要浮在底部食材庫上面，不能被蓋住 */
+  .vfrow #vState{max-width:96px}
+  body{padding-bottom:76px}     /* 讓最後一塊內容不被浮動語音鈕蓋住 */
+  #toast{bottom:78px}           /* 提示浮在浮動鈕上方 */
   /* 選了食材、等使用者點樓層時的提示 */
   .tier.awaitDrop{outline:3px dashed #2f9e6b;outline-offset:2px;background:rgba(47,158,107,.10);cursor:pointer}
 }
@@ -434,10 +449,9 @@ input[type=text],input[type=number],select,textarea{
   header,nav,.no-print,.voice-bar,.voice-float,#toast{display:none !important}
   #view-map .freezer{max-width:none}
 }
-/* 手機：浮動語音鈕要浮在「底部食材庫」上面（放在檔案最後，確保蓋掉上面的基礎樣式） */
+/* 手機：浮動語音鈕放右下角（在最後一塊內容上面，body 已留 76px 不擋內容） */
 @media (max-width:759px){
-  .voice-float{left:10px;right:10px;bottom:140px;max-width:none}
-  .vfrow{width:100%;justify-content:flex-start}
+  .voice-float{left:auto;right:10px;bottom:14px;max-width:calc(100vw - 20px)}
   /* 層內物品：維持「一列到底」的 wrap（若變 column + wrap，物品會被排到第二欄、跑出冰箱外） */
   .freezer .tier .items{flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:6px}
   .freezer .tier .items .chip{width:100%;max-width:100%}
@@ -448,9 +462,11 @@ input[type=text],input[type=number],select,textarea{
 
 <header>
   <div class="hrow">
-    <h1>❄️ 凱德佛堂 冷凍庫 物品位置管理</h1>
+    <h1><span class="hl">❄️ 凱德佛堂 冷凍庫 物品位置管理</span><span class="hs">❄️ 凱德冷凍庫</span></h1>
     <div class="dot" id="dot"></div><span id="syncTxt">連線中…</span>
   </div>
+  <!-- 手機：搜尋＋經手人會被搬到這裡，跟標題同一列 -->
+  <div class="htools" id="hTools"></div>
 </header>
 
 <!-- ============ 位置圖（含語音輸入） ============ -->
@@ -670,6 +686,20 @@ function rememberBy(name) {
   refreshByList();
 }
 renderOperator();
+/* 手機：把「搜尋＋經手人」搬到最上方，跟標題同一列（桌機搬回左欄原位） */
+function layoutTopBar() {
+  const mob = window.matchMedia("(max-width:759px)").matches;
+  const bar = $("#hTools"), side = document.querySelector(".side"), anchor = document.querySelector(".bytoggle");
+  if (!bar || !side || !anchor) return;
+  [ $("#search"), $("#searchInfo"), document.querySelector(".opbar") ].forEach(el => {
+    if (!el) return;
+    if (mob) bar.appendChild(el);
+    else side.insertBefore(el, anchor);
+  });
+}
+layoutTopBar();
+window.addEventListener("resize", layoutTopBar);
+window.addEventListener("orientationchange", () => setTimeout(layoutTopBar, 200));
 /* ============ 經手人提醒：第一次要操作前先問一次，填過就記住這台裝置 ============ */
 let opThen = null;
 function ensureOperator(then) {
@@ -1113,16 +1143,29 @@ function bindChipGestures(el, it, kind) {
     const mouse = e.pointerType === "mouse";
     const sx = e.clientX, sy = e.clientY;
     let mode = "pending";
+    const begin = ev2 => {
+      mode = "drag";
+      try { if (!mouse && navigator.vibrate) navigator.vibrate(15); } catch (_) {}
+      startDrag(el, it, ev2, kind);
+    };
+    /* 手機：長按 0.25 秒進入拖曳（之後往任何方向都能拖，含上下換門）；
+       沒長按直接滑＝捲動頁面；滑鼠或快速橫向滑動＝直接拖 */
+    let longTimer = null;
+    if (!mouse) longTimer = setTimeout(() => { if (mode === "pending") begin({ clientX: sx, clientY: sy, pointerId: e.pointerId }); }, 250);
     const onMove = ev2 => {
       const dx = ev2.clientX - sx, dy = ev2.clientY - sy;
       if (mode === "pending") {
         const far = Math.hypot(dx, dy) > (mouse ? 6 : 9);
-        if (far && (mouse || Math.abs(dx) >= Math.abs(dy))) { mode = "drag"; startDrag(el, it, ev2, kind); }
-        else if (far) { mode = "cancel"; cleanup(); }   // 手指直向滑＝捲動頁面
+        if (far) {
+          if (longTimer) { clearTimeout(longTimer); longTimer = null; }
+          if (mouse || Math.abs(dx) >= Math.abs(dy)) begin(ev2);
+          else { mode = "scroll"; cleanup(); }   // 手指直向滑＝捲動頁面
+        }
       } else if (mode === "drag") moveDrag(ev2);
     };
-    const onUp = () => { if (mode === "drag") endDrag(); cleanup(); };
+    const onUp = () => { if (longTimer) { clearTimeout(longTimer); longTimer = null; } if (mode === "drag") endDrag(); cleanup(); };
     const cleanup = () => {
+      if (longTimer) { clearTimeout(longTimer); longTimer = null; }
       document.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointercancel", onUp);
@@ -1131,6 +1174,8 @@ function bindChipGestures(el, it, kind) {
     document.addEventListener("pointerup", onUp);
     document.addEventListener("pointercancel", onUp);
   });
+  /* 拖曳中不要讓頁面跟著捲動（手機長按拖曳時必須擋掉預設捲動） */
+  el.addEventListener("touchmove", e => { if (dragCtx && dragCtx.el === el) e.preventDefault(); }, { passive: false });
 }
 function bindOutsideGestures(el, entry) { bindChipGestures(el, entry, "outside"); }
 
