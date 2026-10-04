@@ -191,14 +191,6 @@ nav button.on b{filter:none;opacity:1}
 .logitem .t2{font-size:12px;color:var(--muted);margin-top:2px}
 .badge-in{color:var(--ok);font-weight:700}
 .badge-out{color:var(--danger);font-weight:700}
-/* ---------- QR ---------- */
-.qr-grid{display:grid;grid-template-columns:1fr;gap:12px}
-@media(min-width:620px){.qr-grid{grid-template-columns:1fr 1fr}}
-.qr-card{background:#fff;border:1px solid #dbeaf4;border-radius:14px;padding:12px;text-align:center;break-inside:avoid}
-.qr-card h3{margin:0 0 2px;font-size:15px}
-.qr-card p{margin:0;font-size:11.5px;color:var(--muted);word-break:break-all}
-.qr-box{display:flex;justify-content:center;margin:8px 0 6px}
-.qr-box svg,.qr-box canvas{width:158px;height:158px;display:block}
 .btn{
   border:none;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:15px;
   background:var(--accent);color:#fff;font-weight:700;cursor:pointer
@@ -255,12 +247,14 @@ input[type=text],input[type=number],select,textarea{
   font-family:inherit;font-size:15px;background:#fbfdff;color:var(--txt)
 }
 .chip .by{font-size:11px;color:#7c93a2;white-space:nowrap}
-/* ---------- 語音 ---------- */
-.vstatus{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #dbeaf4;border-radius:12px;padding:11px 13px;font-size:14px;margin-bottom:11px}
+/* ---------- 語音（與位置圖同頁） ---------- */
+.voice-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dbeaf4;border-radius:12px;padding:8px 11px;font-size:13px;margin:0 2px 10px}
+.voice-bar #vState{flex:1;color:var(--muted);min-width:0}
+.voice-bar .btn{padding:7px 12px;font-size:13.5px;border-radius:9px}
 .vdot{width:11px;height:11px;border-radius:50%;background:#c9d6de;flex:0 0 auto}
 .vdot.live{background:#e0355a;animation:blink 1s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.vheard{background:#0b4b6b;color:#eaf6fd;border-radius:12px;padding:11px 13px;font-size:15px;min-height:46px;margin-bottom:11px;line-height:1.5}
+.vheard{background:#0b4b6b;color:#eaf6fd;border-radius:12px;padding:11px 13px;font-size:15px;margin-bottom:11px;line-height:1.5}
 .vheard b{color:#8fdcff}
 .vcard{background:#fff;border:2px solid #1e88c7;border-radius:16px;padding:14px;box-shadow:0 6px 20px rgba(11,75,107,.12);margin-bottom:11px}
 .vcard .big{font-size:21px;font-weight:700;line-height:1.5}
@@ -272,9 +266,8 @@ input[type=text],input[type=number],select,textarea{
 /* ---------- print ---------- */
 @media print{
   body{background:#fff;padding:0}
-  header,nav,.no-print,#view-map,#view-log,#toast{display:none !important}
-  #view-qr{display:block !important;padding:0}
-  .qr-card{border:1px solid #999}
+  header,nav,.no-print,.voice-bar,#toast{display:none !important}
+  #view-map .freezer{max-width:none}
 }
 </style>
 </head>
@@ -296,12 +289,26 @@ input[type=text],input[type=number],select,textarea{
   </div>
 </header>
 
-<!-- ============ 位置圖 ============ -->
+<!-- ============ 位置圖（含語音輸入） ============ -->
 <section class="view on" id="view-map">
   <p class="legend" id="focusBar" style="display:none"></p>
   <p class="legend">點任一物品可修改數量／刪除；按 <b>＋新增</b> 登錄新物品。<b>只寫品名＝還有 1 包</b>；標紅色「用完」＝已經沒有了。</p>
+
+  <!-- 語音輸入（與位置圖同一頁） -->
+  <div class="voice-bar">
+    <span class="vdot" id="vDot"></span>
+    <span id="vState">語音未啟動</span>
+    <button class="btn sm" id="btnListen">🎤 開始聽</button>
+    <button class="btn sm ghost" id="btnStop">停止</button>
+  </div>
+  <div class="vheard" id="vHeard" hidden></div>
+  <div id="vCard"></div>
+
   <div class="freezer" id="freezer"></div>
   <div style="margin:14px 4px 0"><button class="btn ghost" id="btnAdd" style="width:100%">＋ 新增物品</button></div>
+  <p class="vhint">
+    語音：按「🎤 開始聽」後講 <code>香菇頭 一包</code>、<code>移出素排骨兩袋</code>、<code>放回當歸五包</code>；沒講動作＝預設「移出」，講錯按取消就好。第一次使用要按「允許」麥克風。
+  </p>
 </section>
 
 <!-- ============ 紀錄 ============ -->
@@ -311,36 +318,9 @@ input[type=text],input[type=number],select,textarea{
   <div id="logList"></div>
 </section>
 
-<!-- ============ QR 列印 ============ -->
-<section class="view" id="view-qr">
-  <p class="log-hint no-print">把對應樓層的 QR 貼在該層門邊；掃碼後手機直接跳到那一層。</p>
-  <div style="margin:0 0 12px" class="no-print">
-    <button class="btn" id="btnPrint">🖨️ 列印 QR 貼紙</button>
-  </div>
-  <div class="qr-grid" id="qrGrid"></div>
-</section>
-
-<!-- ============ 語音記帳 ============ -->
-<section class="view" id="view-voice">
-  <div class="vstatus"><span class="vdot" id="vDot"></span><span id="vState">未啟動</span></div>
-  <div style="display:flex;gap:9px;margin-bottom:11px">
-    <button class="btn" id="btnListen" style="flex:1">🎤 開始聽</button>
-    <button class="btn ghost" id="btnStop" style="flex:1">■ 停止</button>
-  </div>
-  <div class="vheard" id="vHeard">（聽到的內容會顯示在這裡）</div>
-  <div id="vCard"></div>
-  <div class="vhint">
-    講法：<code>香菇頭 一包</code>　<code>移出素排骨兩袋</code>　<code>放回當歸五包</code>　<code>中藥區 當歸 一包</code><br>
-    沒講動作＝預設「移出」；講錯按取消就好，不用重來。權限：第一次要按「允許」麥克風。<br>
-    門邊平板可固定開 <code>?tab=voice</code> 直接進這頁（建議接電源、螢幕設不關）。
-  </div>
-</section>
-
 <nav>
   <button data-view="map" class="on"><b>🧊</b>位置圖</button>
-  <button data-view="voice"><b>🎤</b>語音</button>
   <button data-view="log"><b>🕒</b>紀錄</button>
-  <button data-view="qr"><b>🔳</b>QR列印</button>
 </nav>
 
 <!-- ============ 編輯視窗 ============ -->
@@ -712,24 +692,6 @@ function renderLog(rows) {
 }
 $("#logFilter").addEventListener("change", () => renderLog(logRows));
 
-/* ================= QR（向量圖內嵌，無外部依賴／離線可列印） ================= */
-const QR_SVG = {"1": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m6 0h2m1 0h6m1 0h1m2 0h7m-33 1h1m5 0h1m2 0h2m1 0h4m1 0h1m4 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h2m2 0h3m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h3m3 0h1m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m5 0h1m1 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m3 0h1m1 0h2m1 0h1m1 0h3m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m2 0h1m2 0h1m2 0h1m2 0h1m1 0h1m-24 1h1m1 0h5m2 0h1m1 0h5m1 0h1m2 0h1m1 0h3m1 0h5m-31 1h1m1 0h2m4 0h1m7 0h1m2 0h2m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h1m2 0h4m3 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-32 1h1m11 0h1m1 0h1m1 0h1m4 0h2m1 0h1m1 0h1m1 0h4m-28 1h1m1 0h2m2 0h1m7 0h2m3 0h1m1 0h1m2 0h2m1 0h1m-31 1h1m6 0h2m1 0h2m1 0h3m3 0h1m1 0h3m1 0h1m2 0h1m1 0h2m-33 1h2m1 0h2m1 0h1m1 0h2m4 0h1m4 0h1m1 0h1m3 0h2m1 0h1m2 0h1m-24 1h1m2 0h1m2 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-28 1h1m1 0h2m2 0h1m1 0h2m4 0h1m1 0h1m3 0h3m1 0h2m3 0h1m-30 1h3m2 0h1m1 0h2m1 0h2m2 0h7m1 0h3m1 0h2m1 0h1m-31 1h2m2 0h1m1 0h3m2 0h1m1 0h3m2 0h2m5 0h2m1 0h2m-32 1h4m1 0h1m1 0h1m2 0h3m3 0h10m1 0h4m1 0h1m-30 1h1m2 0h2m1 0h2m1 0h1m3 0h1m3 0h2m2 0h2m1 0h3m2 0h1m-33 1h2m3 0h1m2 0h1m3 0h4m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-33 1h1m3 0h3m3 0h2m2 0h5m1 0h1m6 0h1m1 0h3m-32 1h1m1 0h1m4 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h1m4 0h1m2 0h4m-33 1h1m2 0h1m2 0h1m1 0h4m1 0h3m1 0h2m3 0h1m1 0h6m1 0h2m-25 1h2m6 0h1m1 0h5m1 0h1m3 0h1m1 0h3m-33 1h7m2 0h2m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h1m2 0h2m2 0h1m3 0h3m1 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h3m3 0h2m1 0h1m2 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m1 0h2m1 0h7m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m6 0h1m1 0h1m1 0h2m3 0h2m1 0h1m-30 1h1m5 0h1m2 0h3m1 0h2m1 0h1m1 0h5m2 0h1m2 0h3m-31 1h7m1 0h1m4 0h2m2 0h1m1 0h1m3 0h5m1 0h1m1 0h1\"/></svg>", "2": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m1 0h2m3 0h2m1 0h6m1 0h1m2 0h7m-33 1h1m5 0h1m1 0h1m1 0h2m1 0h1m4 0h1m1 0h4m2 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m5 0h1m1 0h1m1 0h2m1 0h3m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3m3 0h1m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m4 0h2m1 0h1m5 0h3m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m3 0h1m1 0h1m6 0h2m3 0h1m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m3 0h1m1 0h1m2 0h1m2 0h1m3 0h1m-25 1h1m1 0h2m1 0h3m2 0h2m2 0h1m1 0h6m1 0h1m2 0h1m2 0h1m1 0h2m-33 1h1m1 0h2m4 0h2m6 0h1m2 0h2m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h3m3 0h1m1 0h4m2 0h1m1 0h2m4 0h2m2 0h4m1 0h2m-33 1h1m2 0h1m1 0h1m1 0h1m5 0h3m2 0h2m5 0h3m1 0h1m-30 1h1m3 0h1m1 0h5m1 0h1m5 0h2m3 0h1m1 0h1m2 0h2m1 0h1m-32 1h1m1 0h2m1 0h1m4 0h1m5 0h3m2 0h2m4 0h1m2 0h2m-30 1h2m2 0h1m3 0h2m1 0h4m1 0h1m3 0h1m1 0h1m1 0h2m2 0h1m-28 1h1m3 0h1m3 0h1m2 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-31 1h1m1 0h1m3 0h3m2 0h1m2 0h2m2 0h4m3 0h2m1 0h3m-31 1h2m3 0h1m1 0h3m1 0h2m1 0h4m2 0h1m2 0h2m1 0h1m1 0h2m1 0h2m-33 1h1m1 0h5m1 0h1m6 0h3m2 0h1m6 0h2m1 0h2m-32 1h1m4 0h1m1 0h2m5 0h3m2 0h1m5 0h2m1 0h1m-25 1h3m3 0h1m1 0h2m1 0h1m2 0h3m1 0h1m6 0h4m-33 1h1m1 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-31 1h3m1 0h1m2 0h4m3 0h1m4 0h1m1 0h2m1 0h1m4 0h2m-32 1h1m1 0h2m2 0h1m2 0h5m1 0h1m2 0h1m2 0h1m1 0h6m2 0h1m-33 1h1m2 0h1m2 0h6m1 0h3m1 0h2m3 0h1m1 0h6m1 0h2m-25 1h1m2 0h2m1 0h4m1 0h1m2 0h3m3 0h2m1 0h1m-32 1h7m1 0h3m2 0h2m4 0h1m2 0h3m1 0h1m1 0h1m-29 1h1m5 0h1m1 0h2m1 0h2m1 0h2m3 0h3m1 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m4 0h3m1 0h1m1 0h1m1 0h2m2 0h6m1 0h2m-32 1h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m2 0h4m1 0h2m3 0h1m3 0h2m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m4 0h1m1 0h1m1 0h2m3 0h2m1 0h1m-30 1h1m5 0h1m3 0h1m1 0h2m1 0h3m1 0h1m2 0h7m3 0h1m-33 1h7m1 0h5m1 0h5m2 0h3m2 0h1m1 0h3\"/></svg>", "3": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m6 0h2m1 0h6m1 0h1m2 0h7m-33 1h1m5 0h1m2 0h2m1 0h4m1 0h1m4 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m2 0h3m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h3m3 0h1m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h1m1 0h3m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m1 0h2m2 0h1m2 0h1m2 0h1m1 0h1m-24 1h1m1 0h5m2 0h1m2 0h4m1 0h1m2 0h1m1 0h3m1 0h5m-31 1h1m1 0h3m3 0h1m7 0h1m2 0h2m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h2m1 0h2m1 0h1m3 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-32 1h2m2 0h2m3 0h2m1 0h1m1 0h1m1 0h1m4 0h2m1 0h1m1 0h1m1 0h4m-32 1h1m2 0h1m2 0h2m2 0h1m7 0h2m3 0h1m1 0h1m2 0h2m1 0h1m-31 1h2m2 0h1m1 0h1m1 0h2m3 0h3m3 0h1m1 0h3m1 0h1m2 0h1m1 0h2m-33 1h3m1 0h1m1 0h4m1 0h1m2 0h1m4 0h1m1 0h1m3 0h2m1 0h1m2 0h1m-25 1h2m3 0h1m1 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-29 1h2m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m3 0h3m1 0h2m3 0h1m-30 1h3m2 0h1m1 0h2m1 0h2m2 0h7m1 0h3m1 0h2m1 0h1m-33 1h1m1 0h2m1 0h2m1 0h2m5 0h3m2 0h1m6 0h2m1 0h2m-31 1h4m2 0h1m3 0h4m1 0h10m1 0h4m1 0h1m-33 1h1m5 0h3m3 0h3m1 0h1m3 0h2m2 0h2m1 0h3m2 0h1m-33 1h4m1 0h1m1 0h2m2 0h1m1 0h3m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-33 1h1m1 0h1m1 0h4m2 0h3m1 0h5m1 0h1m6 0h1m1 0h3m-32 1h1m1 0h2m5 0h1m4 0h2m2 0h1m2 0h1m4 0h1m2 0h4m-33 1h1m1 0h2m2 0h1m1 0h4m1 0h3m1 0h2m3 0h1m1 0h6m1 0h2m-25 1h2m3 0h1m2 0h1m1 0h5m1 0h1m3 0h1m1 0h3m-33 1h7m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h2m1 0h3m1 0h1m3 0h3m1 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h1m2 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m1 0h2m3 0h1m1 0h3m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m6 0h1m1 0h1m1 0h2m3 0h2m1 0h1m-30 1h1m5 0h1m2 0h2m1 0h3m1 0h1m1 0h5m2 0h1m2 0h3m-31 1h7m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m3 0h5m1 0h1m1 0h1\"/></svg>", "4": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m2 0h3m6 0h1m2 0h2m3 0h7m-33 1h1m5 0h1m1 0h3m1 0h3m2 0h1m3 0h2m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h2m2 0h3m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m2 0h1m8 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h3m3 0h1m1 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m6 0h1m2 0h1m1 0h1m1 0h1m1 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m2 0h2m5 0h1m4 0h1m-24 1h1m5 0h1m1 0h2m2 0h4m1 0h1m2 0h1m1 0h5m2 0h3m-28 1h1m5 0h1m3 0h2m3 0h1m1 0h1m1 0h1m4 0h3m-31 1h1m2 0h2m1 0h1m2 0h2m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-29 1h2m4 0h2m1 0h1m1 0h3m5 0h1m1 0h1m1 0h6m-30 1h1m2 0h2m1 0h1m2 0h1m1 0h2m1 0h3m1 0h1m1 0h1m3 0h1m5 0h1m-30 1h1m3 0h1m6 0h1m1 0h1m3 0h5m1 0h2m1 0h1m1 0h2m-33 1h5m1 0h1m2 0h1m2 0h1m1 0h1m4 0h1m1 0h1m3 0h2m1 0h1m2 0h1m-28 1h1m4 0h2m4 0h1m3 0h1m3 0h1m1 0h1m1 0h1m2 0h1m1 0h1m-31 1h2m1 0h2m2 0h1m2 0h1m4 0h1m1 0h1m3 0h3m1 0h2m3 0h1m-28 1h1m2 0h1m1 0h2m1 0h3m1 0h4m1 0h2m1 0h2m2 0h2m1 0h1m-30 1h5m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h2m1 0h1m-33 1h3m1 0h1m2 0h1m1 0h4m2 0h6m2 0h3m2 0h3m1 0h1m-30 1h1m1 0h4m4 0h1m2 0h1m3 0h2m2 0h2m1 0h3m2 0h1m-33 1h1m2 0h3m2 0h2m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h3m2 0h3m-30 1h1m1 0h1m1 0h4m2 0h3m1 0h5m1 0h1m6 0h1m1 0h3m-32 1h1m6 0h2m2 0h1m2 0h1m3 0h1m7 0h2m1 0h4m-33 1h7m2 0h1m1 0h1m3 0h2m1 0h3m2 0h6m-21 1h2m5 0h2m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3m-33 1h7m3 0h1m1 0h5m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m2 0h1m1 0h2m3 0h1m2 0h1m2 0h3m3 0h4m-32 1h1m1 0h3m1 0h1m2 0h1m2 0h3m3 0h2m1 0h1m2 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m5 0h3m1 0h2m2 0h1m2 0h3m1 0h2m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h2m1 0h1m3 0h2m1 0h1m1 0h1m1 0h2m2 0h2m-33 1h1m5 0h1m3 0h1m2 0h4m1 0h3m1 0h1m2 0h1m1 0h4m-31 1h7m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m3 0h5m1 0h1m1 0h1\"/></svg>"};
-
-function baseURL() {
-  return location.origin + location.pathname;
-}
-function renderQR() {
-  const grid = $("#qrGrid");
-  grid.innerHTML = FLOORS.map(f => `
-    <div class="qr-card">
-      <h3>${esc(f.door)} 第${f.local}層 — ${esc(f.name)}</h3>
-      <p>${esc(f.slot)}</p>
-      <div class="qr-box">${QR_SVG[f.id] || `<span style="font-size:12px;color:#c9455a">QR 圖未內嵌</span>`}</div>
-      <p>${esc(baseURL())}?f=${f.id}</p>
-    </div>`).join("");
-}
-$("#btnPrint").addEventListener("click", () => window.print());
-
 /* ================= 語音記帳（講一句 → 確認卡按一下 → 寫入） ================= */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, listening = false, wakeLock = null, pendingVoice = null;
@@ -759,6 +721,7 @@ function startListen() {
       const r = e.results[i];
       if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript;
     }
+    if (interim || final.trim()) $("#vHeard").hidden = false;
     if (interim) $("#vHeard").innerHTML = "…" + esc(interim);
     if (final.trim()) { $("#vHeard").innerHTML = "<b>" + esc(final.trim()) + "</b>"; handleVoice(final.trim()); }
   };
@@ -802,7 +765,7 @@ function renderVoiceCard(r) {
         <button class="btn ghost" id="vCancel">取消</button>
         <button class="btn" id="vCreate">＋ 新增這個品項</button>
       </div></div>`;
-    $("#vCancel").addEventListener("click", () => { pendingVoice = null; box.innerHTML = ""; });
+    $("#vCancel").addEventListener("click", () => { pendingVoice = null; box.innerHTML = ""; $("#vHeard").hidden = true; });
     $("#vCreate").addEventListener("click", voiceCreate);
     return;
   }
@@ -855,7 +818,7 @@ async function confirmVoice() {
     toast(`已${isIn ? "置入" : "移出"}：${it.name} ${r.qty}${r.unit || it.unit || ""}`);
     pendingVoice = null;
     $("#vCard").innerHTML = "";
-    $("#vHeard").innerHTML = "（聽到的內容會顯示在這裡）";
+    $("#vHeard").hidden = true;
   } catch (e) {
     console.error(e);
     toast("寫入失敗：" + (e.code || e.message));
@@ -865,13 +828,12 @@ async function confirmVoice() {
 $("#btnListen").addEventListener("click", startListen);
 $("#btnStop").addEventListener("click", stopListen);
 window.addEventListener("pagehide", stopListen);
-vState(SR ? "未啟動" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
+vState(SR ? "語音未啟動（按「開始聽」）" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
 
 /* ================= 分頁切換 ================= */
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "view-" + b.dataset.view));
-  if (b.dataset.view === "qr") renderQR();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }));
 
