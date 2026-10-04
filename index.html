@@ -208,6 +208,9 @@ nav button.on b{filter:none;opacity:1}
 .outside .os-items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 .os-chip{background:#fff6e8;border-color:#efd0a4}
+.os-chip.staple{background:#eef7fd;border-color:#c9e2f2;color:#1a5c8c}
+.outside .os-sub{flex:0 0 100%;font-size:11px;font-weight:700;color:#77909f;letter-spacing:.5px;margin:6px 0 2px}
+.outside .os-sub:first-child{margin-top:0}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
 /* ---------- 左欄面板（桌機把搜尋／經手人／說明／語音收到側邊，不佔冰箱上下高度） ---------- */
 .side{
@@ -436,7 +439,7 @@ input[type=text],input[type=number],select,textarea{
     <aside class="outside" id="outsideZone">
       <button class="btn add" id="btnAdd">＋ 新增物品</button>
       <div class="os-head">📦 食材庫</div>
-      <div class="os-hint">拖到這兒＝移出冰箱；把這兒的東西拖回冰箱層＝放回。冰箱裡沒有的（用完／已移出）也會列在這兒。</div>
+      <div class="os-hint">拖到這兒＝移出冰箱；把這兒的東西拖進冰箱層＝放進去／放回。</div>
       <div class="os-items" id="osItems"></div>
       <button type="button" id="osClear">清暫存</button>
     </aside>
@@ -872,6 +875,10 @@ function openChipMenu(it, anchor) {
 /* ================= 冰箱外暫存區：拖出去＝移出冰箱、拖回來＝放回 ================= */
 /* （outside 陣列宣告在最上面的狀態列，因為 renderMap() 在載入時就會呼叫 renderOutside()） */
 
+/* 食材庫內建常備品項（拖進冰箱就建檔） */
+const STAPLES = ["當歸", "枸杞", "紅棗", "豆包", "麵腸", "火腿", "素丸子", "牛蒡排",
+                 "鱈魚排", "飯巾布", "麵線", "饅頭", "包子", "綠豆沙餡"];
+
 /* 食材庫＝「冰箱裡沒有的」：本次拖出去的 ＋ 資料庫裡數量 0 的（重整後也還在，可拖回去） */
 function osEntries() {
   const seen = new Set(outside.map(o => o.id));
@@ -879,14 +886,23 @@ function osEntries() {
     .map(i => ({ id: i._id, name: i.name, qty: 0, unit: i.unit || "", floor: Number(i.floor), gone: true }));
   return [...outside, ...gone];
 }
+/* 常備食材：冰箱裡目前沒有的（同名品項數量 > 0 就不列，避免重複） */
+function stapleEntries() {
+  const have = new Set(items.filter(i => (Number(i.qty) || 0) > 0).map(i => (i.name || "").trim()));
+  return STAPLES.filter(n => !have.has(n)).map(n => ({ id: null, name: n, qty: 0, unit: "", staple: true }));
+}
 function renderOutside() {
   const box = $("#osItems");
   if (!box) return;
-  const list = osEntries();
-  box.innerHTML = list.length
-    ? list.map((o, i) => `<button class="chip os-chip" data-os="${i}" data-name="${esc(o.name)}"
-        title="拖回冰箱任一層＝放回">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}<span class="more" title="更多">⋯</span></button>`).join("")
-    : '<span class="empty">（空）</span>';
+  const staples = stapleEntries();
+  const gone = osEntries();
+  const list = [...staples, ...gone];
+  if (!list.length) { box.innerHTML = '<span class="empty">（空）</span>'; return; }
+  const chip = (o, i) => `<button class="chip os-chip${o.staple ? " staple" : ""}" data-os="${i}" data-name="${esc(o.name)}"
+      title="${o.staple ? "拖進冰箱任一層＝放進冰箱" : "拖回冰箱任一層＝放回"}">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}${o.staple ? "" : '<span class="more" title="更多">⋯</span>'}</button>`;
+  box.innerHTML =
+    (staples.length ? `<div class="os-sub">常備食材 · 拖進冰箱</div>` + staples.map((o, i) => chip(o, i)).join("") : "") +
+    (gone.length ? `<div class="os-sub">冰箱裡沒有的</div>` + gone.map((o, i) => chip(o, staples.length + i)).join("") : "");
   box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, list[Number(el.dataset.os)]));
 }
 
