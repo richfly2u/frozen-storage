@@ -63,9 +63,9 @@ nav button.on b{filter:none;opacity:1}
   background:repeating-linear-gradient(90deg,#0a0e11 0 4px,#4c5860 4px 8px)}
 .fridge-top .panel{background:#080b0d;color:#ff5d4c;font:700 12px/1 ui-monospace,SFMono-Regular,monospace;
   padding:5px 8px;border-radius:5px;letter-spacing:1px;box-shadow:inset 0 0 7px rgba(255,93,76,.35)}
-.doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:14px;padding-right:28px}
 .door{
-  position:relative;border-radius:12px;padding:10px 32px 10px 12px;min-width:0;
+  position:relative;border-radius:12px;padding:10px 12px;min-width:0;
   background:linear-gradient(165deg,rgba(232,245,255,.62),rgba(198,224,243,.40));
   border:3px solid #c6d2db;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 3px 10px rgba(18,38,56,.14)
@@ -75,18 +75,18 @@ nav button.on b{filter:none;opacity:1}
   background:linear-gradient(115deg,rgba(255,255,255,.8) 0 9%,rgba(255,255,255,0) 30% 100%)
 }
 .door-head{position:absolute;top:9px;left:16px;font-size:12px;font-weight:700;color:#41586a;letter-spacing:3px;z-index:2}
-/* 把手：握把 + 上下支架，避免被誤認為捲軸 */
+/* 把手：凸出於門外的握把＋兩支連接支架（避免被誤認為捲軸） */
 .door .handle{
-  position:absolute;top:50%;right:10px;transform:translateY(-50%);width:13px;height:30%;border-radius:7px;z-index:2;
-  background:linear-gradient(90deg,#6a7883,#2b343b 45%,#0a0e11);
-  box-shadow:0 3px 8px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.16)
+  position:absolute;top:50%;right:-24px;transform:translateY(-50%);width:13px;height:32%;border-radius:7px;z-index:2;
+  background:linear-gradient(90deg,#7b8891,#333c43 45%,#0a0e11);
+  box-shadow:4px 3px 9px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.18)
 }
 .door .handle::before,.door .handle::after{
-  content:"";position:absolute;left:50%;transform:translateX(-50%);width:24px;height:7px;border-radius:2px;
-  background:linear-gradient(180deg,#93a0a9,#5b666e);box-shadow:0 1px 2px rgba(0,0,0,.35)
+  content:"";position:absolute;right:11px;width:16px;height:8px;border-radius:2px;
+  background:linear-gradient(180deg,#96a3ac,#5b666e);box-shadow:0 1px 2px rgba(0,0,0,.35)
 }
-.door .handle::before{top:-8px}
-.door .handle::after{bottom:-8px}
+.door .handle::before{top:4px}
+.door .handle::after{bottom:4px}
 /* 門鉸鏈 */
 .door .hinge{
   position:absolute;left:-9px;width:10px;height:26px;border-radius:3px 0 0 3px;z-index:0;
@@ -94,10 +94,14 @@ nav button.on b{filter:none;opacity:1}
 }
 .door .hinge.h1{top:20%}
 .door .hinge.h2{bottom:20%}
-/* 門鎖 */
+/* 門鎖（門右上角） */
 .door .lock{
-  position:absolute;right:14px;bottom:9px;width:11px;height:11px;border-radius:3px;z-index:2;
-  background:linear-gradient(180deg,#3c464e,#171d21);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 1px 2px rgba(0,0,0,.35)
+  position:absolute;top:9px;right:14px;width:13px;height:13px;border-radius:3px;z-index:2;
+  background:linear-gradient(180deg,#454f57,#1b2126);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 1px 2px rgba(0,0,0,.4)
+}
+.door .lock::after{
+  content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:4px;height:6px;border-radius:2px;background:#0a0e11
 }
 .shelves{position:relative;z-index:1;display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);
   gap:4px;height:100%;min-width:0;padding-top:17px}
@@ -115,11 +119,12 @@ nav button.on b{filter:none;opacity:1}
 @media (max-width:520px){
   .freezer{padding:8px 9px 0;border-radius:14px 14px 6px 6px}
   .fridge-top{padding:5px 6px;margin-bottom:8px}
-  .doors{gap:10px}
-  .door{padding:8px 28px 8px 10px;border-width:2px}
-  .door .handle{width:11px;right:7px}
-  .door .handle::before,.door .handle::after{width:20px;height:6px}
+  .doors{gap:10px;padding-right:22px}
+  .door{padding:8px 10px;border-width:2px}
+  .door .handle{width:11px;right:-19px}
+  .door .handle::before,.door .handle::after{width:13px;height:7px;right:9px}
   .door .hinge{left:-7px;width:8px;height:20px}
+  .door .lock{top:7px;right:11px;width:11px;height:11px}
   .door-head{top:7px;left:13px;font-size:11px;letter-spacing:2px}
   .shelves{padding-top:16px}
   .tier{padding:5px 3px 11px;min-height:70px}
