@@ -949,7 +949,7 @@ async function putBack(entry, floor) {
     const e = outside.find(o => o.id === entry.id);
     if (e) { e.qty -= 1; if (e.qty <= 0) outside = outside.filter(x => x !== e); }
     renderOutside();
-    toast(`已放回：${entry.name} → ${floorLabel(floor)}`);
+    toast(`${entry.staple ? "已放入冰箱" : "已放回"}：${entry.name} → ${floorLabel(floor)}`);
   } catch (err) { toast("放回失敗：" + (err.code || err.message)); }
 }
 
