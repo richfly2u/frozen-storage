@@ -518,7 +518,7 @@ const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.n
 const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-let ready = false, items = [], editId = null, logRows = [], pendingHighlight = null, focusedFloor = null;
+let ready = false, items = [], editId = null, logRows = [], pendingHighlight = null, focusedFloor = null, outside = [];
 
 /* ================= 小工具 ================= */
 const $ = s => document.querySelector(s);
@@ -837,7 +837,7 @@ function openChipMenu(it, anchor) {
 }
 
 /* ================= 冰箱外暫存區：拖出去＝移出冰箱、拖回來＝放回 ================= */
-let outside = [];     // 本次瀏覽的暫存（DB 的移出紀錄已經寫好了）
+/* （outside 陣列宣告在最上面的狀態列，因為 renderMap() 在載入時就會呼叫 renderOutside()） */
 
 /* 食材庫＝「冰箱裡沒有的」：本次拖出去的 ＋ 資料庫裡數量 0 的（重整後也還在，可拖回去） */
 function osEntries() {
