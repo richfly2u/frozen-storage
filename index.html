@@ -209,15 +209,37 @@ nav button.on b{filter:none;opacity:1}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 .os-chip{background:#fff6e8;border-color:#efd0a4}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
-/* 桌機／平板：右欄食材庫，並把冰箱壓到一頁裝得下 */
+/* ---------- 左欄面板（桌機把搜尋／經手人／說明／語音收到側邊，不佔冰箱上下高度） ---------- */
+.side{
+  display:flex;flex-direction:column;gap:8px;min-width:0;
+  background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 11px 13px;
+  box-shadow:0 4px 14px rgba(18,38,56,.08)
+}
+.side #search{margin:0;border:1px solid #cfe0eb;background:#fff;color:#12313f;font-size:14px;padding:8px 10px;border-radius:9px}
+.side .searchinfo{color:var(--muted);margin:0;min-height:0}
+.side .opbar{margin:0;color:#41586a;flex-wrap:wrap}
+.side .opbar b{color:#12486b;background:#e7f2fa}
+.side .opbar button{border-color:#cfe0eb;background:#f6fafd;color:#2b5a76}
+.side .bytip{color:#5a4a2a;background:#fdf5e6;margin:0}
+.side .bytip a{color:#0b4b6b}
+.side .legend{margin:0;font-size:12.5px;line-height:1.6}
+.side .voice-bar{margin:0;flex-wrap:wrap}
+.side .voice-bar #vState{flex:1 1 100%}
+.side .vhint{margin:0;font-size:12px}
+.side .vcard{padding:11px;margin:0}
+.side .vcard .big{font-size:17px}
+.side .vcard .acts{display:flex;gap:6px;flex-wrap:wrap}
+.side .vcard .acts .btn{flex:1 1 auto}
+/* 桌機／平板：左欄說明、中間冰箱、右欄食材庫，並把冰箱壓到一頁裝得下 */
 @media (min-width:760px){
-  .mapmain{grid-template-columns:minmax(0,1fr) 206px;align-items:stretch}
-  .freezer{order:1}
-  .outside{order:2}
+  .mapmain{grid-template-columns:246px minmax(0,1fr) 200px;gap:11px;align-items:stretch}
+  .side{grid-column:1}
+  .freezer{grid-column:2;order:0}
+  .outside{grid-column:3;order:0}
   .outside .os-items{flex-direction:column;flex-wrap:nowrap;overflow:auto;align-items:stretch}
   .os-chip{width:100%;justify-content:flex-start}
-  .freezer{height:calc(100vh - 320px);min-height:400px;display:flex;flex-direction:column}
-  .freezer{max-width:560px}
+  .freezer{height:calc(100vh - 148px);min-height:400px;display:flex;flex-direction:column}
+  .freezer{max-width:none}
   .freezer .fridge-top{margin-bottom:6px;padding:3px 7px}
   .freezer .fridge-top .vent{height:9px}
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
@@ -242,8 +264,9 @@ nav button.on b{filter:none;opacity:1}
   .freezer .fridge-top{display:none}
   .freezer .wheels{display:none}
 }
-/* 手機：食材庫放在冰箱上方（固定可見），維持原本的橫向排列；層高也壓扁 */
+/* 手機：左欄收到冰箱上方；食材庫也在上方（固定可見）；層高壓扁 */
 @media (max-width:759px){
+  .side{order:-2}
   .outside{order:-1;position:sticky;top:6px;z-index:30;background:rgba(255,255,255,.95);backdrop-filter:blur(3px);margin-bottom:12px}
   .tier{aspect-ratio:auto;min-height:104px;padding:5px 5px 10px}
 }
@@ -376,35 +399,38 @@ input[type=text],input[type=number],select,textarea{
     <h1>❄️ 凱德佛堂 冷凍庫 物品位置管理</h1>
     <div class="dot" id="dot"></div><span id="syncTxt">連線中…</span>
   </div>
-  <input id="search" type="text" autocomplete="off" placeholder="搜尋品名（例：當歸、素排）…">
-  <div class="searchinfo" id="searchInfo"></div>
-  <div class="opbar">
-    <span>經手人：</span><b id="opName">未設定</b>
-    <button type="button" id="btnLine" style="display:none">🔑 用 LINE 登入</button>
-    <button type="button" id="btnOp">修改</button>
-  </div>
-  <div class="bytip" id="lineTip">
-    目前在 <b>LINE 內建瀏覽器</b>。若按了沒反應，請點右上角「⋯」→ 用其他瀏覽器開啟本頁。
-  </div>
 </header>
 
 <!-- ============ 位置圖（含語音輸入） ============ -->
 <section class="view on" id="view-map">
-  <p class="legend" id="focusBar" style="display:none"></p>
-  <p class="legend">點物品＝改數量／備註；<b>拖出去＝移出冰箱</b>、<b>拖回冰箱＝放回</b>、拖到別層＝移動；點 <b>⋯</b>＝改名／刪除。<b>只寫品名＝還有 1 包</b>；數量 0 的品項不顯示。</p>
-
-  <!-- 語音輸入（與位置圖同一頁） -->
-  <div class="voice-bar">
-    <span class="vdot" id="vDot"></span>
-    <span id="vState">語音未啟動</span>
-    <button class="btn sm" id="btnListen">🎤 開始聽</button>
-    <button class="btn sm ghost" id="btnStop">停止</button>
-  </div>
-  <div class="vheard" id="vHeard" hidden></div>
-  <div id="vCard"></div>
-
-  <!-- 左：冰箱　右：食材庫（便當組合模式；拖出去＝移出、拖回來＝放回） -->
   <div class="mapmain">
+    <!-- 左欄：搜尋／經手人／說明／語音（桌機放側邊，不佔冰箱上下高度） -->
+    <aside class="side">
+      <input id="search" type="text" autocomplete="off" placeholder="搜尋品名（例：當歸、素排）…">
+      <div class="searchinfo" id="searchInfo"></div>
+      <div class="opbar">
+        <span>經手人：</span><b id="opName">未設定</b>
+        <button type="button" id="btnLine" style="display:none">🔑 用 LINE 登入</button>
+        <button type="button" id="btnOp">修改</button>
+      </div>
+      <div class="bytip" id="lineTip">
+        目前在 <b>LINE 內建瀏覽器</b>。若按了沒反應，請點右上角「⋯」→ 用其他瀏覽器開啟本頁。
+      </div>
+      <p class="legend" id="focusBar" style="display:none"></p>
+      <p class="legend">點物品＝改數量／備註；<b>拖出去＝移出冰箱</b>、<b>拖回冰箱＝放回</b>、拖到別層＝移動；點 <b>⋯</b>＝改名／刪除。<b>只寫品名＝還有 1 包</b>；數量 0 的品項不顯示。</p>
+      <div class="voice-bar">
+        <span class="vdot" id="vDot"></span>
+        <span id="vState">語音未啟動</span>
+        <button class="btn sm" id="btnListen">🎤 開始聽</button>
+        <button class="btn sm ghost" id="btnStop">停止</button>
+      </div>
+      <div class="vheard" id="vHeard" hidden></div>
+      <div id="vCard"></div>
+      <p class="vhint">
+        語音：按「🎤 開始聽」後講 <code>香菇頭 一包</code>、<code>移出素排骨兩袋</code>、<code>放回當歸五包</code>；沒講動作＝預設「移出」，講錯按取消就好。第一次使用要按「允許」麥克風。
+      </p>
+    </aside>
+
     <div class="freezer" id="freezer"></div>
     <aside class="outside" id="outsideZone">
       <button class="btn add" id="btnAdd">＋ 新增物品</button>
@@ -414,9 +440,6 @@ input[type=text],input[type=number],select,textarea{
       <button type="button" id="osClear">清暫存</button>
     </aside>
   </div>
-  <p class="vhint">
-    語音：按「🎤 開始聽」後講 <code>香菇頭 一包</code>、<code>移出素排骨兩袋</code>、<code>放回當歸五包</code>；沒講動作＝預設「移出」，講錯按取消就好。第一次使用要按「允許」麥克風。
-  </p>
 </section>
 
 <!-- ============ 紀錄 ============ -->
