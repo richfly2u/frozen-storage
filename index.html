@@ -239,7 +239,8 @@ nav button.on b{filter:none;opacity:1}
   .side{grid-column:1}
   .freezer{grid-column:2;order:0}
   .outside{grid-column:3;order:0}
-  .outside .os-items{flex-direction:column;flex-wrap:nowrap;overflow:auto;align-items:stretch}
+  .outside{height:calc(100vh - 148px);overflow:hidden}
+  .outside .os-items{flex:1;min-height:0;flex-direction:column;flex-wrap:nowrap;overflow:auto;align-items:stretch}
   .os-chip{width:100%;justify-content:flex-start}
   .freezer{height:calc(100vh - 148px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none}
