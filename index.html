@@ -209,8 +209,6 @@ nav button.on b{filter:none;opacity:1}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 .os-chip{background:#fff6e8;border-color:#efd0a4}
 .os-chip.staple{background:#eef7fd;border-color:#c9e2f2;color:#1a5c8c}
-.outside .os-sub{width:100%;flex:0 0 auto;font-size:11px;font-weight:700;color:#77909f;letter-spacing:.5px;margin:6px 0 2px}
-.outside .os-sub:first-child{margin-top:0}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
 /* ---------- 左欄面板（桌機把搜尋／經手人／說明／語音收到側邊，不佔冰箱上下高度） ---------- */
 .side{
@@ -238,15 +236,14 @@ nav button.on b{filter:none;opacity:1}
 .side .vcard .acts .btn{flex:1 1 auto}
 /* 桌機／平板：左欄說明、中間冰箱、右欄食材庫，並把冰箱壓到一頁裝得下 */
 @media (min-width:760px){
-  .mapmain{grid-template-columns:236px minmax(0,1fr) 268px;gap:11px;align-items:stretch}
+  .mapmain{grid-template-columns:236px minmax(0,1fr) 330px;gap:11px;align-items:stretch}
   .side{grid-column:1}
   .freezer{grid-column:2;order:0}
   .outside{grid-column:3;order:0}
   .outside{height:calc(100vh - 148px)}
   /* 食材庫：像便當組合那樣排成多欄小格，全部攤開、不用捲 */
   .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:6px;
-    grid-template-columns:repeat(auto-fill,minmax(76px,1fr));overflow:visible}
-  .outside .os-sub{grid-column:1 / -1}
+    grid-template-columns:repeat(auto-fill,minmax(74px,1fr));overflow:visible}
   .os-chip{width:auto;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:6px 5px}
   .freezer{height:calc(100vh - 148px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none}
@@ -447,7 +444,6 @@ input[type=text],input[type=number],select,textarea{
     <aside class="outside" id="outsideZone">
       <button class="btn add" id="btnAdd">＋ 新增物品</button>
       <div class="os-head">📦 食材庫</div>
-      <div class="os-hint">拖到這兒＝移出冰箱；把這兒的東西拖進冰箱層＝放進去／放回。</div>
       <div class="os-items" id="osItems"></div>
       <button type="button" id="osClear">清暫存</button>
     </aside>
@@ -922,9 +918,7 @@ function renderOutside() {
   if (!list.length) { box.innerHTML = '<span class="empty">（空）</span>'; return; }
   const chip = (o, i) => `<button class="chip os-chip${o.staple ? " staple" : ""}" data-os="${i}" data-name="${esc(o.name)}"
       title="${o.staple ? "拖進冰箱任一層＝放進冰箱" : "拖回冰箱任一層＝放回"}">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}${o.staple ? "" : '<span class="more" title="更多">⋯</span>'}</button>`;
-  box.innerHTML =
-    (staples.length ? `<div class="os-sub">常備食材 · 拖進冰箱</div>` + staples.map((o, i) => chip(o, i)).join("") : "") +
-    (gone.length ? `<div class="os-sub">冰箱裡沒有的</div>` + gone.map((o, i) => chip(o, staples.length + i)).join("") : "");
+  box.innerHTML = list.map((o, i) => chip(o, i)).join("");
   box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, list[Number(el.dataset.os)]));
 }
 
