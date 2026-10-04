@@ -51,10 +51,21 @@
 
 - 沒講動作 → 預設「移出」；講「放回／補／置入／進貨」→ 置入。
 - 講「**我是陳師姐**」可直接帶入經手人；說「**停止**」停止聽取。
+- 講完按「確認」後，畫面會**自動捲到該層、把該層框起來、品項閃一下**，直接就看到更新結果。
 - 講到沒建過的品名 → 卡片會問要不要新增（按了直接開新增視窗、欄位已填好）。
 - 平板建議：接電源、系統設定「螢幕不關」，開頁後按開始聽即可長掛。
 - 解析引擎：`voice-parse.js`（純函式、可單元測試）。測試：`node _probe/test_voice.mjs`。
 - 限制：需 **Android Chrome**（iOS Safari 的語音辨識不穩）；環境太吵會辨識錯誤，講錯按「取消」重講即可。
+
+## LINE 掃碼登入（已內建、待填 LIFF ID）
+
+- 頁面已內建 **LIFF（LINE 登入）**：在 LINE 內開啟時自動取得 LINE 名稱，直接帶入「經手人」，不必手打姓名。
+- **目前尚未啟用**：`index.html` 裡的 `LIFF_ID` 目前是空字串。沒填＝完全不載入任何外部程式，行為與現在完全相同。
+- 取得 LIFF ID（用前賢的 LINE Developers 帳號，約 3 分鐘）：
+  1. LINE Developers Console → 建立或選一個 **LINE Login channel**
+  2. 該 channel → 左側 **LIFF** → Add → Size: `Full`、Endpoint URL: `https://richfly2u.github.io/frozen-storage/`
+  3. 複製 **LIFF ID**（像 `2001234567-abcdefgh`）填進 `index.html` 的 `LIFF_ID`，重新部署即生效
+- 桌機（非 LINE 內）開啟時會出現「🔑 用 LINE 登入」按鈕，按了才導去 LINE 授權。
 
 ## 技術備註
 
