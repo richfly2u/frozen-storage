@@ -835,9 +835,10 @@ async function takeOut(it) {
 
 async function putBack(entry, floor) {
   if (!entry || !needReady()) return;
-  const by = operator || "";
+  const found = items.find(i => i._id === entry.id);
+  const by = operator || (found && found.by) || "";
   if (!by) { toast("請先設定經手人"); return; }
-  const it = items.find(i => i._id === entry.id);
+  const it = found;
   try {
     if (it) {
       await updateDoc(doc(db, COLL_ITEMS, entry.id),
