@@ -209,6 +209,7 @@ nav button.on b{filter:none;opacity:1}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 .os-chip{background:#fff6e8;border-color:#efd0a4}
 .os-chip.staple{background:#eef7fd;border-color:#c9e2f2;color:#1a5c8c}
+.os-chip.sel{outline:3px solid #2f9e6b;outline-offset:1px;background:#e8f8f0;border-color:#8fd3b4}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
 /* ---------- 左欄面板（桌機把搜尋／經手人／說明／語音收到側邊，不佔冰箱上下高度） ---------- */
 .side{
@@ -272,14 +273,34 @@ nav button.on b{filter:none;opacity:1}
   .freezer .fridge-top{display:none}
   .freezer .wheels{display:none}
 }
-/* 手機：冰箱排最前面（一開頁就看得到）；再來食材庫（多欄縮短）；工具面板最後 */
+/* 手機：冰箱在最上面吃滿高度；食材庫固定在畫面底部（橫向滑），兩者同屏才好拖 */
 @media (max-width:759px){
-  .freezer{order:-3;max-width:none}
-  .outside{order:-2;position:static;margin:10px 0 12px;background:rgba(255,255,255,.9)}
-  .side{order:-1;margin-bottom:12px}
-  .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
-  .os-chip{width:auto;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:6px 4px}
-  .tier{aspect-ratio:auto;min-height:104px;padding:5px 5px 10px}
+  .freezer{order:-3;max-width:none;height:calc(100vh - 208px);min-height:360px;display:flex;flex-direction:column}
+  .freezer .fridge-top{margin-bottom:5px;padding:3px 7px}
+  .freezer .fridge-top .vent{height:9px}
+  .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:7px}
+  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:16px 9px 6px}
+  .freezer .door-head{top:2px;left:10px;font-size:11px;padding:1px 7px}
+  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(44px,1fr);gap:4px;padding-top:4px}
+  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 6px}
+  .freezer .tier .items{overflow:auto;align-content:flex-start}
+  .freezer .wheels{padding:4px 18px 2px}
+
+  /* 食材庫：固定底部橫條 */
+  .outside{order:0;position:fixed;left:0;right:0;bottom:0;z-index:28;margin:0;padding:7px 9px 9px;
+    max-height:132px;border-radius:15px 15px 0 0;border:2px solid #b9cddb;border-bottom:none;
+    background:rgba(255,255,255,.97);box-shadow:0 -4px 16px rgba(18,38,56,.14);display:flex;flex-direction:column}
+  .outside .os-head{font-size:12px}
+  .outside #btnAdd{margin:0;position:absolute;right:9px;top:6px;width:auto;padding:3px 9px;font-size:12px;border-radius:8px}
+  .outside #osClear{display:none}
+  .outside .os-items{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;margin:6px 0 0;
+    padding-bottom:2px;scrollbar-width:thin}
+  .outside .os-chip{flex:0 0 auto;width:auto;font-size:12.5px;padding:7px 10px;white-space:nowrap}
+  .outside .os-chip .more{width:18px;height:18px;font-size:13px}
+  .side{order:-1;margin-bottom:126px}
+  body{padding-bottom:132px}
+  /* 選了食材、等使用者點樓層時的提示 */
+  .tier.awaitDrop{outline:3px dashed #2f9e6b;outline-offset:2px;background:rgba(47,158,107,.10);cursor:pointer}
 }
 #dropOut{
   position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:88;pointer-events:none;
@@ -554,7 +575,7 @@ const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.n
 const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-let ready = false, items = [], editId = null, pendingHighlight = null, focusedFloor = null, outside = [];
+let ready = false, items = [], editId = null, pendingHighlight = null, focusedFloor = null, outside = [], pendingPlace = null;
 
 /* ================= 小工具 ================= */
 const $ = s => document.querySelector(s);
@@ -738,6 +759,13 @@ function renderMap() {
     const it = items.find(i => i._id === el.dataset.id);
     if (it) bindChipGestures(el, it);
   });
+  /* 選了食材庫的食材後，點某一層＝放進那一層 */
+  box.querySelectorAll(".tier").forEach(t => t.addEventListener("click", ev2 => {
+    if (!pendingPlace || (ev2.target.closest && ev2.target.closest(".chip"))) return;
+    const fid = Number(t.dataset.floor);
+    const entry = pendingPlace;
+    putBack(entry, fid);
+  }));
   refreshByList();
   renderOutside();   /* 食材庫跟著資料更新：用完／已移出的會自動列進去 */
   /* 上下門依「各有幾層」比例分配高度（上門3層會比下門2層高一些，每層才塞得下） */
@@ -896,6 +924,13 @@ function stapleEntries() {
   const have = new Set(items.filter(i => (Number(i.qty) || 0) > 0).map(i => (i.name || "").trim()));
   return STAPLES.filter(n => !have.has(n)).map(n => ({ id: null, name: n, qty: 0, unit: "", staple: true }));
 }
+/* 點選入庫：先點食材庫的食材，再點要放進的樓層（手機不用拖也能放） */
+function setPendingPlace(entry) {
+  pendingPlace = entry || null;
+  document.querySelectorAll(".tier").forEach(t => t.classList.toggle("awaitDrop", !!pendingPlace));
+  renderOutside();
+  if (pendingPlace) toast(`已選「${pendingPlace.name}」→ 請點要放進哪一層（再點一次取消）`);
+}
 function renderOutside() {
   const box = $("#osItems");
   if (!box) return;
@@ -904,8 +939,8 @@ function renderOutside() {
   const staples = stapleEntries().filter(s => !goneNames.has(s.name));   // 已列在「冰箱裡沒有的」就不要重複
   const list = [...staples, ...gone];
   if (!list.length) { box.innerHTML = '<span class="empty">（空）</span>'; return; }
-  const chip = (o, i) => `<button class="chip os-chip${o.staple ? " staple" : ""}" data-os="${i}" data-name="${esc(o.name)}"
-      title="${o.staple ? "拖進冰箱任一層＝放進冰箱" : "拖回冰箱任一層＝放回"}">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}${o.staple ? "" : '<span class="more" title="更多">⋯</span>'}</button>`;
+  const chip = (o, i) => `<button class="chip os-chip${o.staple ? " staple" : ""}${(pendingPlace && pendingPlace.name === o.name) ? " sel" : ""}" data-os="${i}" data-name="${esc(o.name)}"
+      title="${o.staple ? "拖進冰箱任一層＝放進冰箱（或點一下再點樓層）" : "拖回冰箱任一層＝放回（或點一下再點樓層）"}">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}${o.staple ? "" : '<span class="more" title="更多">⋯</span>'}</button>`;
   box.innerHTML = list.map((o, i) => chip(o, i)).join("");
   box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, list[Number(el.dataset.os)]));
 }
@@ -930,6 +965,7 @@ async function takeOut(it) {
 
 async function putBack(entry, floor) {
   if (!entry || !needReady()) return;
+  setPendingPlace(null);
   const found = items.find(i => i._id === entry.id);
   const by = operator || (found && found.by) || "";
   if (!by) { toast("請先設定經手人"); return; }
@@ -1047,7 +1083,10 @@ function bindChipGestures(el, it, kind) {
       if (real) { e.stopPropagation(); openChipMenu(real, el); }
       return;
     }
-    if (kind === "outside") return;
+    if (kind === "outside") {
+      setPendingPlace((pendingPlace && pendingPlace.name === it.name) ? null : it);
+      return;
+    }
     openEdit(it._id);
   });
   el.addEventListener("keydown", e => {
