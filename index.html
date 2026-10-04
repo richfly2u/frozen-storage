@@ -431,6 +431,9 @@ input[type=text],input[type=number],select,textarea{
 @media (max-width:759px){
   .voice-float{left:10px;right:10px;bottom:140px;max-width:none}
   .vfrow{width:100%;justify-content:flex-start}
+  /* 層內物品：維持「一列到底」的 wrap（若變 column + wrap，物品會被排到第二欄、跑出冰箱外） */
+  .freezer .tier .items{flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:6px}
+  .freezer .tier .items .chip{width:100%;max-width:100%}
 }
 </style>
 </head>
