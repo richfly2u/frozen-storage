@@ -194,11 +194,11 @@ nav button.on b{filter:none;opacity:1}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 /* 食材庫：扁長方格（上下矮一點 → 同一個面板可以放更多品項） */
 .os-chip{background:#fff6e8;border-color:#efd0a4;position:relative;width:100%;max-width:none;
-  height:42px;flex-direction:row;align-items:center;justify-content:center;
-  text-align:center;font-size:11.5px;line-height:1.16;padding:2px 15px 2px 4px;border-radius:8px;overflow-wrap:anywhere}
-.os-chip .q{position:absolute;right:2px;bottom:1px;background:#1e88c7;color:#fff;border-radius:6px;
-  padding:0 3px;font-size:9.5px;line-height:1.45;margin:0}
-.os-chip .more{position:absolute;right:1px;top:1px;width:14px;height:14px;font-size:10.5px;line-height:1;margin:0}
+  height:50px;flex-direction:row;align-items:center;justify-content:center;
+  text-align:center;font-size:12.5px;line-height:1.2;padding:3px 16px 3px 5px;border-radius:9px;overflow-wrap:anywhere}
+.os-chip .q{position:absolute;right:2px;bottom:2px;background:#1e88c7;color:#fff;border-radius:6px;
+  padding:0 3px;font-size:10px;line-height:1.45;margin:0}
+.os-chip .more{position:absolute;right:2px;top:2px;width:16px;height:16px;font-size:11.5px;line-height:1;margin:0}
 .os-chip.staple{background:#eef7fd;border-color:#c9e2f2;color:#1a5c8c}
 .os-chip.sel{outline:3px solid #2f9e6b;outline-offset:1px;background:#e8f8f0;border-color:#8fd3b4}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
@@ -235,9 +235,9 @@ nav button.on b{filter:none;opacity:1}
   .side{grid-column:1 / -1;grid-row:2;align-self:start}
   .outside{height:calc(100vh - 142px)}
   /* 食材庫：像便當組合那樣排成多欄小格，全部攤開、不用捲 */
-  .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:6px;
-    grid-template-columns:repeat(auto-fill,minmax(64px,1fr));overflow:visible}
-  .os-chip{width:100%;height:42px;justify-content:center;text-align:center;font-size:11.5px;line-height:1.16;padding:2px 15px 2px 4px}
+  .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:7px;
+    grid-template-columns:repeat(auto-fill,minmax(74px,1fr));overflow-y:auto;overflow-x:hidden}
+  .os-chip{width:100%;height:50px;justify-content:center;text-align:center;font-size:12.5px;line-height:1.2;padding:3px 16px 3px 5px}
   .freezer{height:calc(100vh - 142px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none;width:100%}   /* 吃滿整欄（margin:0 auto 會讓它縮成內容寬） */
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
@@ -297,8 +297,9 @@ nav button.on b{filter:none;opacity:1}
   .outside .os-head{font-size:13px}
   .outside #btnAdd{position:absolute;right:10px;top:8px;margin:0;width:auto;padding:4px 10px;font-size:12px;border-radius:8px}
   .outside #osClear{display:none}
-  .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin:8px 0 0;overflow:visible}
-  .outside .os-chip{width:100%;height:40px;font-size:11px;padding:2px 13px 2px 3px}
+  .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;margin:8px 0 0;
+    overflow-y:auto;overflow-x:hidden}
+  .outside .os-chip{width:100%;height:44px;font-size:11.5px;padding:3px 14px 3px 4px}
   .outside .os-chip .more{width:15px;height:15px;font-size:11px}
   .side{order:-1;margin-bottom:0}
   /* 手機省空間：長期說明文字收掉（前賢偏好不要說明；操作提示在按鈕與標題上） */
