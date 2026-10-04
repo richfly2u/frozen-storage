@@ -25,19 +25,13 @@ header{
   position:sticky; top:0; z-index:20; background:linear-gradient(160deg,#0b4b6b,#1a7ba8);
   color:#fff; padding:12px 14px 14px; box-shadow:0 3px 14px rgba(11,75,107,.25);
 }
-.hrow{display:flex;align-items:center;gap:8px}
+.hrow{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .hs{display:none}
-.htools{display:none}
+.htools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.5px;flex:1}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--warn);flex:0 0 auto;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
 .dot.on{background:#4fd39a}.dot.off{background:#ff8a8a}
 #syncTxt{font-size:12px;opacity:.9;margin-left:6px;white-space:nowrap}
-#search{
-  margin-top:10px;width:100%;border:none;border-radius:10px;padding:10px 12px;font-size:15px;
-  background:rgba(255,255,255,.94);color:#12313f;
-}
-#search::placeholder{color:#8aa6b5}
-.searchinfo{font-size:12.5px;margin-top:6px;color:#dff0fa;min-height:0}
 /* ---------- tabs ---------- */
 nav{
   position:fixed;bottom:0;left:0;right:0;z-index:30;display:flex;background:#fff;
@@ -214,8 +208,6 @@ nav button.on b{filter:none;opacity:1}
   background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 11px 13px;
   box-shadow:0 4px 14px rgba(18,38,56,.08)
 }
-.side #search{margin:0;border:1px solid #cfe0eb;background:#fff;color:#12313f;font-size:14px;padding:8px 10px;border-radius:9px}
-.side .searchinfo{color:var(--muted);margin:0;min-height:0}
 .side .opbar{margin:0;color:#41586a;flex-wrap:wrap}
 .side .opbar b{color:#12486b;background:#e7f2fa}
 .side .opbar button{border-color:#cfe0eb;background:#f6fafd;color:#2b5a76}
@@ -234,7 +226,12 @@ nav button.on b{filter:none;opacity:1}
 .side .vcard .acts .btn{flex:1 1 auto}
 /* 桌機／平板：左欄說明、中間冰箱、右欄食材庫，並把冰箱壓到一頁裝得下 */
 @media (min-width:760px){
-  .mapmain{grid-template-columns:236px minmax(0,1fr) 330px;gap:11px;align-items:stretch}
+  /* 桌機：標題與經手人同一列（橫向） */
+  header{display:flex;align-items:center;gap:14px;padding:9px 14px 11px}
+  .mapmain{grid-template-columns:minmax(0,1fr) 330px;gap:11px;align-items:stretch}
+  .freezer{grid-column:1;grid-row:1}
+  .outside{grid-column:2;grid-row:1}
+  .side{grid-column:1 / -1;grid-row:2;align-self:start}
   .side{grid-column:1;align-self:start}
   .freezer{grid-column:2;order:0}
   .outside{grid-column:3;order:0}
@@ -249,14 +246,21 @@ nav button.on b{filter:none;opacity:1}
   .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:6px 30px 0 10px}
   .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(50px,1fr);gap:5px;padding-top:3px}
   .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 18px}
-  .freezer .tier .items{overflow:auto;align-content:flex-start}
+  .freezer .tier .items{overflow:auto;align-content:flex-start;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px}
+  .freezer .tier .items .chip{width:100%;max-width:100%;height:38px;font-size:11px;line-height:1.12;
+    flex-direction:column;align-items:center;justify-content:center;gap:0;position:relative;
+    padding:2px 12px 2px 3px;text-align:center;overflow-wrap:anywhere}
+  .freezer .tier .items .chip .by{display:block;font-size:9px;line-height:1.1;color:var(--muted);
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .freezer .tier .items .chip .q{position:absolute;right:2px;bottom:1px;font-size:9px;line-height:1.4;padding:0 2px}
+  .freezer .tier .items .chip .more{position:absolute;right:1px;top:1px;width:14px;height:14px;font-size:10.5px;line-height:1;margin:0}
   .freezer .chip{padding:4px 7px;font-size:12.5px;gap:5px;border-radius:8px}
   .freezer .tier-head{font-size:11px}
   /* 省高度：說明文字與多餘留白在桌機收掉／縮小 */
   .vhint{display:none}
   header{padding:8px 14px 10px}
   h1{font-size:17px}
-  #search{margin-top:7px;padding:8px 12px}
   nav button{padding:7px 4px 9px}
   nav button b{font-size:17px}
   body{padding-bottom:16px}
@@ -283,13 +287,11 @@ nav button.on b{filter:none;opacity:1}
   .hs{display:inline}
   #syncTxt{display:none}
   .htools{display:flex;align-items:center;gap:6px;margin-top:7px}
-  .htools #search{margin-top:0;width:auto;flex:1 1 0;min-width:74px;font-size:13.5px;padding:7px 9px;border-radius:9px}
   .htools .opbar{margin-top:0;gap:5px;font-size:11.5px}
   .htools .opbar > span{display:none}
   .htools .opbar b{font-size:11.5px;padding:2px 7px}
   .htools .opbar b::before{content:"👤 "}
   .htools .opbar button{margin-left:0;padding:4px 9px;font-size:11.5px}
-  .htools #searchInfo{flex:1 1 100%;margin-top:5px;font-size:11.5px}
 
   /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
   .outside{order:-2;position:static;display:block;max-height:none;margin:0;padding:9px 10px;
@@ -453,9 +455,9 @@ input[type=text],input[type=number],select,textarea{
 /* 手機：浮動語音鈕放右下角（在最後一塊內容上面，body 已留 76px 不擋內容） */
 @media (max-width:759px){
   .voice-float{left:auto;right:10px;bottom:14px;max-width:calc(100vw - 20px)}
-  /* 層內物品：維持「一列到底」的 wrap（若變 column + wrap，物品會被排到第二欄、跑出冰箱外） */
-  .freezer .tier .items{flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:6px}
-  .freezer .tier .items .chip{width:100%;max-width:100%}
+  /* 層內物品：方框、多列排開（跟食材庫一樣，一層可以放很多樣） */
+  .freezer .tier .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:5px;align-content:flex-start}
+  .freezer .tier .items .chip{width:100%;max-width:100%;height:36px;font-size:10.5px;padding:2px 11px 2px 3px}
 }
 </style>
 </head>
@@ -466,22 +468,21 @@ input[type=text],input[type=number],select,textarea{
     <h1><span class="hl">❄️ 凱德佛堂 冷凍庫 物品位置管理</span><span class="hs">❄️ 凱德冷凍庫</span></h1>
     <div class="dot" id="dot"></div><span id="syncTxt">連線中…</span>
   </div>
-  <!-- 手機：搜尋＋經手人會被搬到這裡，跟標題同一列 -->
-  <div class="htools" id="hTools"></div>
+  <!-- 經手人（橫向顯示）＋ 顯示開關：一律放最上方 -->
+  <div class="htools" id="hTools">
+    <div class="opbar">
+      <span>經手人：</span><b id="opName">未設定</b>
+      <button type="button" id="btnOp">修改</button>
+    </div>
+    <label class="bytoggle"><input type="checkbox" id="showBy"> 👤 顯示經手人</label>
+  </div>
 </header>
 
 <!-- ============ 位置圖（含語音輸入） ============ -->
 <section class="view on" id="view-map">
   <div class="mapmain">
-    <!-- 左欄：搜尋／經手人／說明／語音（桌機放側邊，不佔冰箱上下高度） -->
+    <!-- 說明與 LINE 提示（搜尋、經手人都已移到最上方標題列） -->
     <aside class="side">
-      <input id="search" type="text" autocomplete="off" placeholder="搜尋品名（例：當歸、素排）…">
-      <div class="searchinfo" id="searchInfo"></div>
-      <div class="opbar">
-        <span>經手人：</span><b id="opName">未設定</b>
-        <button type="button" id="btnOp">修改</button>
-      </div>
-      <label class="bytoggle"><input type="checkbox" id="showBy"> 👤 顯示經手人<small>（預設隱藏）</small></label>
       <div class="bytip" id="lineTip">
         目前在 <b>LINE 內建瀏覽器</b>。若按了沒反應，請點右上角「⋯」→ 用其他瀏覽器開啟本頁。
       </div>
@@ -687,20 +688,6 @@ function rememberBy(name) {
   refreshByList();
 }
 renderOperator();
-/* 手機：把「搜尋＋經手人」搬到最上方，跟標題同一列（桌機搬回左欄原位） */
-function layoutTopBar() {
-  const mob = window.matchMedia("(max-width:759px)").matches;
-  const bar = $("#hTools"), side = document.querySelector(".side"), anchor = document.querySelector(".bytoggle");
-  if (!bar || !side || !anchor) return;
-  [ $("#search"), $("#searchInfo"), document.querySelector(".opbar") ].forEach(el => {
-    if (!el) return;
-    if (mob) bar.appendChild(el);
-    else side.insertBefore(el, anchor);
-  });
-}
-layoutTopBar();
-window.addEventListener("resize", layoutTopBar);
-window.addEventListener("orientationchange", () => setTimeout(layoutTopBar, 200));
 /* ============ 經手人提醒：第一次要操作前先問一次，填過就記住這台裝置 ============ */
 let opThen = null;
 function ensureOperator(then) {
@@ -760,7 +747,7 @@ function listen() {
   if (unsubItems) return;
   unsubItems = onSnapshot(query(collection(db, COLL_ITEMS), orderBy("name")), snap => {
     items = snap.docs.map(d => Object.assign({ _id: d.id }, d.data()));
-    renderMap(); applySearch();
+    renderMap();
   }, err => { console.error(err); sync("off", "讀取失敗"); toast("讀取失敗：" + err.code); });
 }
 
@@ -1179,29 +1166,6 @@ function bindChipGestures(el, it, kind) {
   el.addEventListener("touchmove", e => { if (dragCtx && dragCtx.el === el) e.preventDefault(); }, { passive: false });
 }
 function bindOutsideGestures(el, entry) { bindChipGestures(el, entry, "outside"); }
-
-/* ================= 搜尋 ================= */
-function applySearch() {
-  const kw = ($("#search").value || "").trim().toLowerCase();
-  document.querySelectorAll("#freezer .chip").forEach(el => el.classList.remove("hit"));
-  if (!kw) { $("#searchInfo").textContent = ""; return; }
-  let hits = 0, floors = new Set();
-  document.querySelectorAll("#freezer .chip").forEach(el => {
-    const hit = (el.dataset.name || "").toLowerCase().includes(kw);
-    const tier = el.closest(".tier");
-    if (hit && tier) { el.classList.add("hit"); hits++; floors.add(tier.dataset.floor); }
-  });
-  if (hits) {
-    $("#searchInfo").textContent = `找到 ${hits} 項，位於：` + [...floors].sort().map(f => `${floorLabel(f)} ${floorOf(f).name}`).join("、");
-  } else {
-    /* 格層只顯示冰箱還有的；若查的品項剛好已用完，提醒一下（可用語音「放回」補回） */
-    const gone = items.filter(i => (Number(i.qty) || 0) <= 0 && (i.name || "").toLowerCase().includes(kw));
-    $("#searchInfo").textContent = gone.length
-      ? `「${gone.map(i => i.name).join("、")}」不在冰箱裡（已列在食材庫，可拖回冰箱或用語音「放回 ${gone[0].name} 一包」）`
-      : "查無此品名";
-  }
-}
-$("#search").addEventListener("input", applySearch);
 
 /* ================= 樓層選擇器 ================= */
 $("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">${esc(floorFull(f.id))}</option>`).join("");
