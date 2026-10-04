@@ -273,7 +273,7 @@ nav button.on b{filter:none;opacity:1}
 /* 手機：冰箱在最上面吃滿高度；食材庫固定在畫面底部（橫向滑），兩者同屏才好拖 */
 @media (max-width:759px){
   .freezer{order:-3;max-width:none;width:100%;height:auto;min-height:0;display:flex;flex-direction:column}   /* width:100% 才能吃滿（margin:0 auto 會縮成內容寬） */
-  .mapmain{min-height:calc(100vh - 46px)}          /* 手機：品項少時下方不再一片空白，冰箱長高填滿 */
+  .mapmain{min-height:calc(100vh - 124px)}         /* 手機：扣掉標題列(36)+間距(12)+底部留白(76)，品項少時冰箱長高填滿、不留下方空白 */
   .freezer .doors{flex:1 1 auto}                    /* 門可以長高（層跟著均分） */
   .freezer .doors{display:flex;flex-direction:row;flex:0 0 auto;min-height:0;gap:6px;align-items:stretch}
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;padding:5px 18px 0 8px}
