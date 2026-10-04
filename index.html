@@ -242,15 +242,15 @@ nav button.on b{filter:none;opacity:1}
   .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:4px;
     grid-template-columns:repeat(auto-fill,minmax(56px,1fr));overflow-y:auto;overflow-x:hidden}
   .os-chip{width:100%;height:40px;justify-content:center;text-align:center;font-size:11.5px;line-height:1.15;padding:2px 13px 2px 4px}
-  .freezer{height:calc(100vh - 142px);min-height:400px;display:flex;flex-direction:column}
+  .freezer{min-height:calc(100vh - 142px);height:auto;min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none;width:100%}   /* 吃滿整欄（margin:0 auto 會讓它縮成內容寬） */
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
   .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:6px 30px 0 10px}
-  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(50px,1fr);gap:5px;padding-top:3px}
-  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 18px}
-  .freezer .tier .items{overflow:auto;align-content:flex-start;
+  .freezer .shelves{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(78px,1fr);gap:5px;padding-top:3px}
+  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:visible;padding:2px 4px 18px}   /* 前賢：字被切到底部 → 不再裁切 */
+  .freezer .tier .items{overflow:visible;align-content:flex-start;
     display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px}
-  .freezer .tier .items .chip{width:100%;max-width:100%;height:36px;font-size:11.5px;line-height:1.15;
+  .freezer .tier .items .chip{width:100%;max-width:100%;min-height:36px;height:auto;font-size:11.5px;line-height:1.25;
     align-items:center;justify-content:center;gap:0;position:relative;
     padding:2px 4px;text-align:center;overflow-wrap:anywhere}
   .freezer .tier .items .chip .by{display:block;font-size:9px;line-height:1.1;color:var(--muted);
@@ -468,7 +468,7 @@ input[type=text],input[type=number],select,textarea{
   .freezer .fl-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* 層內物品：方框、多列排開（跟食材庫一樣，一層可以放很多樣） */
   .freezer .tier .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:5px;align-content:flex-start}
-  .freezer .tier .items .chip{width:100%;max-width:100%;height:34px;font-size:11px;padding:2px 3px}
+  .freezer .tier .items .chip{width:100%;max-width:100%;min-height:34px;height:auto;font-size:11px;padding:3px 4px;line-height:1.25}
 }
 </style>
 </head>
