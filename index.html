@@ -275,10 +275,7 @@ nav button.on b{filter:none;opacity:1}
   /* 手機：冰箱與食材庫都固定在同一頁（頁面不捲動）；食材庫裝不下時在食材庫內部捲動 */
   .mapmain{display:flex;flex-direction:column;height:calc(100vh - 136px);min-height:0;gap:8px}
   .freezer{flex:1 1 auto;min-height:132px}
-  .freezer .doors{flex:1 1 auto}                    /* 門跟著長高（層均分） */
-  .outside{flex:0 1 auto;min-height:132px;max-height:42vh;display:flex;flex-direction:column}
-  .outside .os-items{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
-  .freezer .doors{display:flex;flex-direction:row;flex:0 0 auto;min-height:0;gap:6px;align-items:stretch}
+  .freezer .doors{display:flex;flex-direction:row;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}   /* 門跟著冰箱長高（層均分） */
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;padding:5px 18px 0 8px}
   .freezer .door-head{font-size:10px;letter-spacing:2px;padding:6px 3px;right:-1px}
   .freezer .shelves{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(84px,1fr);gap:5px;padding-top:3px}
@@ -302,13 +299,13 @@ nav button.on b{filter:none;opacity:1}
   .htools .bytoggle{color:#dff0fa;gap:3px}
 
   /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
-  .outside{order:-2;position:static;display:block;max-height:none;margin:0;padding:9px 10px;
-    border-radius:13px;border:2px dashed #b9cddb;background:rgba(255,255,255,.8);box-shadow:none}
+  .outside{order:-2;position:static;display:flex;flex-direction:column;flex:0 1 auto;min-height:132px;max-height:42vh;margin:0;padding:9px 10px;
+    border-radius:13px;border:2px dashed #b9cddb;background:rgba(255,255,255,.8);box-shadow:none}   /* 裝不下時在食材庫內部捲動（前賢：冰箱與食材庫同在一頁） */
   .outside .os-head{font-size:13px}
   .outside #btnAdd{position:absolute;right:10px;top:8px;margin:0;width:auto;padding:4px 10px;font-size:12px;border-radius:8px}
   .outside #osClear{display:none}
   .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:4px;margin:7px 0 0;
-    overflow-y:auto;overflow-x:hidden}
+    flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
   .outside .os-chip{width:100%;height:38px;font-size:11px;padding:2px 12px 2px 4px}
   .outside .os-chip .more{width:15px;height:15px;font-size:11px}
   .side{order:-1;margin-bottom:0}
