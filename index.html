@@ -329,8 +329,11 @@ input[type=text],input[type=number],select,textarea{
 <div class="mask" id="mask">
   <div class="sheet" id="sheet">
     <h2 id="sheetTitle">新增物品</h2>
-    <label>品名 <span style="color:#c9455a">*</span></label>
+    <label style="display:flex;align-items:center;gap:8px">品名 <span style="color:#c9455a">*</span>
+      <button type="button" class="btn sm ghost" id="btnVoiceFill" style="margin-left:auto">🎤 用說的</button>
+    </label>
     <input type="text" id="fName" placeholder="例：當歸、素排骨、香菇頭">
+    <div class="vhint" id="fVoiceHint" style="display:none;margin:7px 0 0"></div>
     <div class="row">
       <div>
         <label>數量</label>
@@ -644,6 +647,11 @@ $("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">${f.door} 第$
 
 /* ================= 編輯視窗 ================= */
 function openEdit(id, presetFloor) {
+  stopListen();                                  // 開編輯視窗時先關掉主頁語音，避免搶麥克風
+  if (fillRec) { try { fillRec.stop(); } catch (_) {} }
+  $("#fVoiceHint").style.display = "none";
+  $("#fVoiceHint").textContent = "";
+  $("#btnVoiceFill").textContent = "🎤 用說的";
   editId = id || null;
   const it = id ? items.find(i => i._id === id) : null;
   $("#sheetTitle").textContent = it ? "修改物品" : "新增物品";
@@ -905,6 +913,55 @@ $("#btnListen").addEventListener("click", startListen);
 $("#btnStop").addEventListener("click", stopListen);
 window.addEventListener("pagehide", stopListen);
 vState(SR ? "語音未啟動（按「開始聽」）" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
+
+/* ================= 新增／修改視窗：用語音填欄位 ================= */
+let fillRec = null, fillListening = false;
+
+function applyVoiceToForm(text) {
+  const r = parseUtterance(text, items);
+  const sel = $("#fUnit");
+  const hasUnit = u => [...sel.options].some(o => o.value === u);
+  if (r.name) $("#fName").value = r.name;
+  if (r.qty > 0) $("#fQty").value = r.qty;
+  if (r.unit && hasUnit(r.unit)) sel.value = r.unit;
+  if (r.floor) $("#fFloor").value = String(r.floor);
+  if (r.operatorName) $("#fBy").value = r.operatorName;
+  const parts = [];
+  if (r.name) parts.push("品名「" + r.name + "」");
+  if (r.qty) parts.push("數量 " + r.qty + (r.unit && hasUnit(r.unit) ? r.unit : ""));
+  if (r.floor) parts.push("樓層 " + floorLabel(r.floor));
+  if (r.match) parts.push("（已有品項：" + r.match.name + "）");
+  $("#fVoiceHint").textContent = parts.length ? "✅ 已填入：" + parts.join("、") : "沒聽清楚，請再講一次";
+}
+
+function toggleVoiceFill() {
+  if (!SR) { toast("此瀏覽器不支援語音辨識，請用 Android Chrome 開啟"); return; }
+  if (fillListening) { try { fillRec.stop(); } catch (_) {} return; }
+  stopListen();                              // 避免與主頁語音搶麥克風
+  fillListening = true;
+  $("#btnVoiceFill").textContent = "🎤 聽取中…";
+  $("#fVoiceHint").style.display = "";
+  $("#fVoiceHint").textContent = "請講「品名＋數量」，例如：香菇頭兩包";
+  fillRec = new SR();
+  fillRec.lang = "zh-TW"; fillRec.continuous = false; fillRec.interimResults = true; fillRec.maxAlternatives = 1;
+  fillRec.onresult = e => {
+    let interim = "", final = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript;
+    }
+    if (interim && !final) $("#fVoiceHint").textContent = "…" + interim;
+    if (final.trim()) applyVoiceToForm(final.trim());
+  };
+  fillRec.onerror = e => {
+    fillListening = false; $("#btnVoiceFill").textContent = "🎤 用說的";
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") toast("請允許麥克風權限");
+  };
+  fillRec.onend = () => { fillListening = false; $("#btnVoiceFill").textContent = "🎤 用說的"; };
+  try { fillRec.start(); } catch (e) { fillListening = false; $("#btnVoiceFill").textContent = "🎤 用說的"; toast("無法啟動語音：" + e.message); }
+}
+
+$("#btnVoiceFill").addEventListener("click", toggleVoiceFill);
 
 /* ================= 分頁切換 ================= */
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
