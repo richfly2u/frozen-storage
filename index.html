@@ -65,7 +65,7 @@ nav button.on b{filter:none;opacity:1}
   padding:5px 8px;border-radius:5px;letter-spacing:1px;box-shadow:inset 0 0 7px rgba(255,93,76,.35)}
 .doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:14px}
 .door{
-  position:relative;border-radius:12px;padding:10px 26px 10px 10px;min-width:0;
+  position:relative;border-radius:12px;padding:10px 32px 10px 12px;min-width:0;
   background:linear-gradient(165deg,rgba(232,245,255,.62),rgba(198,224,243,.40));
   border:3px solid #c6d2db;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 3px 10px rgba(18,38,56,.14)
@@ -74,11 +74,30 @@ nav button.on b{filter:none;opacity:1}
   content:"";position:absolute;inset:0;border-radius:9px;pointer-events:none;opacity:.5;z-index:0;
   background:linear-gradient(115deg,rgba(255,255,255,.8) 0 9%,rgba(255,255,255,0) 30% 100%)
 }
-.door-head{position:absolute;top:9px;left:13px;font-size:12px;font-weight:700;color:#41586a;letter-spacing:3px;z-index:1}
+.door-head{position:absolute;top:9px;left:16px;font-size:12px;font-weight:700;color:#41586a;letter-spacing:3px;z-index:2}
+/* 把手：握把 + 上下支架，避免被誤認為捲軸 */
 .door .handle{
-  position:absolute;top:50%;right:7px;transform:translateY(-50%);width:12px;height:40%;border-radius:6px;z-index:1;
-  background:linear-gradient(90deg,#5b6871,#2a333a 40%,#0a0e11);
-  box-shadow:0 2px 5px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.14),0 0 0 2px rgba(255,255,255,.35)
+  position:absolute;top:50%;right:10px;transform:translateY(-50%);width:13px;height:30%;border-radius:7px;z-index:2;
+  background:linear-gradient(90deg,#6a7883,#2b343b 45%,#0a0e11);
+  box-shadow:0 3px 8px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.16)
+}
+.door .handle::before,.door .handle::after{
+  content:"";position:absolute;left:50%;transform:translateX(-50%);width:24px;height:7px;border-radius:2px;
+  background:linear-gradient(180deg,#93a0a9,#5b666e);box-shadow:0 1px 2px rgba(0,0,0,.35)
+}
+.door .handle::before{top:-8px}
+.door .handle::after{bottom:-8px}
+/* 門鉸鏈 */
+.door .hinge{
+  position:absolute;left:-9px;width:10px;height:26px;border-radius:3px 0 0 3px;z-index:0;
+  background:linear-gradient(180deg,#e3eaee,#98a5ae);box-shadow:0 1px 3px rgba(0,0,0,.3)
+}
+.door .hinge.h1{top:20%}
+.door .hinge.h2{bottom:20%}
+/* 門鎖 */
+.door .lock{
+  position:absolute;right:14px;bottom:9px;width:11px;height:11px;border-radius:3px;z-index:2;
+  background:linear-gradient(180deg,#3c464e,#171d21);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 1px 2px rgba(0,0,0,.35)
 }
 .shelves{position:relative;z-index:1;display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);
   gap:4px;height:100%;min-width:0;padding-top:17px}
@@ -97,9 +116,11 @@ nav button.on b{filter:none;opacity:1}
   .freezer{padding:8px 9px 0;border-radius:14px 14px 6px 6px}
   .fridge-top{padding:5px 6px;margin-bottom:8px}
   .doors{gap:10px}
-  .door{padding:8px 22px 8px 8px;border-width:2px}
-  .door .handle{width:10px;right:5px}
-  .door-head{top:7px;left:10px;font-size:11px;letter-spacing:2px}
+  .door{padding:8px 28px 8px 10px;border-width:2px}
+  .door .handle{width:11px;right:7px}
+  .door .handle::before,.door .handle::after{width:20px;height:6px}
+  .door .hinge{left:-7px;width:8px;height:20px}
+  .door-head{top:7px;left:13px;font-size:11px;letter-spacing:2px}
   .shelves{padding-top:16px}
   .tier{padding:5px 3px 11px;min-height:70px}
   .fl-sub{display:none}
@@ -497,9 +518,11 @@ function renderMap() {
     <div class="doors">
       ${doors.map(d => `
         <section class="door" data-door="${d.key}">
+          <div class="hinge h1"></div><div class="hinge h2"></div>
           <div class="door-head">${d.label}</div>
           <div class="shelves">${d.floors.map(tierHTML).join("")}</div>
           <div class="handle"></div>
+          <div class="lock"></div>
         </section>`).join("")}
     </div>
     <div class="wheels"><i></i><i></i><i></i><i></i></div>`;
