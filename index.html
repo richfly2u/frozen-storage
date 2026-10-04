@@ -287,6 +287,7 @@ nav button.on b{filter:none;opacity:1}
   .htools .opbar{margin-top:0;gap:5px;font-size:11.5px}
   .htools .opbar > span{display:none}
   .htools .opbar b{font-size:11.5px;padding:2px 7px}
+  .htools .opbar b::before{content:"👤 "}
   .htools .opbar button{margin-left:0;padding:4px 9px;font-size:11.5px}
   .htools #searchInfo{flex:1 1 100%;margin-top:5px;font-size:11.5px}
 
@@ -1355,7 +1356,7 @@ function startListen() {
 function stopListen() {
   listening = false;
   if (rec) { try { rec.stop(); } catch (_) {} }
-  keepAwake(false); vState("未開始（按「🎤 開始聽」才會聽）", false);
+  keepAwake(false); vState("未開始", false);
 }
 
 function handleVoice(text) {
@@ -1451,7 +1452,7 @@ $("#btnListen").addEventListener("click", () => { listening ? stopListen() : sta
 $("#btnStop").addEventListener("click", stopListen);
 window.addEventListener("pagehide", stopListen);
 /* 進頁面時是「未開始」狀態：一定要按「🎤 開始聽」才會啟動麥克風 */
-vState(SR ? "未開始（按「🎤 開始聽」才會聽）" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
+vState(SR ? "未開始" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
 
 /* ================= 新增／修改視窗：用語音填欄位 ================= */
 let fillRec = null, fillListening = false;
