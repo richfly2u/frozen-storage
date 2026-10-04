@@ -705,10 +705,12 @@ function gotoFirstHit() {
   if (os) os.scrollIntoView({ behavior: "smooth", block: "center" });
   else toast("找不到「" + searchQ + "」");
 }
-$("#search").addEventListener("input", e => { searchQ = (e.target.value || "").trim(); styleSearch(); });
-$("#search").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); gotoFirstHit(); } });
-$("#searchClear").addEventListener("click", () => {
-  const el = $("#search"); el.value = ""; searchQ = ""; styleSearch(); try { el.focus(); } catch (_) {}
+/* ※ 這裡不能用 $()：$ 是後面才宣告的 const，會踩 TDZ 讓整個模組掛掉 */
+const searchEl = document.getElementById("search"), searchClearEl = document.getElementById("searchClear");
+searchEl.addEventListener("input", e => { searchQ = (e.target.value || "").trim(); styleSearch(); });
+searchEl.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); gotoFirstHit(); } });
+searchClearEl.addEventListener("click", () => {
+  searchEl.value = ""; searchQ = ""; styleSearch(); try { searchEl.focus(); } catch (_) {}
 });
 /* 剛放進冰箱的層＋品項：不同顏色框 3 秒後恢復 */
 let justInFloor = null, justInName = "", justInTimer = null;
