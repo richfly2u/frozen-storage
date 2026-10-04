@@ -179,6 +179,42 @@ nav button.on b{filter:none;opacity:1}
 .chip.low .q{background:var(--danger)}
 .chip .nt{font-size:11.5px;color:var(--muted)}
 .chip.hit{outline:3px solid #ffcf70;background:#fff8e6}
+/* ---------- 就地操作（拖曳換層／⋯選單） ---------- */
+.chip .more{
+  display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 auto;
+  margin:-2px -4px -2px 0;border-radius:7px;color:#5c7f97;background:rgba(30,136,199,.10);
+  font-size:15px;line-height:1;font-weight:700
+}
+.chip .more:hover{background:rgba(30,136,199,.22)}
+.chip{touch-action:pan-y}
+.chip.dragging{opacity:.32}
+.chip-ghost{
+  position:fixed;z-index:90;pointer-events:none;transform:translate(-50%,-50%) scale(1.05);
+  background:#1e88c7;color:#fff;border-radius:10px;padding:6px 11px;font-size:13.5px;font-weight:600;
+  box-shadow:0 8px 22px rgba(10,40,70,.35);white-space:nowrap
+}
+.tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
+.cmenu{
+  position:fixed;z-index:95;background:#fff;border:1px solid #d7e3ec;border-radius:12px;padding:7px;
+  box-shadow:0 12px 34px rgba(18,38,56,.28);min-width:168px;max-width:82vw;
+  display:flex;flex-direction:column;gap:4px;font-family:inherit
+}
+.cmenu .cm-h{font-size:13.5px;font-weight:700;color:#20455e;padding:3px 6px 5px;border-bottom:1px solid #eef4f8;margin-bottom:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmenu button{
+  border:none;background:transparent;text-align:left;font-family:inherit;font-size:14px;color:#26384a;
+  padding:8px 9px;border-radius:8px;cursor:pointer
+}
+.cmenu button:hover{background:#f1f7fb}
+.cmenu button.danger{color:#c9455a}
+.cmenu button.danger:hover{background:#fdf0f2}
+.cmenu button.ok{background:#1e88c7;color:#fff;text-align:center;flex:1}
+.cmenu button.ok:hover{background:#1673ad}
+.cmenu input{font-family:inherit;font-size:14px;padding:7px 9px;border:1px solid #cfe0eb;border-radius:8px;width:100%}
+.cmenu .cm-row{display:flex;gap:6px}
+.cmenu .cm-row button:not(.ok){background:#f1f5f8;text-align:center;flex:0 0 auto}
+.cmenu .cm-l{display:flex;align-items:center;gap:6px;font-size:14px;color:#26384a;padding:4px 9px}
+.cmenu select{flex:1;font-family:inherit;font-size:13.5px;padding:6px 4px;border:1px solid #cfe0eb;border-radius:8px;max-width:150px}
 /* ---------- log ---------- */
 .log-hint{font-size:12.5px;color:var(--muted);margin-bottom:8px}
 .logitem{
@@ -294,7 +330,7 @@ input[type=text],input[type=number],select,textarea{
 <!-- ============ 位置圖（含語音輸入） ============ -->
 <section class="view on" id="view-map">
   <p class="legend" id="focusBar" style="display:none"></p>
-  <p class="legend">點任一物品可修改數量／刪除；按 <b>＋新增</b> 登錄新物品。<b>只寫品名＝還有 1 包</b>；<b>數量 0 的品項不顯示</b>（冰箱裡沒有就不列）。</p>
+  <p class="legend">點物品＝改數量／備註；<b>拖到別層＝移動</b>；點 <b>⋯</b>＝改名／刪除。按 <b>＋新增</b> 登錄新物品。<b>只寫品名＝還有 1 包</b>；數量 0 的品項不顯示。</p>
 
   <!-- 語音輸入（與位置圖同一頁） -->
   <div class="voice-bar">
@@ -592,7 +628,10 @@ function renderMap() {
     </div>
     <div class="wheels"><i></i><i></i><i></i><i></i></div>`;
 
-  box.querySelectorAll(".chip").forEach(el => el.addEventListener("click", () => openEdit(el.dataset.id)));
+  box.querySelectorAll(".chip").forEach(el => {
+    const it = items.find(i => i._id === el.dataset.id);
+    if (it) bindChipGestures(el, it);
+  });
   refreshByList();
   /* 重繪後把焦點框補回來（語音/掃碼指定的樓層） */
   if (focusedFloor != null) {
@@ -636,7 +675,173 @@ function chipHTML(it) {
       <span class="nm">${esc(it.name)}</span>
       ${qtyBadge}
       ${it.by ? `<span class="by">👤${esc(it.by)}</span>` : ""}
+      <span class="more" title="更多（改名／刪除／移到別層）">⋯</span>
     </button>`;
+}
+
+/* ================= 就地操作：拖曳換層、就地選單（改名／移層／刪除） ================= */
+let dragCtx = null, suppressClick = false, chipMenuEl = null;
+
+function closeChipMenu() {
+  if (chipMenuEl) { chipMenuEl.remove(); chipMenuEl = null; }
+  document.removeEventListener("pointerdown", outsideCloseMenu, true);
+}
+function outsideCloseMenu(e) {
+  const onMore = e.target.closest && e.target.closest(".more");
+  if (chipMenuEl && !chipMenuEl.contains(e.target) && !onMore) closeChipMenu();
+}
+
+async function moveItemTo(it, floor) {
+  const from = Number(it.floor), to = Number(floor);
+  if (!needReady() || from === to) return;
+  const by = operator || it.by || "";
+  if (!by) { toast("請先設定經手人"); return; }
+  try {
+    await updateDoc(doc(db, COLL_ITEMS, it._id), { floor: to, updatedAt: Date.now() });
+    await addLog(to, it.name, Number(it.qty) || 0, it.unit || "", "move", by, from);
+    toast(`已移動：${it.name} → ${floorLabel(to)}`);
+    pendingHighlight = it._id; focusedFloor = to;
+  } catch (e) { toast("移動失敗：" + (e.code || e.message)); }
+}
+
+async function renameItem(it, newName) {
+  const nm = (newName || "").trim();
+  if (!nm || nm === it.name || !needReady()) return;
+  const by = operator || it.by || "";
+  if (!by) { toast("請先設定經手人"); return; }
+  try {
+    await updateDoc(doc(db, COLL_ITEMS, it._id), { name: nm, updatedAt: Date.now() });
+    await addLog(Number(it.floor), nm, Number(it.qty) || 0, it.unit || "", "rename", by, null, it.name);
+    toast(`已改名：${it.name} → ${nm}`);
+    pendingHighlight = it._id;
+  } catch (e) { toast("改名失敗：" + (e.code || e.message)); }
+}
+
+async function removeItem(it) {
+  if (!needReady()) return;
+  const by = operator || it.by || "";
+  if (!by) { toast("請先設定經手人"); return; }
+  if (!confirm(`確定刪除「${it.name}」？\n（紀錄會保留一筆刪除記錄）`)) return;
+  try {
+    await deleteDoc(doc(db, COLL_ITEMS, it._id));
+    await addLog(Number(it.floor), it.name, Number(it.qty) || 0, it.unit || "", "del", by);
+    toast("已刪除：" + it.name);
+  } catch (e) { toast("刪除失敗：" + (e.code || e.message)); }
+}
+
+function openChipMenu(it, anchor) {
+  closeChipMenu();
+  const others = FLOORS.filter(f => f.id !== Number(it.floor));
+  const el = document.createElement("div");
+  el.className = "cmenu";
+  el.innerHTML = `
+    <div class="cm-h">${esc(it.name)}</div>
+    <button type="button" data-a="rename">✏️ 修改名稱</button>
+    <label class="cm-l">📦 移到
+      <select id="cmMove"><option value="">選樓層…</option>
+        ${others.map(f => `<option value="${f.id}">${esc(f.door)} 第${f.local}層 — ${esc(f.name)}</option>`).join("")}
+      </select>
+    </label>
+    <button type="button" class="danger" data-a="del">🗑️ 刪除</button>`;
+  document.body.appendChild(el);
+  chipMenuEl = el;
+
+  const r = anchor.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  const x = Math.min(Math.max(8, r.left), innerWidth - w - 8);
+  let y = r.bottom + 6;
+  if (y + h > innerHeight - 8) y = Math.max(8, r.top - h - 6);
+  el.style.left = x + "px"; el.style.top = y + "px";
+
+  el.querySelector('[data-a="rename"]').addEventListener("click", () => {
+    el.innerHTML = `<div class="cm-h">修改名稱</div>
+      <input id="cmName" value="${esc(it.name)}">
+      <div class="cm-row"><button type="button" data-a="cancel">取消</button>
+      <button type="button" class="ok" data-a="ok">確定</button></div>`;
+    const inp = el.querySelector("#cmName");
+    inp.focus(); inp.select();
+    const ok = () => { const v = inp.value; closeChipMenu(); renameItem(it, v); };
+    el.querySelector('[data-a="ok"]').addEventListener("click", ok);
+    el.querySelector('[data-a="cancel"]').addEventListener("click", closeChipMenu);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") ok(); });
+  });
+  el.querySelector('[data-a="del"]').addEventListener("click", () => { closeChipMenu(); removeItem(it); });
+  el.querySelector("#cmMove").addEventListener("change", e => {
+    const v = e.target.value; closeChipMenu();
+    if (v) moveItemTo(it, Number(v));
+  });
+  setTimeout(() => document.addEventListener("pointerdown", outsideCloseMenu, true), 0);
+}
+
+/* 拖曳：滑鼠可直接拖；手指要橫向起手（直向＝讓頁面捲動），拖到哪一層就移過去 */
+function startDrag(el, it, ev) {
+  const g = document.createElement("div");
+  g.className = "chip-ghost";
+  g.textContent = it.name + ((Number(it.qty) || 0) > 1 ? ` ${it.qty}${it.unit || ""}` : "");
+  document.body.appendChild(g);
+  el.classList.add("dragging");
+  dragCtx = { el, it, ghost: g, target: null };
+  suppressClick = true;
+  try { el.setPointerCapture(ev.pointerId); } catch (_) {}
+  moveDrag(ev);
+}
+function moveDrag(ev) {
+  if (!dragCtx) return;
+  dragCtx.ghost.style.left = ev.clientX + "px";
+  dragCtx.ghost.style.top = ev.clientY + "px";
+  const under = document.elementFromPoint(ev.clientX, ev.clientY);
+  const tier = under && under.closest ? under.closest(".tier") : null;
+  if (dragCtx.target !== tier) {
+    if (dragCtx.target) dragCtx.target.classList.remove("drop");
+    dragCtx.target = tier;
+    if (tier) tier.classList.add("drop");
+  }
+}
+function endDrag() {
+  if (!dragCtx) return;
+  const { el, it, ghost, target } = dragCtx;
+  el.classList.remove("dragging");
+  if (ghost) ghost.remove();
+  if (target) {
+    target.classList.remove("drop");
+    const fid = Number(target.dataset.floor);
+    if (fid && fid !== Number(it.floor)) moveItemTo(it, fid);
+  }
+  dragCtx = null;
+  setTimeout(() => { suppressClick = false; }, 250);
+}
+function bindChipGestures(el, it) {
+  el.addEventListener("click", e => {
+    if (suppressClick) { suppressClick = false; return; }
+    if (e.target.closest(".more")) { e.stopPropagation(); openChipMenu(it, el); return; }
+    openEdit(it._id);
+  });
+  el.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(it._id); }
+  });
+  el.addEventListener("pointerdown", e => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target.closest(".more")) return;              // ⋯ 只開選單，不拖
+    const mouse = e.pointerType === "mouse";
+    const sx = e.clientX, sy = e.clientY;
+    let mode = "pending";
+    const onMove = ev2 => {
+      const dx = ev2.clientX - sx, dy = ev2.clientY - sy;
+      if (mode === "pending") {
+        const far = Math.hypot(dx, dy) > (mouse ? 6 : 9);
+        if (far && (mouse || Math.abs(dx) >= Math.abs(dy))) { mode = "drag"; startDrag(el, it, ev2); }
+        else if (far) { mode = "cancel"; cleanup(); }   // 手指直向滑＝捲動頁面
+      } else if (mode === "drag") moveDrag(ev2);
+    };
+    const onUp = () => { if (mode === "drag") endDrag(); cleanup(); };
+    const cleanup = () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
+    };
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
+  });
 }
 
 /* ================= 搜尋 ================= */
@@ -756,10 +961,12 @@ $("#btnDel").addEventListener("click", async () => {
   } catch (e) { toast("刪除失敗：" + (e.code || e.message)); }
 });
 
-async function addLog(floor, name, qty, unit, action, by) {
+async function addLog(floor, name, qty, unit, action, by, from = null, oldName = null) {
   try {
     await addDoc(collection(db, COLL_LOG), {
-      floor: Number(floor), name, qty, unit, action, by: by || "", at: Date.now()
+      floor: Number(floor), name, qty, unit, action, by: by || "", at: Date.now(),
+      ...(from != null ? { from: Number(from) } : {}),
+      ...(oldName ? { old: oldName } : {})
     });
   } catch (e) { console.warn("紀錄寫入失敗", e); }
 }
@@ -770,6 +977,8 @@ const ACT = {
   out:  { ic: "⬆️", txt: "移出", cls: "badge-out" },
   new:  { ic: "🆕", txt: "新增", cls: "badge-in" },
   del:  { ic: "🗑️", txt: "刪除", cls: "badge-out" },
+  move: { ic: "📦", txt: "移動", cls: "" },
+  rename: { ic: "✏️", txt: "改名", cls: "" },
   edit: { ic: "✏️", txt: "修改", cls: "" }
 };
 function renderLog(rows) {
@@ -784,11 +993,15 @@ function renderLog(rows) {
   $("#logList").innerHTML = list.length ? list.map(r => {
     const a = ACT[r.action] || ACT.edit;
     const f = floorOf(r.floor);
+    const pos = r.action === "move" && r.from != null
+      ? `${esc(floorLabel(r.from))} → <b>${esc(floorLabel(r.floor))}</b>`
+      : `${esc(floorLabel(r.floor))} ${esc(f.name)}`;
+    const nm = r.action === "rename" && r.old ? `${esc(r.old)} → <b>${esc(r.name)}</b>` : esc(r.name);
     return `<div class="logitem">
       <div class="ic">${a.ic}</div>
       <div class="body">
-        <div class="t1"><span class="${a.cls}">${a.txt}</span>　${esc(r.name)}　${Number(r.qty) || 0} ${esc(r.unit || "")}</div>
-        <div class="t2">${esc(floorLabel(r.floor))} ${esc(f.name)}　·　👤 ${esc(r.by || "未記錄")}　·　${fmtTime(r.at)}</div>
+        <div class="t1"><span class="${a.cls}">${a.txt}</span>　${nm}　${Number(r.qty) || 0} ${esc(r.unit || "")}</div>
+        <div class="t2">${pos}　·　👤 ${esc(r.by || "未記錄")}　·　${fmtTime(r.at)}</div>
       </div></div>`;
   }).join("") : '<p class="log-hint">沒有符合的紀錄。</p>';
 }
