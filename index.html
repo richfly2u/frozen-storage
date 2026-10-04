@@ -196,12 +196,13 @@ nav button.on b{filter:none;opacity:1}
 .outside .os-items{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0;min-height:30px}
 .outside .os-items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
-/* 食材庫：小方形格子（同樣空間可以放更多品項） */
+/* 食材庫：扁長方格（上下矮一點 → 同一個面板可以放更多品項） */
 .os-chip{background:#fff6e8;border-color:#efd0a4;position:relative;width:100%;max-width:none;
-  aspect-ratio:1 / 1;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-  text-align:center;font-size:11.5px;line-height:1.18;padding:3px;border-radius:9px;overflow-wrap:anywhere}
-.os-chip .q{background:#1e88c7;color:#fff;border-radius:6px;padding:0 3px;font-size:10px;line-height:1.5;margin:0}
-.os-chip .more{position:absolute;right:2px;top:2px;width:15px;height:15px;font-size:11px;line-height:1;margin:0}
+  height:42px;flex-direction:row;align-items:center;justify-content:center;
+  text-align:center;font-size:11.5px;line-height:1.16;padding:2px 15px 2px 4px;border-radius:8px;overflow-wrap:anywhere}
+.os-chip .q{position:absolute;right:2px;bottom:1px;background:#1e88c7;color:#fff;border-radius:6px;
+  padding:0 3px;font-size:9.5px;line-height:1.45;margin:0}
+.os-chip .more{position:absolute;right:1px;top:1px;width:14px;height:14px;font-size:10.5px;line-height:1;margin:0}
 .os-chip.staple{background:#eef7fd;border-color:#c9e2f2;color:#1a5c8c}
 .os-chip.sel{outline:3px solid #2f9e6b;outline-offset:1px;background:#e8f8f0;border-color:#8fd3b4}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
@@ -238,8 +239,8 @@ nav button.on b{filter:none;opacity:1}
   .outside{height:calc(100vh - 92px)}
   /* 食材庫：像便當組合那樣排成多欄小格，全部攤開、不用捲 */
   .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:6px;
-    grid-template-columns:repeat(auto-fill,minmax(68px,1fr));overflow:visible}
-  .os-chip{width:auto;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:6px 5px}
+    grid-template-columns:repeat(auto-fill,minmax(64px,1fr));overflow:visible}
+  .os-chip{width:100%;height:42px;justify-content:center;text-align:center;font-size:11.5px;line-height:1.16;padding:2px 15px 2px 4px}
   .freezer{height:calc(100vh - 92px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none}
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
@@ -280,8 +281,8 @@ nav button.on b{filter:none;opacity:1}
   .outside #osClear{display:none}
   .outside .os-items{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;margin:6px 0 0;
     padding-bottom:2px;scrollbar-width:thin}
-  .outside .os-chip{flex:0 0 auto;width:62px;height:62px;font-size:11px;padding:2px}
-  .outside .os-chip .more{width:18px;height:18px;font-size:13px}
+  .outside .os-chip{flex:0 0 auto;width:62px;height:40px;font-size:11px;padding:2px 13px 2px 3px}
+  .outside .os-chip .more{width:15px;height:15px;font-size:11px}
   .side{order:-1;margin-bottom:126px}
   .vfrow #vState{max-width:76px}
   body{padding-bottom:132px}
