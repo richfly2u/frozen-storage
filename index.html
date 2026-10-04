@@ -194,6 +194,25 @@ nav button.on b{filter:none;opacity:1}
   box-shadow:0 8px 22px rgba(10,40,70,.35);white-space:nowrap
 }
 .tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
+/* ---------- 冰箱外（拖出＝移出、拖回＝放回） ---------- */
+.outside{margin:14px 2px 0;border:2px dashed #b9cddb;border-radius:13px;padding:9px 11px 11px;
+  background:rgba(255,255,255,.6)}
+.outside .os-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700;color:#41586a}
+.outside .os-hint{font-weight:400;font-size:11.5px;color:#7b93a4}
+.outside #osClear{border:1px solid #cfe0eb;background:#fff;color:#4a6a80;border-radius:8px;
+  padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer}
+.outside .os-items{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;min-height:30px}
+.outside .os-items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
+.outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.1)}
+.os-chip{background:#fff6e8;border-color:#efd0a4}
+#dropOut{
+  position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:88;pointer-events:none;
+  display:none;align-items:center;gap:8px;background:#1e88c7;color:#fff;border-radius:15px;
+  padding:13px 20px;font-size:14.5px;font-weight:700;border:3px dashed rgba(255,255,255,.7);
+  box-shadow:0 10px 26px rgba(10,40,70,.35)
+}
+#dropOut.on{display:flex}
+#dropOut.over{background:#2f9e6b;transform:translateX(-50%) scale(1.07)}
 .cmenu{
   position:fixed;z-index:95;background:#fff;border:1px solid #d7e3ec;border-radius:12px;padding:7px;
   box-shadow:0 12px 34px rgba(18,38,56,.28);min-width:168px;max-width:82vw;
@@ -330,7 +349,7 @@ input[type=text],input[type=number],select,textarea{
 <!-- ============ 位置圖（含語音輸入） ============ -->
 <section class="view on" id="view-map">
   <p class="legend" id="focusBar" style="display:none"></p>
-  <p class="legend">點物品＝改數量／備註；<b>拖到別層＝移動</b>；點 <b>⋯</b>＝改名／刪除。按 <b>＋新增</b> 登錄新物品。<b>只寫品名＝還有 1 包</b>；數量 0 的品項不顯示。</p>
+  <p class="legend">點物品＝改數量／備註；<b>拖出去＝移出冰箱</b>、<b>拖回冰箱＝放回</b>、拖到別層＝移動；點 <b>⋯</b>＝改名／刪除。<b>只寫品名＝還有 1 包</b>；數量 0 的品項不顯示。</p>
 
   <!-- 語音輸入（與位置圖同一頁） -->
   <div class="voice-bar">
@@ -343,6 +362,16 @@ input[type=text],input[type=number],select,textarea{
   <div id="vCard"></div>
 
   <div class="freezer" id="freezer"></div>
+
+  <!-- 冰箱外：拖出去＝移出、拖回來＝放回 -->
+  <div class="outside" id="outsideZone">
+    <div class="os-head">📦 冰箱外
+      <span class="os-hint">把冰箱裡的東西拖到這兒＝移出；把這兒的東西拖回冰箱＝放回</span>
+      <button type="button" id="osClear" style="margin-left:auto">清空</button>
+    </div>
+    <div class="os-items" id="osItems"></div>
+  </div>
+
   <div style="margin:14px 4px 0"><button class="btn ghost" id="btnAdd" style="width:100%">＋ 新增物品</button></div>
   <p class="vhint">
     語音：按「🎤 開始聽」後講 <code>香菇頭 一包</code>、<code>移出素排骨兩袋</code>、<code>放回當歸五包</code>；沒講動作＝預設「移出」，講錯按取消就好。第一次使用要按「允許」麥克風。
@@ -772,50 +801,156 @@ function openChipMenu(it, anchor) {
   setTimeout(() => document.addEventListener("pointerdown", outsideCloseMenu, true), 0);
 }
 
-/* 拖曳：滑鼠可直接拖；手指要橫向起手（直向＝讓頁面捲動），拖到哪一層就移過去 */
-function startDrag(el, it, ev) {
+/* ================= 冰箱外暫存區：拖出去＝移出冰箱、拖回來＝放回 ================= */
+let outside = [];     // 本次瀏覽的暫存（DB 的移出紀錄已經寫好了）
+
+function renderOutside() {
+  const box = $("#osItems");
+  if (!box) return;
+  box.innerHTML = outside.length
+    ? outside.map((o, i) => `<button class="chip os-chip" data-os="${i}" data-name="${esc(o.name)}"
+        title="拖回冰箱任一層＝放回">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}</button>`).join("")
+    : '<span class="empty">（空）</span>';
+  box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, outside[Number(el.dataset.os)]));
+}
+
+async function takeOut(it) {
+  const q = Number(it.qty) || 0;
+  if (!needReady() || q <= 0) return;
+  const by = operator || it.by || "";
+  if (!by) { toast("請先設定經手人"); return; }
+  const unit = it.unit || "";
+  try {
+    await updateDoc(doc(db, COLL_ITEMS, it._id), { qty: q - 1, updatedAt: Date.now() });
+    await addLog(Number(it.floor), it.name, 1, unit, "out", by);
+    const e = outside.find(o => o.id === it._id);
+    if (e) e.qty += 1;
+    else outside.unshift({ id: it._id, name: it.name, qty: 1, unit, floor: Number(it.floor) });
+    renderOutside();
+    pendingHighlight = it._id;
+    toast(`已移出：${it.name} 1${unit}（要放回，把下面「冰箱外」的它拖回冰箱）`);
+  } catch (err) { toast("移出失敗：" + (err.code || err.message)); }
+}
+
+async function putBack(entry, floor) {
+  if (!entry || !needReady()) return;
+  const by = operator || "";
+  if (!by) { toast("請先設定經手人"); return; }
+  const it = items.find(i => i._id === entry.id);
+  try {
+    if (it) {
+      await updateDoc(doc(db, COLL_ITEMS, entry.id),
+        { qty: (Number(it.qty) || 0) + 1, floor: Number(floor), updatedAt: Date.now() });
+      await addLog(Number(floor), entry.name, 1, entry.unit || it.unit || "", "in", by);
+      pendingHighlight = entry.id;
+    } else {
+      await addDoc(collection(db, COLL_ITEMS), {
+        name: entry.name, qty: 1, unit: entry.unit || "", floor: Number(floor), note: "", by,
+        updatedAt: Date.now(), createdAt: Date.now()
+      });
+      await addLog(Number(floor), entry.name, 1, entry.unit || "", "new", by);
+    }
+    focusedFloor = Number(floor);
+    const e = outside.find(o => o.id === entry.id);
+    if (e) { e.qty -= 1; if (e.qty <= 0) outside = outside.filter(x => x !== e); }
+    renderOutside();
+    toast(`已放回：${entry.name} → ${floorLabel(floor)}`);
+  } catch (err) { toast("放回失敗：" + (err.code || err.message)); }
+}
+
+$("#osClear").addEventListener("click", () => {
+  if (!outside.length) { toast("「冰箱外」是空的"); return; }
+  if (!confirm("清空「冰箱外」清單？\n（只清這份暫存，庫存與紀錄不受影響）")) return;
+  outside = [];
+  renderOutside();
+});
+renderOutside();
+
+/* 拖曳中浮出的「移出」放置區 */
+let dropOutEl = null, autoScrollRaf = 0;
+function ensureDropOut() {
+  if (dropOutEl) return dropOutEl;
+  dropOutEl = document.createElement("div");
+  dropOutEl.id = "dropOut";
+  dropOutEl.textContent = "📤 放這裡＝移出冰箱";
+  document.body.appendChild(dropOutEl);
+  return dropOutEl;
+}
+function autoScroll() {
+  if (!dragCtx) { autoScrollRaf = 0; return; }
+  const y = dragCtx.lastY;
+  if (y < 100) window.scrollBy(0, -16);
+  else if (y > innerHeight - 100) window.scrollBy(0, 16);
+  autoScrollRaf = requestAnimationFrame(autoScroll);
+}
+
+/* 拖曳：滑鼠可直接拖；手指要橫向起手（直向＝捲動頁面） */
+function startDrag(el, it, ev, kind) {
   const g = document.createElement("div");
   g.className = "chip-ghost";
   g.textContent = it.name + ((Number(it.qty) || 0) > 1 ? ` ${it.qty}${it.unit || ""}` : "");
   document.body.appendChild(g);
   el.classList.add("dragging");
-  dragCtx = { el, it, ghost: g, target: null };
+  dragCtx = { el, it, kind: kind || "item", ghost: g, targetTier: null, overOut: false, lastY: ev.clientY };
   suppressClick = true;
+  ensureDropOut().classList.add("on");
   try { el.setPointerCapture(ev.pointerId); } catch (_) {}
+  if (!autoScrollRaf) autoScrollRaf = requestAnimationFrame(autoScroll);
   moveDrag(ev);
 }
 function moveDrag(ev) {
   if (!dragCtx) return;
+  dragCtx.lastY = ev.clientY;
   dragCtx.ghost.style.left = ev.clientX + "px";
   dragCtx.ghost.style.top = ev.clientY + "px";
   const under = document.elementFromPoint(ev.clientX, ev.clientY);
   const tier = under && under.closest ? under.closest(".tier") : null;
-  if (dragCtx.target !== tier) {
-    if (dragCtx.target) dragCtx.target.classList.remove("drop");
-    dragCtx.target = tier;
+  let overOut = false;
+  if (dragCtx.kind === "item") {
+    const d = ensureDropOut(), r = d.getBoundingClientRect();
+    overOut = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+    const oz = document.getElementById("outsideZone");
+    if (!overOut && oz && under && oz.contains(under)) overOut = true;   // 拖到下方「冰箱外」區塊也算
+    d.classList.toggle("over", overOut);
+    if (oz) oz.classList.toggle("over", overOut);
+  }
+  if (dragCtx.targetTier !== tier) {
+    if (dragCtx.targetTier) dragCtx.targetTier.classList.remove("drop");
+    dragCtx.targetTier = tier;
     if (tier) tier.classList.add("drop");
   }
+  dragCtx.overOut = overOut;
 }
 function endDrag() {
   if (!dragCtx) return;
-  const { el, it, ghost, target } = dragCtx;
+  const { el, it, kind, ghost, targetTier, overOut } = dragCtx;
   el.classList.remove("dragging");
   if (ghost) ghost.remove();
-  if (target) {
-    target.classList.remove("drop");
-    const fid = Number(target.dataset.floor);
-    if (fid && fid !== Number(it.floor)) moveItemTo(it, fid);
-  }
+  const d = ensureDropOut(); d.classList.remove("on", "over");
+  const oz = document.getElementById("outsideZone");
+  if (oz) oz.classList.remove("over");
+  if (targetTier) targetTier.classList.remove("drop");
   dragCtx = null;
+  if (kind === "item") {
+    if (overOut) takeOut(it);                        // 拖到「移出」區＝移出冰箱
+    else if (targetTier) {
+      const fid = Number(targetTier.dataset.floor);
+      if (fid && fid !== Number(it.floor)) moveItemTo(it, fid);
+    }
+  } else if (targetTier) {
+    putBack(it, Number(targetTier.dataset.floor));   // 從「冰箱外」拖回某層＝放回
+  }
   setTimeout(() => { suppressClick = false; }, 250);
 }
-function bindChipGestures(el, it) {
+function bindChipGestures(el, it, kind) {
   el.addEventListener("click", e => {
     if (suppressClick) { suppressClick = false; return; }
+    if (kind === "outside") return;
     if (e.target.closest(".more")) { e.stopPropagation(); openChipMenu(it, el); return; }
     openEdit(it._id);
   });
   el.addEventListener("keydown", e => {
+    if (kind === "outside") return;
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEdit(it._id); }
   });
   el.addEventListener("pointerdown", e => {
@@ -828,7 +963,7 @@ function bindChipGestures(el, it) {
       const dx = ev2.clientX - sx, dy = ev2.clientY - sy;
       if (mode === "pending") {
         const far = Math.hypot(dx, dy) > (mouse ? 6 : 9);
-        if (far && (mouse || Math.abs(dx) >= Math.abs(dy))) { mode = "drag"; startDrag(el, it, ev2); }
+        if (far && (mouse || Math.abs(dx) >= Math.abs(dy))) { mode = "drag"; startDrag(el, it, ev2, kind); }
         else if (far) { mode = "cancel"; cleanup(); }   // 手指直向滑＝捲動頁面
       } else if (mode === "drag") moveDrag(ev2);
     };
@@ -843,6 +978,7 @@ function bindChipGestures(el, it) {
     document.addEventListener("pointercancel", onUp);
   });
 }
+function bindOutsideGestures(el, entry) { bindChipGestures(el, entry, "outside"); }
 
 /* ================= 搜尋 ================= */
 function applySearch() {
