@@ -389,12 +389,14 @@ import { parseUtterance } from "./voice-parse.js";
 const COLL_ITEMS = "frozen_items";
 const COLL_LOG   = "frozen_log";
 const FLOORS = [
-  { id: 1, name: "中藥區",       sub: "上門・上格" },
-  { id: 2, name: "素料、餡料區", sub: "上門・下格" },
-  { id: 3, name: "素料",         sub: "下門・上格" },
-  { id: 4, name: "其他",         sub: "下門・下格" }
+  { id: 1, name: "中藥區",       door: "上門", local: 1, slot: "上格" },
+  { id: 2, name: "素料、餡料區", door: "上門", local: 2, slot: "下格" },
+  { id: 3, name: "素料",         door: "下門", local: 1, slot: "上格" },
+  { id: 4, name: "其他",         door: "下門", local: 2, slot: "下格" }
 ];
-const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id), name: "未指定", sub: "" };
+const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id), name: "未指定", door: "", local: Number(id), slot: "" };
+const floorLabel = id => { const f = floorOf(id); return f.door ? `${f.door} 第${f.local}層` : `第${f.id}層`; };
+const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.name}`; };
 
 /* ================= Firebase ================= */
 const app  = initializeApp(window.FIREBASE_CONFIG);
@@ -498,9 +500,9 @@ function tierHTML(fid) {
   const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}">
       <div class="tier-head">
-        <span class="fl-badge">第 ${fid} 層</span>
+        <span class="fl-badge">${esc(f.door)} 第${f.local}層</span>
         <span class="fl-name">${esc(f.name)}</span>
-        <span class="fl-sub">${esc(f.sub)}</span>
+        <span class="fl-sub">${esc(f.slot)}</span>
         <span class="fl-count">${list.length} 項 / 共 ${total}</span>
       </div>
       <div class="items">
@@ -540,10 +542,14 @@ renderMap();
 
 function chipHTML(it) {
   const q = Number(it.qty) || 0;
+  const u = esc(it.unit || "");
+  /* 數量 1 不標示（大部分都是一包）；0 標「用完」；2 以上才寫數量 */
+  const qtyBadge = q < 1 ? `<span class="q">用完</span>`
+                 : q > 1 ? `<span class="q">${q}${u ? " " + u : ""}</span>` : "";
   return `<button class="chip${q < 1 ? " low" : ""}" data-id="${esc(it._id)}" data-name="${esc(it.name)}"
       title="${esc([it.name, q + (it.unit || ""), it.note ? "備註：" + it.note : "", it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　"))}">
       <span class="nm">${esc(it.name)}</span>
-      <span class="q">${q} ${esc(it.unit || "")}</span>
+      ${qtyBadge}
       ${it.by ? `<span class="by">👤${esc(it.by)}</span>` : ""}
     </button>`;
 }
@@ -559,13 +565,13 @@ function applySearch() {
     if (hit) { el.classList.add("hit"); hits++; floors.add(el.closest(".tier").dataset.floor); }
   });
   $("#searchInfo").textContent = hits
-    ? `找到 ${hits} 項，位於：` + [...floors].sort().map(f => `第${f}層 ${floorOf(f).name}`).join("、")
+    ? `找到 ${hits} 項，位於：` + [...floors].sort().map(f => `${floorLabel(f)} ${floorOf(f).name}`).join("、")
     : "查無此品名";
 }
 $("#search").addEventListener("input", applySearch);
 
 /* ================= 樓層選擇器 ================= */
-$("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">第 ${f.id} 層 — ${f.name}（${f.sub}）</option>`).join("");
+$("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">${f.door} 第${f.local}層 — ${f.name}</option>`).join("");
 
 /* ================= 編輯視窗 ================= */
 function openEdit(id, presetFloor) {
@@ -683,7 +689,7 @@ function renderLog(rows) {
       <div class="ic">${a.ic}</div>
       <div class="body">
         <div class="t1"><span class="${a.cls}">${a.txt}</span>　${esc(r.name)}　${Number(r.qty) || 0} ${esc(r.unit || "")}</div>
-        <div class="t2">第 ${r.floor} 層 ${esc(f.name)}　·　👤 ${esc(r.by || "未記錄")}　·　${fmtTime(r.at)}</div>
+        <div class="t2">${esc(floorLabel(r.floor))} ${esc(f.name)}　·　👤 ${esc(r.by || "未記錄")}　·　${fmtTime(r.at)}</div>
       </div></div>`;
   }).join("") : '<p class="log-hint">沒有符合的紀錄。</p>';
 }
@@ -699,8 +705,8 @@ function renderQR() {
   const grid = $("#qrGrid");
   grid.innerHTML = FLOORS.map(f => `
     <div class="qr-card">
-      <h3>第 ${f.id} 層 — ${esc(f.name)}</h3>
-      <p>${esc(f.sub)}</p>
+      <h3>${esc(f.door)} 第${f.local}層 — ${esc(f.name)}</h3>
+      <p>${esc(f.slot)}</p>
       <div class="qr-box">${QR_SVG[f.id] || `<span style="font-size:12px;color:#c9455a">QR 圖未內嵌</span>`}</div>
       <p>${esc(baseURL())}?f=${f.id}</p>
     </div>`).join("");
@@ -788,10 +794,10 @@ function renderVoiceCard(r) {
   const after = Math.max(0, cur + (isIn ? r.qty : -r.qty));
   const f = floorOf(it.floor);
   const floorWarn = (r.floor && Number(r.floor) !== Number(it.floor))
-    ? `<br><span style="color:#c9455a">⚠️ 你講的是第 ${r.floor} 層，但這個品項記在第 ${it.floor} 層</span>` : "";
+    ? `<br><span style="color:#c9455a">⚠️ 你講的是 ${esc(floorLabel(r.floor))}，但這個品項記在 ${esc(floorLabel(it.floor))}</span>` : "";
   box.innerHTML = `<div class="vcard">
     <div class="big">${isIn ? "⬇️ 置入" : "⬆️ 移出"}　<span class="nm">${esc(it.name)}</span>　${r.qty}${esc(r.unit || it.unit || "")}</div>
-    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　第 ${it.floor} 層 ${esc(f.name)}${floorWarn}</div>
+    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　${esc(floorLabel(it.floor))} ${esc(f.name)}${floorWarn}</div>
     <label>經手人</label>
     <input type="text" id="vBy" list="byList" value="${esc(operator)}" placeholder="例：陳師姐">
     <div class="acts">
@@ -863,7 +869,7 @@ function gotoFloor(fid) {
   if (!FLOORS.some(x => x.id === Number(fid))) return;
   const bar = $("#focusBar");
   bar.style.display = "";
-  bar.innerHTML = `📍 掃碼指定：<b>第 ${fid} 層 — ${esc(f.name)}</b>（${esc(f.sub)}）`;
+  bar.innerHTML = `📍 掃碼指定：<b>${esc(floorLabel(fid))} — ${esc(f.name)}</b>（${esc(f.slot)}）`;
   setTimeout(() => {
     const el = document.getElementById("tier-" + fid);
     if (!el) return;
