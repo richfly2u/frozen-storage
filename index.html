@@ -135,7 +135,7 @@ nav button.on b{filter:none;opacity:1}
   .shelves{padding-top:3px}
   .tier{padding:5px 4px 18px}
   .tier-no{font-size:10.5px;padding:2px 7px}
-  .fl-name{font-size:14px}
+  .fl-name{font-size:12.5px}
   .tier-head{gap:5px}
   h1{font-size:15px;letter-spacing:0}
   #syncTxt{font-size:11.5px}
@@ -148,9 +148,9 @@ nav button.on b{filter:none;opacity:1}
 .tier.focus{box-shadow:0 0 0 3px rgba(30,136,199,.35);transform:scale(1.012)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(30,136,199,.30)}50%{box-shadow:0 0 0 9px rgba(30,136,199,.14)}}
 .tier.pulse{animation:pulse 1.1s ease-in-out 3}
-.tier-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
-.fl-name{font-weight:700;font-size:15.5px;overflow-wrap:anywhere;min-width:0}
-.fl-count{margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:700}
+.tier-head{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;min-width:0}
+.fl-name{font-weight:700;font-size:13.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl-count{margin-left:auto;font-size:11.5px;color:var(--accent);font-weight:700;flex:0 0 auto;white-space:nowrap}
 .items{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:10px;min-width:0}
 .items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
 .chip{
@@ -246,15 +246,16 @@ nav button.on b{filter:none;opacity:1}
   .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 18px}
   .freezer .tier .items{overflow:auto;align-content:flex-start;
     display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px}
-  .freezer .tier .items .chip{width:100%;max-width:100%;height:38px;font-size:11px;line-height:1.12;
-    flex-direction:column;align-items:center;justify-content:center;gap:0;position:relative;
-    padding:2px 12px 2px 3px;text-align:center;overflow-wrap:anywhere}
+  .freezer .tier .items .chip{width:100%;max-width:100%;height:36px;font-size:11.5px;line-height:1.15;
+    align-items:center;justify-content:center;gap:0;position:relative;
+    padding:2px 4px;text-align:center;overflow-wrap:anywhere}
   .freezer .tier .items .chip .by{display:block;font-size:9px;line-height:1.1;color:var(--muted);
     max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .freezer .tier .items .chip .q{position:absolute;right:2px;bottom:1px;font-size:9px;line-height:1.4;padding:0 2px}
   .freezer .tier .items .chip .more{position:absolute;right:1px;top:1px;width:14px;height:14px;font-size:10.5px;line-height:1;margin:0}
   .freezer .chip{padding:4px 7px;font-size:12.5px;gap:5px;border-radius:8px}
   .freezer .tier-head{font-size:11px}
+  .freezer .fl-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* 省高度：說明文字與多餘留白在桌機收掉／縮小 */
   .vhint{display:none}
   header{padding:8px 14px 10px}
@@ -270,11 +271,11 @@ nav button.on b{filter:none;opacity:1}
 /* 手機：冰箱在最上面吃滿高度；食材庫固定在畫面底部（橫向滑），兩者同屏才好拖 */
 @media (max-width:759px){
   .freezer{order:-3;max-width:none;height:auto;min-height:0;display:flex;flex-direction:column}
-  .freezer .doors{display:flex;flex-direction:row;flex:0 0 auto;min-height:0;gap:6px}
-  .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:flex-start;padding:5px 18px 0 8px}
+  .freezer .doors{display:flex;flex-direction:row;flex:0 0 auto;min-height:0;gap:6px;align-items:stretch}
+  .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;padding:5px 18px 0 8px}
   .freezer .door-head{font-size:10px;letter-spacing:2px;padding:6px 3px;right:-1px}
-  .freezer .shelves{flex:0 0 auto;min-height:0;grid-auto-rows:minmax(104px,auto);gap:5px;padding-top:3px}
-  .freezer .tier{aspect-ratio:auto;min-height:104px;overflow:visible;padding:2px 4px 18px}
+  .freezer .shelves{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(84px,1fr);gap:5px;padding-top:3px}
+  .freezer .tier{aspect-ratio:auto;min-height:84px;overflow:visible;padding:2px 4px 18px}
   .freezer .tier .items{overflow:visible;align-content:flex-start}
 
   /* 手機：最上面就只有一列（標題＋經手人＋顯示開關），不多佔高度 */
@@ -458,7 +459,7 @@ input[type=text],input[type=number],select,textarea{
   .voice-float{left:auto;right:10px;bottom:14px;max-width:calc(100vw - 20px)}
   /* 層內物品：方框、多列排開（跟食材庫一樣，一層可以放很多樣） */
   .freezer .tier .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:5px;align-content:flex-start}
-  .freezer .tier .items .chip{width:100%;max-width:100%;height:36px;font-size:10.5px;padding:2px 11px 2px 3px}
+  .freezer .tier .items .chip{width:100%;max-width:100%;height:34px;font-size:11px;padding:2px 3px}
 }
 </style>
 </head>
@@ -759,7 +760,7 @@ function tierHTML(fid) {
   /* 只顯示冰箱裡還有的（數量 0 的用完品項不顯示） */
   const list = items.filter(i => Number(i.floor) === fid && (Number(i.qty) || 0) > 0);
   const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
-  const countTxt = list.length ? `${list.length} 項${total > list.length ? ` / 共 ${total}` : ""}` : "";
+  const countTxt = list.length ? `${list.length} 項` : "";
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}" data-door="${f.key}">
       <div class="tier-head">
         <span class="fl-name">${esc(f.name)}</span>
@@ -833,17 +834,13 @@ function focusTier(fid) {
 /* 先畫出空冰箱骨架，資料（Firestore）回來再填內容 → 斷線／慢連線時不會整片空白 */
 renderMap();
 
+/* 冰箱裡的品項：方框只寫品名（不顯示數量／經手人／⋯）；要細節＝長按（拖曳時浮動標籤會顯示），要編輯＝點一下 */
 function chipHTML(it) {
   const q = Number(it.qty) || 0;
-  const u = esc(it.unit || "");
-  /* 數量 1 不標示（大部分都是一包）；2 以上才寫數量 */
-  const qtyBadge = q > 1 ? `<span class="q">${q}${u ? " " + u : ""}</span>` : "";
-  return `<button class="chip" data-id="${esc(it._id)}" data-name="${esc(it.name)}"
-      title="${esc([it.name, q + (it.unit || ""), it.note ? "備註：" + it.note : "", it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　"))}">
+  const detail = [it.name, q > 0 ? q + (it.unit || "") : "", it.note ? "備註：" + it.note : "",
+                  it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　");
+  return `<button class="chip" data-id="${esc(it._id)}" data-name="${esc(it.name)}" title="${esc(detail)}">
       <span class="nm">${esc(it.name)}</span>
-      ${qtyBadge}
-      ${(showBy && it.by) ? `<span class="by">👤${esc(it.by)}</span>` : ""}
-      <span class="more" title="更多（改名／刪除／移到別層）">⋯</span>
     </button>`;
 }
 
@@ -1054,7 +1051,8 @@ function autoScroll() {
 function startDrag(el, it, ev, kind) {
   const g = document.createElement("div");
   g.className = "chip-ghost";
-  g.textContent = it.name + ((Number(it.qty) || 0) > 1 ? ` ${it.qty}${it.unit || ""}` : "");
+  const q0 = Number(it.qty) || 0;
+  g.textContent = [it.name, q0 > 0 ? `${q0}${it.unit || ""}` : "", (showBy && it.by) ? `👤${it.by}` : ""].filter(Boolean).join("　");
   document.body.appendChild(g);
   el.classList.add("dragging");
   dragCtx = { el, it, kind: kind || "item", ghost: g, targetTier: null, overOut: false, lastY: ev.clientY };
