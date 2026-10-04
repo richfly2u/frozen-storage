@@ -265,12 +265,13 @@ nav button.on b{filter:none;opacity:1}
 }
 /* 手機：冰箱在最上面吃滿高度；食材庫固定在畫面底部（橫向滑），兩者同屏才好拖 */
 @media (max-width:759px){
-  .freezer{order:-3;max-width:none;height:calc(100vh - 256px);min-height:340px;display:flex;flex-direction:column}
-  .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:7px}
-  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:5px 28px 0 9px}
-  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(44px,1fr);gap:4px;padding-top:3px}
-  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:2px 4px 18px}
-  .freezer .tier .items{overflow:auto;align-content:flex-start}
+  .freezer{order:-3;max-width:none;height:auto;min-height:0;display:flex;flex-direction:column}
+  .freezer .doors{display:flex;flex-direction:row;flex:0 0 auto;min-height:0;gap:6px}
+  .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:flex-start;padding:5px 18px 0 8px}
+  .freezer .door-head{font-size:10px;letter-spacing:2px;padding:6px 3px;right:-1px}
+  .freezer .shelves{flex:0 0 auto;min-height:0;grid-auto-rows:minmax(104px,auto);gap:5px;padding-top:3px}
+  .freezer .tier{aspect-ratio:auto;min-height:104px;overflow:visible;padding:2px 4px 18px}
+  .freezer .tier .items{overflow:visible;align-content:flex-start}
 
   /* 食材庫：固定底部橫條 */
   .outside{order:0;position:fixed;left:0;right:0;bottom:0;z-index:28;margin:0;padding:7px 9px 9px;
@@ -413,6 +414,9 @@ input[type=text],input[type=number],select,textarea{
 .vfrow{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dbeaf4;border-radius:14px;
   padding:7px 10px;font-size:13px;box-shadow:0 6px 20px rgba(11,75,107,.20)}
 .vfrow #vState{color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.voice-float #btnStop{display:none}                 /* 只用同一顆鈕切換開始／停止 */
+.voice-float.on .vfrow{background:#fff2f5;border-color:#f0b4c3}
+.voice-float.on #btnListen{background:linear-gradient(180deg,#e0355a,#c0203f);border-color:#a5183a;color:#fff}
 .voice-float .btn{padding:7px 12px;font-size:13.5px;border-radius:10px}
 /* 第一次操作前的經手人對話框 */
 .opdlg{background:#fff;width:100%;max-width:430px;border-radius:16px;padding:18px 18px 20px;margin:0 14px 16px;
@@ -1157,7 +1161,7 @@ $("#fFloor").innerHTML = FLOORS.map(f => `<option value="${f.id}">${esc(floorFul
 /* ================= 編輯視窗 ================= */
 function openEdit(id, presetFloor) {
   if (!ensureOperator()) return;
-  stopListen();                                  // 開編輯視窗時先關掉主頁語音，避免搶麥克風
+  stopListen();                              // 開編輯視窗時先關掉主頁語音，避免搶麥克風
   if (fillRec) { try { fillRec.stop(); } catch (_) {} }
   $("#fVoiceHint").style.display = "none";
   $("#fVoiceHint").textContent = "";
@@ -1264,6 +1268,8 @@ let rec = null, listening = false, wakeLock = null, pendingVoice = null;
 function vState(txt, live) {
   $("#vState").textContent = txt;
   $("#vDot").classList.toggle("live", !!live);
+  const f = $("#voiceFloat"); if (f) f.classList.toggle("on", !!live);
+  const b = $("#btnListen"); if (b) b.textContent = live ? "⏹ 停止聽取" : "🎤 開始聽";
 }
 async function keepAwake(on) {
   try {
@@ -1302,7 +1308,7 @@ function startListen() {
 function stopListen() {
   listening = false;
   if (rec) { try { rec.stop(); } catch (_) {} }
-  keepAwake(false); vState("已停止", false);
+  keepAwake(false); vState("未開始（按「🎤 開始聽」才會聽）", false);
 }
 
 function handleVoice(text) {
@@ -1394,10 +1400,11 @@ async function confirmVoice() {
   } finally { if ($("#vOk")) $("#vOk").disabled = false; }
 }
 
-$("#btnListen").addEventListener("click", startListen);
+$("#btnListen").addEventListener("click", () => { listening ? stopListen() : startListen(); });
 $("#btnStop").addEventListener("click", stopListen);
 window.addEventListener("pagehide", stopListen);
-vState(SR ? "講：香菇頭 一包" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
+/* 進頁面時是「未開始」狀態：一定要按「🎤 開始聽」才會啟動麥克風 */
+vState(SR ? "未開始（按「🎤 開始聽」才會聽）" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
 
 /* ================= 新增／修改視窗：用語音填欄位 ================= */
 let fillRec = null, fillListening = false;
