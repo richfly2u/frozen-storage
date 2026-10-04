@@ -724,6 +724,7 @@ $("#btnSave").addEventListener("click", async () => {
       if (diff !== 0) await addLog(floor, name, Math.abs(diff), unit, diff > 0 ? "in" : "out", by);
       else await addLog(floor, name, qty, unit, "edit", by);
       toast("已更新：" + name);
+      pendingHighlight = editId;
     } else {
       await addDoc(collection(db, COLL_ITEMS), {
         name, qty, unit, floor, note, by, updatedAt: Date.now(), createdAt: Date.now()
@@ -732,6 +733,8 @@ $("#btnSave").addEventListener("click", async () => {
       toast("已新增：" + name);
     }
     closeEdit();
+    /* 存完直接帶到該層：捲過去、框起來 */
+    focusTier(floor);
   } catch (e) {
     console.error(e);
     toast("寫入失敗：" + (e.code || e.message));
