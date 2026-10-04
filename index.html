@@ -220,11 +220,13 @@ nav button.on b{filter:none;opacity:1}
   .freezer{max-width:560px}
   .freezer .fridge-top{margin-bottom:6px;padding:3px 7px}
   .freezer .fridge-top .vent{height:9px}
-  .freezer .doors{flex:1;min-height:0;gap:8px}
-  .freezer .door{display:flex;flex-direction:column;min-height:0;padding:7px 10px}
-  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(58px,1fr);gap:5px;padding-top:14px}
-  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:4px 4px 8px}
+  .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
+  .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:7px 10px}
+  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(50px,1fr);gap:5px;padding-top:12px}
+  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:3px 4px 7px}
   .freezer .tier .items{overflow:auto;align-content:flex-start}
+  .freezer .chip{padding:5px 8px;font-size:13px;gap:5px;border-radius:9px}
+  .freezer .tier-head{font-size:11.5px}
   .freezer .wheels{padding:5px 20px 3px}
   /* 省高度：說明文字與多餘留白在桌機收掉／縮小 */
   .vhint{display:none}
@@ -697,6 +699,8 @@ function renderMap() {
   });
   refreshByList();
   renderOutside();   /* 食材庫跟著資料更新：用完／已移出的會自動列進去 */
+  /* 上下門依「各有幾層」比例分配高度（上門3層會比下門2層高一些，每層才塞得下） */
+  box.querySelectorAll(".door").forEach(d => { d.style.flexGrow = String(d.querySelectorAll(".tier").length || 1); });
   /* 重繪後把焦點框補回來（語音/掃碼指定的樓層） */
   if (focusedFloor != null) {
     const ft = box.querySelector(`.tier[data-floor="${focusedFloor}"]`);
