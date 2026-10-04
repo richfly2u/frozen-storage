@@ -223,6 +223,9 @@ nav button.on b{filter:none;opacity:1}
 .side .opbar{margin:0;color:#41586a;flex-wrap:wrap}
 .side .opbar b{color:#12486b;background:#e7f2fa}
 .side .opbar button{border-color:#cfe0eb;background:#f6fafd;color:#2b5a76}
+.bytoggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#41586a;cursor:pointer;user-select:none;margin:0}
+.bytoggle small{color:#8fa8b8;font-size:11px}
+.bytoggle input{width:15px;height:15px;accent-color:#1e88c7;flex:0 0 auto}
 .side .bytip{color:#5a4a2a;background:#fdf5e6;margin:0}
 .side .bytip a{color:#0b4b6b}
 .side .legend{margin:0;font-size:12.5px;line-height:1.6}
@@ -421,6 +424,7 @@ input[type=text],input[type=number],select,textarea{
         <button type="button" id="btnLine" style="display:none">🔑 用 LINE 登入</button>
         <button type="button" id="btnOp">修改</button>
       </div>
+      <label class="bytoggle"><input type="checkbox" id="showBy"> 👤 顯示經手人<small>（預設隱藏）</small></label>
       <div class="bytip" id="lineTip">
         目前在 <b>LINE 內建瀏覽器</b>。若按了沒反應，請點右上角「⋯」→ 用其他瀏覽器開啟本頁。
       </div>
@@ -594,6 +598,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { memStore[k] = v; } }
 };
 let operator = store.get("frozen_operator");
+/* 是否顯示經手人（預設不顯示；用左欄開關控制）
+   ※ 宣告位置必須在 renderMap() 首次執行之前，且 store 已定義 */
+let showBy = store.get("frozen_showby") === "1";
 function byHistory() {
   const saved = (store.get("frozen_bys") || "").split("|").filter(Boolean);
   const used = items.map(i => i.by).filter(Boolean);
@@ -622,6 +629,14 @@ renderOperator();
 $("#btnOp").addEventListener("click", () => {
   const v = prompt("請輸入您的姓名（之後每次置入／移出都會記下）：", operator || "");
   if (v !== null) { setOperator(v); toast(operator ? "經手人：" + operator : "已清除經手人"); }
+});
+/* 顯示／隱藏經手人（預設隱藏） */
+$("#showBy").checked = showBy;
+$("#showBy").addEventListener("change", e => {
+  showBy = !!e.target.checked;
+  store.set("frozen_showby", showBy ? "1" : "0");
+  renderMap();
+  toast(showBy ? "已顯示經手人" : "已隱藏經手人");
 });
 
 /* ================= LINE 掃碼登入（LIFF）：開啟即自動帶入姓名 ================= */
@@ -785,7 +800,7 @@ function chipHTML(it) {
       title="${esc([it.name, q + (it.unit || ""), it.note ? "備註：" + it.note : "", it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　"))}">
       <span class="nm">${esc(it.name)}</span>
       ${qtyBadge}
-      ${it.by ? `<span class="by">👤${esc(it.by)}</span>` : ""}
+      ${(showBy && it.by) ? `<span class="by">👤${esc(it.by)}</span>` : ""}
       <span class="more" title="更多（改名／刪除／移到別層）">⋯</span>
     </button>`;
 }
