@@ -70,11 +70,23 @@ nav button.on b{filter:none;opacity:1}
   border:3px solid #c6d2db;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 3px 10px rgba(18,38,56,.14)
 }
+/* 上下門色系區隔：上門＝藍、下門＝綠 */
+.door[data-door="U"]{
+  background:linear-gradient(165deg,rgba(228,243,255,.74),rgba(184,219,244,.46));
+  border-color:#b3cde4;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 3px 10px rgba(20,80,130,.16)
+}
+.door[data-door="D"]{
+  background:linear-gradient(165deg,rgba(229,249,240,.74),rgba(183,229,211,.46));
+  border-color:#abcbbd;box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 3px 10px rgba(16,90,70,.16)
+}
 .door::before{
   content:"";position:absolute;inset:0;border-radius:9px;pointer-events:none;opacity:.5;z-index:0;
   background:linear-gradient(115deg,rgba(255,255,255,.8) 0 9%,rgba(255,255,255,0) 30% 100%)
 }
-.door-head{position:absolute;top:9px;left:16px;font-size:12px;font-weight:700;color:#41586a;letter-spacing:3px;z-index:2}
+.door-head{position:absolute;top:9px;left:16px;font-size:12px;font-weight:700;color:#41586a;letter-spacing:3px;z-index:2;
+  padding:2px 9px;border-radius:7px}
+.door[data-door="U"] .door-head{color:#1a5c8c;background:rgba(31,127,181,.15)}
+.door[data-door="D"] .door-head{color:#146b55;background:rgba(19,133,103,.15)}
 /* 把手：凸出於門外的握把＋兩支連接支架（避免被誤認為捲軸） */
 .door .handle{
   position:absolute;top:50%;right:-24px;transform:translateY(-50%);width:13px;height:32%;border-radius:7px;z-index:2;
@@ -148,6 +160,8 @@ nav button.on b{filter:none;opacity:1}
   background:linear-gradient(150deg,#0b4b6b,#2089bd);color:#fff;font-size:12px;font-weight:700;
   padding:3px 9px;border-radius:8px;letter-spacing:.5px;flex:0 0 auto
 }
+.tier[data-door="U"] .fl-badge{background:linear-gradient(150deg,#0b4b6b,#2089bd)}
+.tier[data-door="D"] .fl-badge{background:linear-gradient(150deg,#0f5f4b,#1fa07a)}
 .fl-name{font-weight:700;font-size:15.5px;overflow-wrap:anywhere;min-width:0}
 .fl-sub{font-size:11.5px;color:var(--muted)}
 .fl-count{margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:700}
@@ -389,10 +403,10 @@ import { parseUtterance } from "./voice-parse.js";
 const COLL_ITEMS = "frozen_items";
 const COLL_LOG   = "frozen_log";
 const FLOORS = [
-  { id: 1, name: "中藥區、甜餡料、湯料", door: "上門", local: 1, slot: "上格" },
-  { id: 2, name: "素料、餡料區", door: "上門", local: 2, slot: "下格" },
-  { id: 3, name: "素料",         door: "下門", local: 1, slot: "上格" },
-  { id: 4, name: "其他",         door: "下門", local: 2, slot: "下格" }
+  { id: 1, name: "中藥區、甜餡料、湯料", door: "上門", key: "U", local: 1, slot: "上格" },
+  { id: 2, name: "素料、餡料區", door: "上門", key: "U", local: 2, slot: "下格" },
+  { id: 3, name: "素料",         door: "下門", key: "D", local: 1, slot: "上格" },
+  { id: 4, name: "其他",         door: "下門", key: "D", local: 2, slot: "下格" }
 ];
 const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id), name: "未指定", door: "", local: Number(id), slot: "" };
 const floorLabel = id => { const f = floorOf(id); return f.door ? `${f.door} 第${f.local}層` : `第${f.id}層`; };
@@ -500,7 +514,7 @@ function tierHTML(fid) {
   const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
   const countTxt = total > 0 ? `${list.length} 項 / 共 ${total}`
                  : list.length ? `${list.length} 項（用完）` : "";
-  return `<div class="tier" id="tier-${fid}" data-floor="${fid}">
+  return `<div class="tier" id="tier-${fid}" data-floor="${fid}" data-door="${f.key}">
       <div class="tier-head">
         <span class="fl-badge">${esc(f.door)} 第${f.local}層</span>
         <span class="fl-name">${esc(f.name)}</span>
