@@ -294,7 +294,7 @@ input[type=text],input[type=number],select,textarea{
 <!-- ============ 位置圖（含語音輸入） ============ -->
 <section class="view on" id="view-map">
   <p class="legend" id="focusBar" style="display:none"></p>
-  <p class="legend">點任一物品可修改數量／刪除；按 <b>＋新增</b> 登錄新物品。<b>只寫品名＝還有 1 包</b>；標紅色「用完」＝已經沒有了。</p>
+  <p class="legend">點任一物品可修改數量／刪除；按 <b>＋新增</b> 登錄新物品。<b>只寫品名＝還有 1 包</b>；<b>數量 0 的品項不顯示</b>（冰箱裡沒有就不列）。</p>
 
   <!-- 語音輸入（與位置圖同一頁） -->
   <div class="voice-bar">
@@ -538,10 +538,10 @@ function listen() {
 /* ================= 位置圖 ================= */
 function tierHTML(fid) {
   const f = floorOf(fid);
-  const list = items.filter(i => Number(i.floor) === fid);
+  /* 只顯示冰箱裡還有的（數量 0 的用完品項不顯示） */
+  const list = items.filter(i => Number(i.floor) === fid && (Number(i.qty) || 0) > 0);
   const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
-  const countTxt = total > 0 ? `${list.length} 項 / 共 ${total}`
-                 : list.length ? `${list.length} 項（用完）` : "";
+  const countTxt = list.length ? `${list.length} 項${total > list.length ? ` / 共 ${total}` : ""}` : "";
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}" data-door="${f.key}">
       <div class="tier-head">
         <span class="fl-badge">${esc(f.door)} 第${f.local}層</span>
@@ -615,10 +615,9 @@ renderMap();
 function chipHTML(it) {
   const q = Number(it.qty) || 0;
   const u = esc(it.unit || "");
-  /* 數量 1 不標示（大部分都是一包）；0 標「用完」；2 以上才寫數量 */
-  const qtyBadge = q < 1 ? `<span class="q">用完</span>`
-                 : q > 1 ? `<span class="q">${q}${u ? " " + u : ""}</span>` : "";
-  return `<button class="chip${q < 1 ? " low" : ""}" data-id="${esc(it._id)}" data-name="${esc(it.name)}"
+  /* 數量 1 不標示（大部分都是一包）；2 以上才寫數量 */
+  const qtyBadge = q > 1 ? `<span class="q">${q}${u ? " " + u : ""}</span>` : "";
+  return `<button class="chip" data-id="${esc(it._id)}" data-name="${esc(it.name)}"
       title="${esc([it.name, q + (it.unit || ""), it.note ? "備註：" + it.note : "", it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　"))}">
       <span class="nm">${esc(it.name)}</span>
       ${qtyBadge}
@@ -636,9 +635,15 @@ function applySearch() {
     const hit = (el.dataset.name || "").toLowerCase().includes(kw);
     if (hit) { el.classList.add("hit"); hits++; floors.add(el.closest(".tier").dataset.floor); }
   });
-  $("#searchInfo").textContent = hits
-    ? `找到 ${hits} 項，位於：` + [...floors].sort().map(f => `${floorLabel(f)} ${floorOf(f).name}`).join("、")
-    : "查無此品名";
+  if (hits) {
+    $("#searchInfo").textContent = `找到 ${hits} 項，位於：` + [...floors].sort().map(f => `${floorLabel(f)} ${floorOf(f).name}`).join("、");
+  } else {
+    /* 格層只顯示冰箱還有的；若查的品項剛好已用完，提醒一下（可用語音「放回」補回） */
+    const gone = items.filter(i => (Number(i.qty) || 0) <= 0 && (i.name || "").toLowerCase().includes(kw));
+    $("#searchInfo").textContent = gone.length
+      ? `「${gone.map(i => i.name).join("、")}」已用完，不在冰箱內（說「放回 ${gone[0].name} 一包」可補回）`
+      : "查無此品名";
+  }
 }
 $("#search").addEventListener("input", applySearch);
 
@@ -951,7 +956,7 @@ function toggleVoiceFill() {
       if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript;
     }
     if (interim && !final) $("#fVoiceHint").textContent = "…" + interim;
-    if (final.trim()) applyVoiceToForm(final.trim());
+    if (final.trim()) { applyVoiceToForm(final.trim()); try { fillRec.stop(); } catch (_) {} }
   };
   fillRec.onerror = e => {
     fillListening = false; $("#btnVoiceFill").textContent = "🎤 用說的";
