@@ -286,7 +286,6 @@ nav button.on b{filter:none;opacity:1}
   .outside .os-chip{flex:0 0 auto;width:62px;height:62px;font-size:11px;padding:2px}
   .outside .os-chip .more{width:18px;height:18px;font-size:13px}
   .side{order:-1;margin-bottom:126px}
-  .voice-float{left:10px;right:10px;bottom:144px;max-width:none}
   .vfrow #vState{max-width:76px}
   body{padding-bottom:132px}
   #toast{bottom:142px}   /* 提示要浮在底部食材庫上面，不能被蓋住 */
@@ -430,6 +429,11 @@ input[type=text],input[type=number],select,textarea{
   body{background:#fff;padding:0}
   header,nav,.no-print,.voice-bar,.voice-float,#toast{display:none !important}
   #view-map .freezer{max-width:none}
+}
+/* 手機：浮動語音鈕要浮在「底部食材庫」上面（放在檔案最後，確保蓋掉上面的基礎樣式） */
+@media (max-width:759px){
+  .voice-float{left:10px;right:10px;bottom:145px;max-width:none}
+  .vfrow{width:100%;justify-content:flex-start}
 }
 </style>
 </head>
