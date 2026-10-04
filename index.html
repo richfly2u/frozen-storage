@@ -671,7 +671,8 @@ function refreshByList() {
   $("#byList").innerHTML = byHistory().map(n => `<option value="${esc(n)}"></option>`).join("");
 }
 function renderOperator() {
-  $("#opName").textContent = operator || "未填（第一次操作會請您輸入）";
+  $("#opName").textContent = operator || "未填";        /* 手機版空間小，只寫「未填」 */
+  $("#opName").title = operator ? `目前經手人：${operator}（按「修改」可換人）` : "第一次操作時會請您輸入姓名，填一次就記住這台裝置";
   const bar = document.querySelector(".opbar");
   if (bar) bar.classList.toggle("need", !operator);
 }
