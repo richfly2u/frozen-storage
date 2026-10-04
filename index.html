@@ -235,13 +235,16 @@ nav button.on b{filter:none;opacity:1}
 .side .vcard .acts .btn{flex:1 1 auto}
 /* 桌機／平板：左欄說明、中間冰箱、右欄食材庫，並把冰箱壓到一頁裝得下 */
 @media (min-width:760px){
-  .mapmain{grid-template-columns:246px minmax(0,1fr) 200px;gap:11px;align-items:stretch}
+  .mapmain{grid-template-columns:236px minmax(0,1fr) 268px;gap:11px;align-items:stretch}
   .side{grid-column:1}
   .freezer{grid-column:2;order:0}
   .outside{grid-column:3;order:0}
-  .outside{height:calc(100vh - 148px);overflow:hidden}
-  .outside .os-items{flex:1;min-height:0;flex-direction:column;flex-wrap:nowrap;overflow:auto;align-items:stretch}
-  .os-chip{width:100%;justify-content:flex-start}
+  .outside{height:calc(100vh - 148px)}
+  /* 食材庫：像便當組合那樣排成多欄小格，全部攤開、不用捲 */
+  .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:6px;
+    grid-template-columns:repeat(auto-fill,minmax(76px,1fr));overflow:visible}
+  .outside .os-sub{grid-column:1 / -1}
+  .os-chip{width:auto;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:6px 5px}
   .freezer{height:calc(100vh - 148px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none}
   .freezer .fridge-top{margin-bottom:6px;padding:3px 7px}
