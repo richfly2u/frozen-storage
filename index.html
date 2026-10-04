@@ -277,19 +277,21 @@ nav button.on b{filter:none;opacity:1}
   .freezer .tier{aspect-ratio:auto;min-height:104px;overflow:visible;padding:2px 4px 18px}
   .freezer .tier .items{overflow:visible;align-content:flex-start}
 
-  /* 最上方：標題＋搜尋＋經手人同一列（搜尋/經手人是 JS 搬進來的） */
-  header{padding:8px 12px 9px}
-  .hrow{gap:6px}
-  h1{font-size:14px;letter-spacing:0;flex:0 0 auto}
+  /* 手機：最上面就只有一列（標題＋經手人＋顯示開關），不多佔高度 */
+  header{display:flex;align-items:center;gap:6px;padding:6px 10px}
+  .hrow{gap:4px;flex:0 0 auto}
+  h1{font-size:13px;letter-spacing:0;flex:0 0 auto;white-space:nowrap}
   .hl{display:none}
   .hs{display:inline}
   #syncTxt{display:none}
-  .htools{display:flex;align-items:center;gap:6px;margin-top:7px}
-  .htools .opbar{margin-top:0;gap:5px;font-size:11.5px}
+  .htools{display:flex;align-items:center;gap:5px;margin-top:0;margin-left:auto;flex:0 1 auto;flex-wrap:nowrap}
+  .htools .opbar{margin-top:0;gap:4px;font-size:11px;flex-wrap:nowrap}
   .htools .opbar > span{display:none}
-  .htools .opbar b{font-size:11.5px;padding:2px 7px}
+  .htools .opbar b{font-size:11px;padding:2px 6px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .htools .opbar b::before{content:"👤 "}
-  .htools .opbar button{margin-left:0;padding:4px 9px;font-size:11.5px}
+  .htools .opbar button{margin-left:0;padding:3px 7px;font-size:11px}
+  .htools .bytl{display:none}
+  .htools .bytoggle{color:#dff0fa;gap:3px}
 
   /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
   .outside{order:-2;position:static;display:block;max-height:none;margin:0;padding:9px 10px;
@@ -473,7 +475,7 @@ input[type=text],input[type=number],select,textarea{
       <span>經手人：</span><b id="opName">未設定</b>
       <button type="button" id="btnOp">修改</button>
     </div>
-    <label class="bytoggle"><input type="checkbox" id="showBy"> 👤 顯示經手人</label>
+    <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"> 👤<span class="bytl"> 顯示經手人</span></label>
   </div>
 </header>
 
