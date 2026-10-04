@@ -30,3 +30,4 @@
 - 權限：需匿名登入（頁面自動處理）；`frozen_log` 不可修改，只有管理員可刪。
 - 換 Firebase 金鑰／專案：改 `index.html` 裡 `window.FIREBASE_CONFIG`。
 - 改樓層名稱：改 `index.html` 裡的 `FLOORS` 陣列。
+- **換網址或改樓層名稱後，QR 要重產**：`pip install segno` 後執行 `python _probe/make_qr.py`（QR 是內嵌向量圖，不依賴外部 CDN）。
