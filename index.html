@@ -125,8 +125,9 @@ nav button.on b{filter:none;opacity:1}
   background:linear-gradient(180deg,#ffffff,#e7eff5);border:1px solid #b6c4d0;border-radius:8px;
   padding:3px 9px;box-shadow:0 1px 2px rgba(0,0,0,.16)
 }
-/* 每扇門最下層的橫槓切齊門的底緣（配合 door/shelves 的 padding-bottom:0） */
-.door .tier:last-child::after{bottom:-3px;border-radius:3px 3px 8px 8px}
+/* 每扇門最下層的橫槓切齊門的底緣：把最下層「壓」到門框底線上，橫槓就貼住冰箱底 */
+.door .tier:last-child{margin-bottom:-3px}
+.door .tier:last-child::after{bottom:0;border-radius:3px 3px 8px 8px}
 @media (max-width:520px){
   .freezer{padding:8px 9px 0;border-radius:14px 14px 6px 6px}
   .doors{gap:10px;padding-right:22px}
