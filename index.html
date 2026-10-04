@@ -195,7 +195,7 @@ nav button.on b{filter:none;opacity:1}
 }
 .tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
 /* ---------- 冰箱外（拖出＝移出、拖回＝放回）：sticky 讓它捲動時一直看得到 ---------- */
-.outside{position:sticky;top:6px;z-index:30;margin:14px 2px 0;border:2px dashed #b9cddb;border-radius:13px;
+.outside{position:sticky;top:6px;z-index:30;margin:0 2px 12px;border:2px dashed #b9cddb;border-radius:13px;
   padding:9px 11px 11px;background:rgba(255,255,255,.94);backdrop-filter:blur(3px);
   box-shadow:0 4px 14px rgba(18,38,56,.10)}
 .outside .os-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700;color:#41586a}
@@ -362,16 +362,16 @@ input[type=text],input[type=number],select,textarea{
   <div class="vheard" id="vHeard" hidden></div>
   <div id="vCard"></div>
 
-  <div class="freezer" id="freezer"></div>
-
-  <!-- 冰箱外：拖出去＝移出、拖回來＝放回 -->
+  <!-- 冰箱外：拖出去＝移出、拖回來＝放回（放在冰箱上方，捲動時固定可見） -->
   <div class="outside" id="outsideZone">
     <div class="os-head">📦 冰箱外
-      <span class="os-hint">把冰箱裡的東西拖到這兒＝移出；把這兒的東西拖回冰箱＝放回</span>
+      <span class="os-hint">把冰箱裡的東西拖到這兒＝移出；把這兒的東西拖回冰箱層＝放回</span>
       <button type="button" id="osClear" style="margin-left:auto">清空</button>
     </div>
     <div class="os-items" id="osItems"></div>
   </div>
+
+  <div class="freezer" id="freezer"></div>
 
   <div style="margin:14px 4px 0"><button class="btn ghost" id="btnAdd" style="width:100%">＋ 新增物品</button></div>
   <p class="vhint">
