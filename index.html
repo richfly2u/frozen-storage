@@ -215,7 +215,7 @@ nav button.on b{filter:none;opacity:1}
   .outside{order:2}
   .outside .os-items{flex-direction:column;flex-wrap:nowrap;overflow:auto;align-items:stretch}
   .os-chip{width:100%;justify-content:flex-start}
-  .freezer{height:calc(100vh - 296px);min-height:430px;display:flex;flex-direction:column}
+  .freezer{height:calc(100vh - 452px);min-height:300px;display:flex;flex-direction:column}
   .freezer{max-width:560px}
   .freezer .fridge-top{margin-bottom:7px;padding:4px 7px}
   .freezer .fridge-top .vent{height:10px}
@@ -226,9 +226,10 @@ nav button.on b{filter:none;opacity:1}
   .freezer .tier .items{overflow:auto;align-content:flex-start}
   .freezer .wheels{padding:6px 20px 4px}
 }
-/* 手機：食材庫放在冰箱上方（固定可見），維持原本的橫向排列 */
+/* 手機：食材庫放在冰箱上方（固定可見），維持原本的橫向排列；層高也壓扁 */
 @media (max-width:759px){
   .outside{order:-1;position:sticky;top:6px;z-index:30;background:rgba(255,255,255,.95);backdrop-filter:blur(3px);margin-bottom:12px}
+  .tier{aspect-ratio:auto;min-height:104px;padding:5px 5px 10px}
 }
 #dropOut{
   position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:88;pointer-events:none;
