@@ -339,6 +339,7 @@ function renderOperator() {
 function setOperator(v) {
   operator = (v || "").trim();
   store.set("frozen_operator", operator);
+  if (operator) rememberBy(operator);
   renderOperator();
 }
 function rememberBy(name) {
