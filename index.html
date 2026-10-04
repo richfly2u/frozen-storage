@@ -285,6 +285,8 @@ nav button.on b{filter:none;opacity:1}
   .outside .os-chip{flex:0 0 auto;width:62px;height:40px;font-size:11px;padding:2px 13px 2px 3px}
   .outside .os-chip .more{width:15px;height:15px;font-size:11px}
   .side{order:-1;margin-bottom:126px}
+  /* 手機省空間：長期說明文字收掉（前賢偏好不要說明；操作提示在按鈕與標題上） */
+  .side p.legend:not(#focusBar){display:none}
   .vfrow #vState{max-width:76px}
   body{padding-bottom:132px}
   #toast{bottom:142px}   /* 提示要浮在底部食材庫上面，不能被蓋住 */
