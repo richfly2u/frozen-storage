@@ -208,6 +208,7 @@ nav button.on b{filter:none;opacity:1}
 .outside .os-items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
 .outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 .os-chip{background:#fff6e8;border-color:#efd0a4}
+.outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
 /* 桌機／平板：右欄食材庫，並把冰箱壓到一頁裝得下 */
 @media (min-width:760px){
   .mapmain{grid-template-columns:minmax(0,1fr) 206px;align-items:stretch}
@@ -215,16 +216,24 @@ nav button.on b{filter:none;opacity:1}
   .outside{order:2}
   .outside .os-items{flex-direction:column;flex-wrap:nowrap;overflow:auto;align-items:stretch}
   .os-chip{width:100%;justify-content:flex-start}
-  .freezer{height:calc(100vh - 452px);min-height:300px;display:flex;flex-direction:column}
+  .freezer{height:calc(100vh - 320px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:560px}
-  .freezer .fridge-top{margin-bottom:7px;padding:4px 7px}
-  .freezer .fridge-top .vent{height:10px}
-  .freezer .doors{flex:1;min-height:0;gap:9px}
-  .freezer .door{display:flex;flex-direction:column;min-height:0;padding:8px 10px}
-  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(0,1fr);gap:5px;padding-top:15px}
-  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:4px 4px 9px}
+  .freezer .fridge-top{margin-bottom:6px;padding:3px 7px}
+  .freezer .fridge-top .vent{height:9px}
+  .freezer .doors{flex:1;min-height:0;gap:8px}
+  .freezer .door{display:flex;flex-direction:column;min-height:0;padding:7px 10px}
+  .freezer .shelves{flex:1;min-height:0;grid-auto-rows:minmax(58px,1fr);gap:5px;padding-top:14px}
+  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:hidden;padding:4px 4px 8px}
   .freezer .tier .items{overflow:auto;align-content:flex-start}
-  .freezer .wheels{padding:6px 20px 4px}
+  .freezer .wheels{padding:5px 20px 3px}
+  /* 省高度：說明文字與多餘留白在桌機收掉／縮小 */
+  .vhint{display:none}
+  header{padding:8px 14px 10px}
+  h1{font-size:17px}
+  #search{margin-top:7px;padding:8px 12px}
+  nav button{padding:7px 4px 9px}
+  nav button b{font-size:17px}
+  body{padding-bottom:66px}
 }
 /* 手機：食材庫放在冰箱上方（固定可見），維持原本的橫向排列；層高也壓扁 */
 @media (max-width:759px){
@@ -391,14 +400,13 @@ input[type=text],input[type=number],select,textarea{
   <div class="mapmain">
     <div class="freezer" id="freezer"></div>
     <aside class="outside" id="outsideZone">
+      <button class="btn add" id="btnAdd">＋ 新增物品</button>
       <div class="os-head">📦 食材庫</div>
       <div class="os-hint">把冰箱裡的東西拖到這兒＝移出；把這兒的東西拖回冰箱層＝放回</div>
       <div class="os-items" id="osItems"></div>
       <button type="button" id="osClear">清空</button>
     </aside>
   </div>
-
-  <div style="margin:14px 4px 0"><button class="btn ghost" id="btnAdd" style="width:100%">＋ 新增物品</button></div>
   <p class="vhint">
     語音：按「🎤 開始聽」後講 <code>香菇頭 一包</code>、<code>移出素排骨兩袋</code>、<code>放回當歸五包</code>；沒講動作＝預設「移出」，講錯按取消就好。第一次使用要按「允許」麥克風。
   </p>
