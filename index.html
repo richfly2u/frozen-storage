@@ -829,7 +829,7 @@ async function takeOut(it) {
     else outside.unshift({ id: it._id, name: it.name, qty: 1, unit, floor: Number(it.floor) });
     renderOutside();
     pendingHighlight = it._id;
-    toast(`已移出：${it.name} 1${unit}（要放回，把下面「冰箱外」的它拖回冰箱）`);
+    toast(`已移出：${it.name} 1${unit}（要放回就把「冰箱外」的它拖回冰箱層）`);
   } catch (err) { toast("移出失敗：" + (err.code || err.message)); }
 }
 
