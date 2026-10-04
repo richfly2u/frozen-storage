@@ -243,7 +243,7 @@ nav button.on b{filter:none;opacity:1}
   .outside{height:calc(100vh - 148px)}
   /* 食材庫：像便當組合那樣排成多欄小格，全部攤開、不用捲 */
   .outside .os-items{flex:1;min-height:0;display:grid;align-content:start;gap:6px;
-    grid-template-columns:repeat(auto-fill,minmax(74px,1fr));overflow:visible}
+    grid-template-columns:repeat(auto-fill,minmax(68px,1fr));overflow:visible}
   .os-chip{width:auto;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:6px 5px}
   .freezer{height:calc(100vh - 148px);min-height:400px;display:flex;flex-direction:column}
   .freezer{max-width:none}
@@ -912,8 +912,9 @@ function stapleEntries() {
 function renderOutside() {
   const box = $("#osItems");
   if (!box) return;
-  const staples = stapleEntries();
   const gone = osEntries();
+  const goneNames = new Set(gone.map(o => (o.name || "").trim()));
+  const staples = stapleEntries().filter(s => !goneNames.has(s.name));   // 已列在「冰箱裡沒有的」就不要重複
   const list = [...staples, ...gone];
   if (!list.length) { box.innerHTML = '<span class="empty">（空）</span>'; return; }
   const chip = (o, i) => `<button class="chip os-chip${o.staple ? " staple" : ""}" data-os="${i}" data-name="${esc(o.name)}"
