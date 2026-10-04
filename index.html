@@ -181,11 +181,7 @@ nav button.on b{filter:none;opacity:1}
 .chip .more:hover{background:rgba(30,136,199,.22)}
 .chip{touch-action:pan-y}
 .chip.dragging{opacity:.32}
-.chip-ghost{
-  position:fixed;z-index:90;pointer-events:none;transform:translate(-50%,-50%) scale(1.05);
-  background:#1e88c7;color:#fff;border-radius:10px;padding:6px 11px;font-size:13.5px;font-weight:600;
-  box-shadow:0 8px 22px rgba(10,40,70,.35);white-space:nowrap
-}
+.chip.dragging{opacity:.45}   /* 正在被拖的品項淡掉（不再有跟手的說明標籤） */
 .tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
 /* ---------- 版面：左邊冰箱、右邊食材庫（便當組合模式） ---------- */
 .mapmain{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
@@ -1080,7 +1076,7 @@ function ensureDropOut() {
   if (dropOutEl) return dropOutEl;
   dropOutEl = document.createElement("div");
   dropOutEl.id = "dropOut";
-  dropOutEl.textContent = "📤 放這裡＝移出冰箱";
+  dropOutEl.textContent = "📤";          /* 前賢：不要說明文字，只留圖示 */
   document.body.appendChild(dropOutEl);
   return dropOutEl;
 }
@@ -1094,14 +1090,9 @@ function autoScroll() {
 
 /* 拖曳：滑鼠可直接拖；手指要橫向起手（直向＝捲動頁面） */
 function startDrag(el, it, ev, kind) {
-  const g = document.createElement("div");
-  g.className = "chip-ghost";
-  const q0 = Number(it.qty) || 0;
-  g.textContent = [it.name, q0 > 0 ? `${q0}${it.unit || ""}` : "", (showBy && it.by) ? `👤${it.by}` : ""].filter(Boolean).join("　");
-  document.body.appendChild(g);
   el.classList.add("dragging");
-  /* 舊版會把「拖到這兒＝移出冰箱」變綠放大、把目標層加 .drop → 前賢要求這些動態都不要 */
-  dragCtx = { el, it, kind: kind || "item", ghost: g, targetTier: null, overOut: false, lastY: ev.clientY };
+  /* 前賢：移動時的狀態說明不要 → 不再顯示跟手的品名／數量標籤（舊版動態也一律不做） */
+  dragCtx = { el, it, kind: kind || "item", ghost: null, targetTier: null, overOut: false, lastY: ev.clientY };
   suppressClick = true;
   ensureDropOut().classList.add("on");
   try { el.setPointerCapture(ev.pointerId); } catch (_) {}
@@ -1111,8 +1102,6 @@ function startDrag(el, it, ev, kind) {
 function moveDrag(ev) {
   if (!dragCtx) return;
   dragCtx.lastY = ev.clientY;
-  dragCtx.ghost.style.left = ev.clientX + "px";
-  dragCtx.ghost.style.top = ev.clientY + "px";
   const under = document.elementFromPoint(ev.clientX, ev.clientY);
   const tier = under && under.closest ? under.closest(".tier") : null;
   let overOut = false;
