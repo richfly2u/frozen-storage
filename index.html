@@ -399,7 +399,7 @@ const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.n
 const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-let ready = false, items = [], editId = null, logRows = [], pendingHighlight = null;
+let ready = false, items = [], editId = null, logRows = [], pendingHighlight = null, focusedFloor = null;
 
 /* ================= 小工具 ================= */
 const $ = s => document.querySelector(s);
@@ -577,6 +577,11 @@ function renderMap() {
 
   box.querySelectorAll(".chip").forEach(el => el.addEventListener("click", () => openEdit(el.dataset.id)));
   refreshByList();
+  /* 重繪後把焦點框補回來（語音/掃碼指定的樓層） */
+  if (focusedFloor != null) {
+    const ft = box.querySelector(`.tier[data-floor="${focusedFloor}"]`);
+    if (ft) ft.classList.add("focus");
+  }
   /* 語音/編輯更新後，讓剛動到的品項閃一下 */
   if (pendingHighlight) {
     const el = box.querySelector(`.chip[data-id="${pendingHighlight}"]`);
@@ -587,13 +592,19 @@ function renderMap() {
     }
   }
 }
-/* 捲到指定樓層並閃框 */
+/* 捲到指定樓層、閃框、保留焦點框 10 秒 */
 function focusTier(fid) {
+  focusedFloor = Number(fid);
   const el = document.getElementById("tier-" + fid);
   if (!el) return;
   el.scrollIntoView({ behavior: "smooth", block: "center" });
   el.classList.add("focus", "pulse");
   setTimeout(() => el.classList.remove("pulse"), 3600);
+  setTimeout(() => {
+    const t = document.getElementById("tier-" + fid);
+    if (t) t.classList.remove("focus");
+    if (focusedFloor === Number(fid)) focusedFloor = null;
+  }, 10000);
 }
 /* 先畫出空冰箱骨架，資料（Firestore）回來再填內容 → 斷線／慢連線時不會整片空白 */
 renderMap();
@@ -914,13 +925,7 @@ function gotoFloor(fid) {
   const bar = $("#focusBar");
   bar.style.display = "";
   bar.innerHTML = `📍 掃碼指定：<b>${esc(floorLabel(fid))} — ${esc(f.name)}</b>（${esc(f.slot)}）`;
-  setTimeout(() => {
-    const el = document.getElementById("tier-" + fid);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("focus", "pulse");
-    setTimeout(() => el.classList.remove("pulse"), 3600);
-  }, 400);
+  setTimeout(() => focusTier(fid), 400);
 }
 const m = new URLSearchParams(location.search).get("f");
 if (m) gotoFloor(m);
