@@ -191,7 +191,6 @@ nav button.on b{filter:none;opacity:1}
   padding:5px 10px;font-size:12px;font-family:inherit;cursor:pointer}
 .outside .os-items{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0;min-height:30px}
 .outside .os-items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
-.outside.over{border-color:#2f9e6b;background:rgba(47,158,107,.12)}
 /* 食材庫：扁長方格（上下矮一點 → 同一個面板可以放更多品項） */
 .os-chip{background:#fff6e8;border-color:#efd0a4;position:relative;width:100%;max-width:none;
   height:40px;flex-direction:row;align-items:center;justify-content:center;
@@ -273,8 +272,12 @@ nav button.on b{filter:none;opacity:1}
 /* 手機：冰箱在最上面吃滿高度；食材庫固定在畫面底部（橫向滑），兩者同屏才好拖 */
 @media (max-width:759px){
   .freezer{order:-3;max-width:none;width:100%;height:auto;min-height:0;display:flex;flex-direction:column}   /* width:100% 才能吃滿（margin:0 auto 會縮成內容寬） */
-  .mapmain{min-height:calc(100vh - 136px)}         /* 手機：扣掉標題列(36)+間距(12)+底部留白(76)，品項少時冰箱長高填滿、不留下方空白 */
-  .freezer .doors{flex:1 1 auto}                    /* 門可以長高（層跟著均分） */
+  /* 手機：冰箱與食材庫都固定在同一頁（頁面不捲動）；食材庫裝不下時在食材庫內部捲動 */
+  .mapmain{display:flex;flex-direction:column;height:calc(100vh - 136px);min-height:0;gap:8px}
+  .freezer{flex:1 1 auto;min-height:132px}
+  .freezer .doors{flex:1 1 auto}                    /* 門跟著長高（層均分） */
+  .outside{flex:0 1 auto;min-height:132px;max-height:42vh;display:flex;flex-direction:column}
+  .outside .os-items{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
   .freezer .doors{display:flex;flex-direction:row;flex:0 0 auto;min-height:0;gap:6px;align-items:stretch}
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;padding:5px 18px 0 8px}
   .freezer .door-head{font-size:10px;letter-spacing:2px;padding:6px 3px;right:-1px}
@@ -324,7 +327,6 @@ nav button.on b{filter:none;opacity:1}
   box-shadow:0 10px 26px rgba(10,40,70,.35)
 }
 #dropOut.on{display:flex}
-#dropOut.over{background:#2f9e6b;transform:translateX(-50%) scale(1.07)}
 .cmenu{
   position:fixed;z-index:95;background:#fff;border:1px solid #d7e3ec;border-radius:12px;padding:7px;
   box-shadow:0 12px 34px rgba(18,38,56,.28);min-width:168px;max-width:82vw;
@@ -1062,6 +1064,7 @@ function startDrag(el, it, ev, kind) {
   g.textContent = [it.name, q0 > 0 ? `${q0}${it.unit || ""}` : "", (showBy && it.by) ? `👤${it.by}` : ""].filter(Boolean).join("　");
   document.body.appendChild(g);
   el.classList.add("dragging");
+  /* 舊版會把「拖到這兒＝移出冰箱」變綠放大、把目標層加 .drop → 前賢要求這些動態都不要 */
   dragCtx = { el, it, kind: kind || "item", ghost: g, targetTier: null, overOut: false, lastY: ev.clientY };
   suppressClick = true;
   ensureDropOut().classList.add("on");
@@ -1082,14 +1085,9 @@ function moveDrag(ev) {
     overOut = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
     const oz = document.getElementById("outsideZone");
     if (!overOut && oz && under && oz.contains(under)) overOut = true;   // 拖到下方「冰箱外」區塊也算
-    d.classList.toggle("over", overOut);
-    if (oz) oz.classList.toggle("over", overOut);
+    /* 前賢：拖拉時不要有變色／放大的動態變化（功能照舊，放手時仍判斷是否拖到下方） */
   }
-  if (dragCtx.targetTier !== tier) {
-    if (dragCtx.targetTier) dragCtx.targetTier.classList.remove("drop");
-    dragCtx.targetTier = tier;
-    if (tier) tier.classList.add("drop");
-  }
+  dragCtx.targetTier = tier;      /* 前賢：拖拉時不要顯示拖到第幾層的動態變化 */
   dragCtx.overOut = overOut;
 }
 function endDrag() {
@@ -1097,10 +1095,9 @@ function endDrag() {
   const { el, it, kind, ghost, targetTier, overOut } = dragCtx;
   el.classList.remove("dragging");
   if (ghost) ghost.remove();
-  const d = ensureDropOut(); d.classList.remove("on", "over");
+  const d = ensureDropOut(); d.classList.remove("on");
   const oz = document.getElementById("outsideZone");
   if (oz) oz.classList.remove("over");
-  if (targetTier) targetTier.classList.remove("drop");
   dragCtx = null;
   if (kind === "item") {
     if (overOut) takeOut(it);                        // 拖到「移出」區＝移出冰箱
