@@ -115,7 +115,7 @@ nav button.on b{filter:none;opacity:1}
   content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:4px;height:6px;border-radius:2px;background:#0a0e11
 }
-.shelves{position:relative;z-index:1;display:grid;grid-template-rows:auto auto;
+.shelves{position:relative;z-index:1;display:grid;grid-auto-rows:auto;
   gap:6px;min-width:0;padding-top:17px}
 .tier{
   position:relative;margin:0;padding:6px 5px 12px;min-width:0;display:flex;flex-direction:column;
@@ -388,12 +388,29 @@ import { parseUtterance } from "./voice-parse.js";
 /* ================= 設定 ================= */
 const COLL_ITEMS = "frozen_items";
 const COLL_LOG   = "frozen_log";
-const FLOORS = [
-  { id: 1, name: "中藥區、甜餡料、湯料", door: "上門", key: "U", local: 1, slot: "上格" },
-  { id: 2, name: "素料、餡料區", door: "上門", key: "U", local: 2, slot: "下格" },
-  { id: 3, name: "素料",         door: "下門", key: "D", local: 1, slot: "上格" },
-  { id: 4, name: "其他",         door: "下門", key: "D", local: 2, slot: "下格" }
+/* 門別（上門／下門）；每扇門有幾層、叫什麼，看下面的 FLOORS */
+const DOORS = [
+  { key: "U", label: "上　門" },
+  { key: "D", label: "下　門" }
 ];
+/* 樓層：key 決定屬哪一扇門；同一扇門裡的先後順序決定「第幾層」（每扇門各自從第 1 層算）
+   ※ id 是資料庫用的固定編號：新增樓層要給「沒用過的號碼」，不要動舊號碼，免得住錯位置 */
+const FLOORS = [
+  { id: 1, door: "上門", key: "U", name: "中藥區、甜餡料、湯料" },
+  { id: 2, door: "上門", key: "U", name: "素料、餡料區" },
+  { id: 5, door: "上門", key: "U", name: "（待命名）" },
+  { id: 3, door: "下門", key: "D", name: "素料" },
+  { id: 4, door: "下門", key: "D", name: "其他" }
+];
+/* 自動算「第幾層」與格位名稱（二層＝上/下格，三層＝上/中/下格） */
+FLOORS.forEach(f => {
+  const peers = FLOORS.filter(x => x.key === f.key);
+  const n = peers.length, i = peers.indexOf(f);
+  f.local = i + 1;
+  f.slot = n === 2 ? ["上格", "下格"][i]
+         : n === 3 ? ["上格", "中格", "下格"][i]
+         : `第${i + 1}格`;
+});
 const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id), name: "未指定", door: "", local: Number(id), slot: "" };
 const floorLabel = id => { const f = floorOf(id); return f.door ? `${f.door} 第${f.local}層` : `第${f.id}層`; };
 const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.name}`; };
@@ -557,10 +574,7 @@ function tierHTML(fid) {
 
 function renderMap() {
   const box = $("#freezer");
-  const doors = [
-    { key: "U", label: "上　門", floors: [1, 2] },
-    { key: "D", label: "下　門", floors: [3, 4] }
-  ];
+  const doors = DOORS.map(d => ({ ...d, floors: FLOORS.filter(f => f.key === d.key).map(f => f.id) }));
   box.innerHTML = `
     <div class="fridge-top">
       <span class="vent"></span>
