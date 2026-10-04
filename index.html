@@ -236,9 +236,10 @@ input[type=text],input[type=number],select,textarea{
 .opbar{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;color:#dff0fa}
 .opbar b{color:#fff;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:8px;font-size:13px}
 .opbar button{
-  margin-left:auto;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;
+  margin-left:8px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;
   border-radius:8px;padding:5px 11px;font-size:12.5px;font-family:inherit;cursor:pointer
 }
+.opbar > button:first-of-type{margin-left:auto}
 .bytip{margin-top:7px;font-size:12px;line-height:1.55;color:#eaf6fd;background:rgba(255,255,255,.12);padding:7px 10px;border-radius:9px;display:none}
 .bytip.on{display:block}
 .bytip a{color:#fff}
@@ -282,6 +283,7 @@ input[type=text],input[type=number],select,textarea{
   <div class="searchinfo" id="searchInfo"></div>
   <div class="opbar">
     <span>經手人：</span><b id="opName">未設定</b>
+    <button type="button" id="btnLine" style="display:none">🔑 用 LINE 登入</button>
     <button type="button" id="btnOp">修改</button>
   </div>
   <div class="bytip" id="lineTip">
@@ -397,7 +399,7 @@ const floorFull = id => { const f = floorOf(id); return `${floorLabel(id)} ${f.n
 const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-let ready = false, items = [], editId = null, logRows = [];
+let ready = false, items = [], editId = null, logRows = [], pendingHighlight = null;
 
 /* ================= 小工具 ================= */
 const $ = s => document.querySelector(s);
@@ -457,6 +459,48 @@ $("#btnOp").addEventListener("click", () => {
   const v = prompt("請輸入您的姓名（之後每次置入／移出都會記下）：", operator || "");
   if (v !== null) { setOperator(v); toast(operator ? "經手人：" + operator : "已清除經手人"); }
 });
+
+/* ================= LINE 掃碼登入（LIFF）：開啟即自動帶入姓名 ================= */
+/* 前賢提供 LIFF ID 後填入即可啟用；未填 = 完全不載入外部程式、維持手動輸入姓名 */
+const LIFF_ID = "";   // 例："2001234567-abcdefgh"
+
+async function applyLineProfile() {
+  try {
+    const p = await window.liff.getProfile();
+    if (p && p.displayName) {
+      setOperator(p.displayName);
+      rememberBy(p.displayName);
+      toast("LINE 登入：" + p.displayName);
+    }
+  } catch (e) { console.warn("取得 LINE 資料失敗", e); }
+}
+
+async function initLiff() {
+  if (!LIFF_ID) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://static.line-scdn.net/liff/edge/2/sdk.js";
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+  await window.liff.init({ liffId: LIFF_ID });
+  if (window.liff.isLoggedIn()) {
+    $("#btnLine").style.display = "none";
+    await applyLineProfile();
+  } else if (window.liff.isInClient()) {
+    window.liff.login();                     // 在 LINE 內開啟 → 直接登入
+  } else {
+    $("#btnLine").style.display = "";        // 一般瀏覽器 → 給一顆登入鈕
+  }
+}
+
+$("#btnLine").addEventListener("click", async () => {
+  if (!window.liff) { toast("LINE 元件未載入"); return; }
+  if (!window.liff.isLoggedIn()) window.liff.login();
+  else await applyLineProfile();
+});
+
+initLiff().catch(e => console.warn("LIFF 初始化失敗（LIFF ID 未設定或網路問題）", e));
 
 /* LINE 內建瀏覽器提示 */
 if (/Line\/|LIFF/i.test(navigator.userAgent)) $("#lineTip").classList.add("on");
@@ -533,6 +577,23 @@ function renderMap() {
 
   box.querySelectorAll(".chip").forEach(el => el.addEventListener("click", () => openEdit(el.dataset.id)));
   refreshByList();
+  /* 語音/編輯更新後，讓剛動到的品項閃一下 */
+  if (pendingHighlight) {
+    const el = box.querySelector(`.chip[data-id="${pendingHighlight}"]`);
+    if (el) {
+      el.classList.add("hit");
+      setTimeout(() => el.classList.remove("hit"), 2600);
+      pendingHighlight = null;
+    }
+  }
+}
+/* 捲到指定樓層並閃框 */
+function focusTier(fid) {
+  const el = document.getElementById("tier-" + fid);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.add("focus", "pulse");
+  setTimeout(() => el.classList.remove("pulse"), 3600);
 }
 /* 先畫出空冰箱骨架，資料（Firestore）回來再填內容 → 斷線／慢連線時不會整片空白 */
 renderMap();
@@ -819,6 +880,10 @@ async function confirmVoice() {
     pendingVoice = null;
     $("#vCard").innerHTML = "";
     $("#vHeard").hidden = true;
+    /* 直接反映在冷凍格層：捲到該層、品項閃一下 */
+    pendingHighlight = it._id;
+    focusTier(it.floor);
+    setTimeout(() => { if (pendingHighlight) renderMap(); }, 900);
   } catch (e) {
     console.error(e);
     toast("寫入失敗：" + (e.code || e.message));
