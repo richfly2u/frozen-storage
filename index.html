@@ -214,9 +214,11 @@ nav button.on b{filter:none;opacity:1}
 .side p.legend:not(#focusBar){display:none}   /* 說明文字收掉（前賢偏好不要說明） */
 .side .opbar b{color:#12486b;background:#e7f2fa}
 .side .opbar button{border-color:#cfe0eb;background:#f6fafd;color:#2b5a76}
-.bytoggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#41586a;cursor:pointer;user-select:none;margin:0}
-.bytoggle small{color:#8fa8b8;font-size:11px}
-.bytoggle input{width:15px;height:15px;accent-color:#1e88c7;flex:0 0 auto}
+.bytoggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#ffe066;font-weight:600;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,224,102,.55);border-radius:20px;padding:3px 10px;
+  cursor:pointer;user-select:none;margin:0;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.bytoggle small{color:#ffe9a3;font-size:11px}
+.bytoggle input{width:15px;height:15px;accent-color:#ffd447;flex:0 0 auto}
 .side .bytip{color:#5a4a2a;background:#fdf5e6;margin:0}
 .side .bytip a{color:#0b4b6b}
 .side .legend{margin:0;font-size:12.5px;line-height:1.6}
@@ -295,8 +297,9 @@ nav button.on b{filter:none;opacity:1}
   .htools .opbar b{font-size:11px;padding:2px 6px;max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .htools .opbar b::before{content:"👤 "}
   .htools .opbar button{margin-left:0;padding:3px 7px;font-size:11px}
-  .htools .bytl{display:none}
-  .htools .bytoggle{color:#dff0fa;gap:3px}
+  .htools .byti{display:none}
+  .htools .bytl{display:inline}
+  .htools .bytoggle{color:#ffe066;gap:4px;padding:2px 8px;font-size:11px}
 
   /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
   .outside{order:-2;position:static;display:flex;flex-direction:column;flex:0 1 auto;min-height:132px;max-height:42vh;margin:0;padding:9px 10px;
@@ -481,7 +484,7 @@ input[type=text],input[type=number],select,textarea{
       <span>經手人：</span><b id="opName">未設定</b>
       <button type="button" id="btnOp">修改</button>
     </div>
-    <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"> 👤<span class="bytl"> 顯示經手人</span></label>
+    <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"><span class="byti">👤</span><span class="bytl">顯示經手人</span></label>
   </div>
 </header>
 
