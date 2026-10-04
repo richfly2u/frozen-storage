@@ -204,10 +204,13 @@ nav button.on b{filter:none;opacity:1}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
 /* ---------- 左欄面板（桌機把搜尋／經手人／說明／語音收到側邊，不佔冰箱上下高度） ---------- */
 .side{
-  display:flex;flex-direction:column;gap:8px;min-width:0;
+  display:none;   /* 平常是空的（只剩 LINE 提示／掃碼焦點列），有內容時才由 JS 加 .show 打開 */
+  flex-direction:column;gap:8px;min-width:0;
   background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 11px 13px;
   box-shadow:0 4px 14px rgba(18,38,56,.08)
 }
+.side.show{display:block}
+.side.show{display:flex}
 .side .opbar{margin:0;color:#41586a;flex-wrap:wrap}
 .side p.legend:not(#focusBar){display:none}   /* 說明文字收掉（前賢偏好不要說明） */
 .side .opbar b{color:#12486b;background:#e7f2fa}
@@ -730,7 +733,10 @@ $("#showBy").addEventListener("change", e => {
 });
 
 /* LINE 內建瀏覽器提示 */
-if (/Line\/|LIFF/i.test(navigator.userAgent)) $("#lineTip").classList.add("on");
+if (/Line\/|LIFF/i.test(navigator.userAgent)) {
+  $("#lineTip").classList.add("on");
+  const sd = document.querySelector(".side"); if (sd) sd.classList.add("show");
+}
 
 /* ================= 匿名登入，自動） ================= */
 sync("", "連線中…");
@@ -1472,6 +1478,7 @@ function gotoFloor(fid) {
   if (!FLOORS.some(x => x.id === Number(fid))) return;
   const bar = $("#focusBar");
   bar.style.display = "";
+  const sd = document.querySelector(".side"); if (sd) sd.classList.add("show");
   bar.innerHTML = `📍 掃碼指定：<b>${esc(floorLabel(fid))} — ${esc(f.name)}</b>`;
   setTimeout(() => focusTier(fid), 400);
 }
