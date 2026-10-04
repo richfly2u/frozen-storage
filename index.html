@@ -61,26 +61,30 @@ nav button.on b{filter:none;opacity:1}
   font-size:11.5px;letter-spacing:3px;color:#fff;background:linear-gradient(90deg,#1e88c7,#5cb3dd);
   padding:3px 16px;border-radius:0 0 10px 10px
 }
-.doors{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .door{
   position:relative;background:#eef7fd;border:2px solid #cfe4f2;border-radius:14px;padding:8px 8px 10px;
   box-shadow:inset 0 1px 6px rgba(30,136,199,.09)
 }
 .door-head{font-size:12.5px;font-weight:700;color:var(--deep);text-align:center;margin-bottom:7px;letter-spacing:3px}
 .door .handle{
-  position:absolute;top:50%;transform:translateY(-50%);width:7px;height:44%;border-radius:7px;
-  background:linear-gradient(#dceefb,#9fc9e2);box-shadow:0 1px 3px rgba(11,75,107,.28)
+  position:absolute;top:50%;transform:translateY(-50%);width:9px;height:46%;border-radius:6px;
+  background:linear-gradient(180deg,#9ac9e3,#5f9dc0);
+  box-shadow:0 1px 4px rgba(11,75,107,.35),inset 0 0 2px rgba(255,255,255,.8)
 }
-.door[data-door="L"] .handle{right:-5px}
-.door[data-door="R"] .handle{left:-5px}
+.door[data-door="L"] .handle{right:-8px}
+.door[data-door="R"] .handle{left:-8px}
 .shelves{display:grid;grid-template-rows:1fr 1fr;gap:8px;height:100%}
 .tier{
   background:var(--card);border:1px solid #d9eaf5;border-radius:12px;margin:0;padding:8px 9px 9px;
   min-height:78px;transition:box-shadow .25s,transform .25s
 }
 @media (max-width:520px){
-  .doors{gap:7px}
+  .doors{gap:13px}
   .door{padding:6px 6px 8px}
+  .door .handle{width:8px;height:40%}
+  .door[data-door="L"] .handle{right:-6px}
+  .door[data-door="R"] .handle{left:-6px}
   .fl-sub{display:none}
   .fl-name{font-size:14px}
   .fl-badge{font-size:11px;padding:2px 7px}
