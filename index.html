@@ -166,6 +166,20 @@ input[type=text],input[type=number],select,textarea{
   font-family:inherit;font-size:15px;background:#fbfdff;color:var(--txt)
 }
 .chip .by{font-size:11px;color:#7c93a2;white-space:nowrap}
+/* ---------- 語音 ---------- */
+.vstatus{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #dbeaf4;border-radius:12px;padding:11px 13px;font-size:14px;margin-bottom:11px}
+.vdot{width:11px;height:11px;border-radius:50%;background:#c9d6de;flex:0 0 auto}
+.vdot.live{background:#e0355a;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.vheard{background:#0b4b6b;color:#eaf6fd;border-radius:12px;padding:11px 13px;font-size:15px;min-height:46px;margin-bottom:11px;line-height:1.5}
+.vheard b{color:#8fdcff}
+.vcard{background:#fff;border:2px solid #1e88c7;border-radius:16px;padding:14px;box-shadow:0 6px 20px rgba(11,75,107,.12);margin-bottom:11px}
+.vcard .big{font-size:21px;font-weight:700;line-height:1.5}
+.vcard .big .nm{color:#0b4b6b}
+.vcard .sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
+.vcard.warn{border-color:#c9455a}
+.vhint{font-size:12.5px;color:var(--muted);line-height:1.75;margin:12px 2px}
+.vhint code{background:#eef7fd;padding:1px 6px;border-radius:5px;font-size:12.5px;color:#0b4b6b}
 /* ---------- print ---------- */
 @media print{
   body{background:#fff;padding:0}
@@ -217,8 +231,25 @@ input[type=text],input[type=number],select,textarea{
   <div class="qr-grid" id="qrGrid"></div>
 </section>
 
+<!-- ============ 語音記帳 ============ -->
+<section class="view" id="view-voice">
+  <div class="vstatus"><span class="vdot" id="vDot"></span><span id="vState">未啟動</span></div>
+  <div style="display:flex;gap:9px;margin-bottom:11px">
+    <button class="btn" id="btnListen" style="flex:1">🎤 開始聽</button>
+    <button class="btn ghost" id="btnStop" style="flex:1">■ 停止</button>
+  </div>
+  <div class="vheard" id="vHeard">（聽到的內容會顯示在這裡）</div>
+  <div id="vCard"></div>
+  <div class="vhint">
+    講法：<code>香菇頭 一包</code>　<code>移出素排骨兩袋</code>　<code>放回當歸五包</code>　<code>中藥區 當歸 一包</code><br>
+    沒講動作＝預設「移出」；講錯按取消就好，不用重來。權限：第一次要按「允許」麥克風。<br>
+    門邊平板可固定開 <code>?tab=voice</code> 直接進這頁（建議接電源、螢幕設不關）。
+  </div>
+</section>
+
 <nav>
   <button data-view="map" class="on"><b>🧊</b>位置圖</button>
+  <button data-view="voice"><b>🎤</b>語音</button>
   <button data-view="log"><b>🕒</b>紀錄</button>
   <button data-view="qr"><b>🔳</b>QR列印</button>
 </nav>
@@ -278,6 +309,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot,
          query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { parseUtterance } from "./voice-parse.js";
 
 /* ================= 設定 ================= */
 const COLL_ITEMS = "frozen_items";
@@ -587,6 +619,143 @@ function renderQR() {
 }
 $("#btnPrint").addEventListener("click", () => window.print());
 
+/* ================= 語音記帳（講一句 → 確認卡按一下 → 寫入） ================= */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false, wakeLock = null, pendingVoice = null;
+
+function vState(txt, live) {
+  $("#vState").textContent = txt;
+  $("#vDot").classList.toggle("live", !!live);
+}
+async function keepAwake(on) {
+  try {
+    if (on && "wakeLock" in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) { /* 不支援就算了 */ }
+}
+function startListen() {
+  if (!SR) { toast("此瀏覽器不支援語音辨識，請用 Android Chrome 開啟"); return; }
+  if (listening) return;
+  listening = true;
+  rec = new SR();
+  rec.lang = "zh-TW"; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+  rec.onstart = () => vState("聽取中…請講「品名＋數量」", true);
+  rec.onresult = e => {
+    let interim = "", final = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript;
+    }
+    if (interim) $("#vHeard").innerHTML = "…" + esc(interim);
+    if (final.trim()) { $("#vHeard").innerHTML = "<b>" + esc(final.trim()) + "</b>"; handleVoice(final.trim()); }
+  };
+  rec.onerror = e => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      listening = false; keepAwake(false); vState("麥克風未授權", false);
+      toast("請允許麥克風權限後再按「開始聽」");
+    } else if (e.error !== "no-speech" && e.error !== "aborted") { console.warn("語音錯誤:", e.error); }
+  };
+  rec.onend = () => { if (listening) { try { rec.start(); } catch (_) {} } else vState("已停止", false); };
+  try { rec.start(); keepAwake(true); } catch (e) { listening = false; toast("無法啟動語音：" + e.message); }
+}
+function stopListen() {
+  listening = false;
+  if (rec) { try { rec.stop(); } catch (_) {} }
+  keepAwake(false); vState("已停止", false);
+}
+
+function handleVoice(text) {
+  if (/^(停止|結束|不要聽|關掉)/.test(text)) { stopListen(); toast("已停止聽取"); return; }
+  const r = parseUtterance(text, items);
+  if (r.operatorName) { setOperator(r.operatorName); toast("經手人：" + r.operatorName); }
+  pendingVoice = r;
+  renderVoiceCard(r);
+}
+
+function renderVoiceCard(r) {
+  const box = $("#vCard");
+  const isIn = r.action === "in";
+  if (!r.name) {
+    pendingVoice = null;
+    box.innerHTML = `<div class="vcard warn"><div class="big">🤔 沒聽清楚</div>
+      <div class="sub">只聽到：「${esc(r.raw)}」<br>請再講一次，例如「香菇頭 一包」。</div></div>`;
+    return;
+  }
+  if (!r.match || r.score < 45) {
+    box.innerHTML = `<div class="vcard warn">
+      <div class="big">❓ 找不到「<span class="nm">${esc(r.name)}</span>」</div>
+      <div class="sub">這個品項還沒建過。要新增就按下面，或按取消再講一次。</div>
+      <div class="acts">
+        <button class="btn ghost" id="vCancel">取消</button>
+        <button class="btn" id="vCreate">＋ 新增這個品項</button>
+      </div></div>`;
+    $("#vCancel").addEventListener("click", () => { pendingVoice = null; box.innerHTML = ""; });
+    $("#vCreate").addEventListener("click", voiceCreate);
+    return;
+  }
+  const it = r.match;
+  const cur = Number(it.qty) || 0;
+  const after = Math.max(0, cur + (isIn ? r.qty : -r.qty));
+  const f = floorOf(it.floor);
+  const floorWarn = (r.floor && Number(r.floor) !== Number(it.floor))
+    ? `<br><span style="color:#c9455a">⚠️ 你講的是第 ${r.floor} 層，但這個品項記在第 ${it.floor} 層</span>` : "";
+  box.innerHTML = `<div class="vcard">
+    <div class="big">${isIn ? "⬇️ 置入" : "⬆️ 移出"}　<span class="nm">${esc(it.name)}</span>　${r.qty}${esc(r.unit || it.unit || "")}</div>
+    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　第 ${it.floor} 層 ${esc(f.name)}${floorWarn}</div>
+    <label>經手人</label>
+    <input type="text" id="vBy" list="byList" value="${esc(operator)}" placeholder="例：陳師姐">
+    <div class="acts">
+      <button class="btn ghost" id="vCancel">取消</button>
+      <button class="btn ok" id="vOk">✅ 確認</button>
+    </div>
+    <div class="tiny">聽到：「${esc(r.raw)}」</div></div>`;
+  refreshByList();
+  $("#vCancel").addEventListener("click", () => { pendingVoice = null; box.innerHTML = ""; });
+  $("#vOk").addEventListener("click", confirmVoice);
+}
+
+function voiceCreate() {
+  const r = pendingVoice;
+  if (!r) return;
+  openEdit(null, r.floor || 1);
+  setTimeout(() => {
+    $("#fName").value = r.name;
+    $("#fQty").value = r.qty || 1;
+    if (r.unit) $("#fUnit").value = r.unit;
+  }, 80);
+  $("#vCard").innerHTML = "";
+}
+
+async function confirmVoice() {
+  const r = pendingVoice;
+  if (!r || !r.match || !needReady()) return;
+  const by = ($("#vBy").value || "").trim();
+  if (!by) { toast("請填經手人"); $("#vBy").focus(); return; }
+  setOperator(by); rememberBy(by);
+  const it = r.match;
+  const isIn = r.action === "in";
+  const newQty = Math.max(0, (Number(it.qty) || 0) + (isIn ? r.qty : -r.qty));
+  $("#vOk").disabled = true;
+  try {
+    await updateDoc(doc(db, COLL_ITEMS, it._id), { qty: newQty, by, updatedAt: Date.now() });
+    await addLog(Number(it.floor), it.name, r.qty, r.unit || it.unit || "", r.action, by);
+    toast(`已${isIn ? "置入" : "移出"}：${it.name} ${r.qty}${r.unit || it.unit || ""}`);
+    pendingVoice = null;
+    $("#vCard").innerHTML = "";
+    $("#vHeard").innerHTML = "（聽到的內容會顯示在這裡）";
+  } catch (e) {
+    console.error(e);
+    toast("寫入失敗：" + (e.code || e.message));
+  } finally { if ($("#vOk")) $("#vOk").disabled = false; }
+}
+
+$("#btnListen").addEventListener("click", startListen);
+$("#btnStop").addEventListener("click", stopListen);
+window.addEventListener("pagehide", stopListen);
+vState(SR ? "未啟動" : "此瀏覽器不支援語音（請用 Android Chrome）", false);
+
 /* ================= 分頁切換 ================= */
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
@@ -594,6 +763,11 @@ document.querySelectorAll("nav button").forEach(b => b.addEventListener("click",
   if (b.dataset.view === "qr") renderQR();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }));
+
+/* ?tab=xxx 直接開指定分頁（門邊平板固定用 ?tab=voice） */
+const tabParam = new URLSearchParams(location.search).get("tab");
+const tabBtn = tabParam ? document.querySelector(`nav button[data-view="${tabParam}"]`) : null;
+if (tabBtn) tabBtn.click();
 
 /* ================= 掃碼直達 ?f=N ================= */
 function gotoFloor(fid) {
