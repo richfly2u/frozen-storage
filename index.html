@@ -18,7 +18,7 @@
 html,body{margin:0;padding:0}
 body{
   font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",sans-serif;
-  background:#eef6fb; color:var(--txt); padding-bottom:16px; font-size:16px;
+  background:#eef6fb; color:var(--txt); padding-bottom:64px; font-size:16px;   /* 留給底部固定列（搜尋＋開始聽） */
   /* 前賢：點/長按品項會跳出「複製、全選」小視窗 → 全站關掉文字選取與長按選單（輸入框另外開放） */
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
 }
@@ -172,6 +172,10 @@ nav button.on b{filter:none;opacity:1}
 .chip.low .q{background:var(--danger)}
 .chip .nt{font-size:11.5px;color:var(--muted)}
 .chip.hit{outline:3px solid #ffcf70;background:#fff8e6}
+/* 搜尋：符合的標黃框＋所在層框起來，其他變淡 */
+.os-chip.hit{outline:3px solid #ffcf70;background:#fff8e6 !important}
+.chip.dim,.os-chip.dim{opacity:.30}
+.tier.sfocus{box-shadow:0 0 0 3px rgba(255,159,0,.55)}
 /* ---------- 就地操作（拖曳換層／⋯選單） ---------- */
 .chip .more{
   display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 auto;
@@ -320,8 +324,8 @@ nav button.on b{filter:none;opacity:1}
   /* 手機省空間：長期說明文字收掉（前賢偏好不要說明；操作提示在按鈕與標題上） */
   .side p.legend:not(#focusBar){display:none}
   .vfrow #vState{max-width:96px}
-  body{padding-bottom:10px}     /* 語音鈕已改到食材庫下方，不用再留 76px */
-  #toast{bottom:78px}           /* 提示浮在浮動鈕上方 */
+  body{padding-bottom:64px}     /* 底部固定列（搜尋＋開始聽） */
+  #toast{bottom:70px}           /* 提示浮在浮動鈕上方 */
   /* 選了食材、等使用者點樓層時的提示 */
   .tier.awaitDrop{outline:3px dashed #2f9e6b;outline-offset:2px;background:rgba(47,158,107,.10);cursor:pointer}
 }
@@ -401,7 +405,7 @@ input[type=text],input[type=number],select,textarea{
 .btn.ok{background:var(--ok)}
 .tiny{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.6}
 #toast{
-  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;
+  position:fixed;left:50%;bottom:68px;transform:translateX(-50%);z-index:80;
   background:rgba(11,75,107,.94);color:#fff;padding:10px 16px;border-radius:11px;font-size:14px;
   opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw;text-align:center
 }
@@ -438,10 +442,22 @@ input[type=text],input[type=number],select,textarea{
 .vcard .big .nm{color:#0b4b6b}
 .vcard .sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
 .vcard.warn{border-color:#c9455a}
-/* 浮動語音列（開始聽）：固定左下角（左欄下方本來是空的），不擋冰箱與食材庫 */
-.voice-float{position:fixed;left:14px;bottom:14px;z-index:45;display:flex;flex-direction:column;
-  align-items:flex-start;gap:7px;max-width:min(94vw,430px);pointer-events:none}
-.voice-float > *{pointer-events:auto}
+/* ---------- 底部固定列：搜尋 ＋ 開始聽（同一列；前賢 2026-10-05） ---------- */
+#bottomBar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;gap:8px;
+  padding:7px 10px calc(7px + env(safe-area-inset-bottom,0px));
+  background:rgba(255,255,255,.97);border-top:1px solid #d7e7f1;box-shadow:0 -3px 12px rgba(18,38,56,.09)}
+#bottomBar .sbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:5px;
+  background:#f1f7fb;border:1px solid #cfe0eb;border-radius:11px;padding:0 3px 0 9px}
+#bottomBar .sbox .sico{font-size:13px;opacity:.7;flex:0 0 auto}
+#bottomBar #search{flex:1 1 auto;min-width:0;border:0;background:transparent;font-family:inherit;
+  font-size:14px;padding:8px 0;outline:none;color:var(--txt);-webkit-appearance:none;appearance:none}
+#bottomBar #search::-webkit-search-cancel-button{display:none}
+#bottomBar #searchClear{display:none;border:0;background:transparent;color:#7b93a4;font-size:14px;
+  padding:5px 7px;cursor:pointer;line-height:1}
+#bottomBar.hasQ #searchClear{display:inline-block}
+#bottomBar.noHit .sbox{border-color:#e79aad;background:#fff5f7}
+.voice-float{position:relative;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.voice-float #vCard,.voice-float .vheard{position:absolute;bottom:calc(100% + 8px);right:0;min-width:min(86vw,330px)}
 .voice-float #vCard:empty{display:none}
 .voice-float .vheard{margin-bottom:0}
 .vfrow{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dbeaf4;border-radius:14px;
@@ -450,7 +466,9 @@ input[type=text],input[type=number],select,textarea{
 .voice-float #btnStop{display:none}                 /* 只用同一顆鈕切換開始／停止 */
 .voice-float.on .vfrow{background:#fff2f5;border-color:#f0b4c3}
 .voice-float.on #btnListen{background:linear-gradient(180deg,#e0355a,#c0203f);border-color:#a5183a;color:#fff}
-.voice-float .btn{padding:7px 12px;font-size:13.5px;border-radius:10px}
+#bottomBar .voice-float .vfrow{padding:4px 4px 4px 8px;border-radius:11px;box-shadow:none;gap:6px;background:#fff;border:1px solid #dbeaf4}
+#bottomBar .vfrow #vState{font-size:12px;max-width:78px}
+#bottomBar .voice-float .btn{padding:6px 10px;font-size:13px;border-radius:9px}
 /* 第一次操作前的經手人對話框 */
 .opdlg{background:#fff;width:100%;max-width:430px;border-radius:16px;padding:18px 18px 20px;margin:0 14px 16px;
   box-shadow:0 14px 34px rgba(8,38,55,.32);animation:up .2s ease-out}
@@ -468,8 +486,7 @@ input[type=text],input[type=number],select,textarea{
 /* 手機：浮動語音鈕放右下角（在最後一塊內容上面，body 已留 76px 不擋內容） */
 @media (max-width:759px){
   /* 開始聽：放在食材庫下方（方框外），不再浮動（前賢 2026-10-05） */
-  .voice-float{position:static;left:auto;right:auto;bottom:auto;margin:8px 10px 0;max-width:none;width:auto;
-    background:transparent;box-shadow:none;padding:0}
+  /* 手機：開始聽在底部固定列裡，與搜尋同列（見 #bottomBar） */
   /* 手機門較窄：層名字小一點、單列不跨行，並收掉層統計讓名稱完整顯示 */
   .freezer .fl-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* 層內物品：方框、多列排開（跟食材庫一樣，一層可以放很多樣） */
@@ -560,15 +577,22 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   </div>
 </div>
 
-<!-- 浮動語音（開始聽）：固定在畫面右下角，不佔版面 -->
-<div class="voice-float" id="voiceFloat">
-  <div id="vCard"></div>
-  <div class="vheard" id="vHeard" hidden></div>
-  <div class="vfrow">
-    <span class="vdot" id="vDot"></span>
-    <span id="vState">講：香菇頭 一包</span>
-    <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」">🎤 開始聽</button>
-    <button class="btn sm ghost" id="btnStop">停止</button>
+<!-- 底部固定列（浮在頁面底層）：搜尋（左）＋ 開始聽（右）同一列（前賢 2026-10-05） -->
+<div id="bottomBar">
+  <div class="sbox">
+    <span class="sico">🔍</span>
+    <input type="search" id="search" placeholder="找食材…" autocomplete="off" enterkeyhint="search">
+    <button type="button" id="searchClear" title="清除">✕</button>
+  </div>
+  <div class="voice-float" id="voiceFloat">
+    <div id="vCard"></div>
+    <div class="vheard" id="vHeard" hidden></div>
+    <div class="vfrow">
+      <span class="vdot" id="vDot"></span>
+      <span id="vState">未開始</span>
+      <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」">🎤 開始聽</button>
+      <button class="btn sm ghost" id="btnStop">停止</button>
+    </div>
   </div>
 </div>
 
@@ -646,6 +670,46 @@ const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 let ready = false, items = [], editId = null, pendingHighlight = null, focusedFloor = null, outside = [], pendingPlace = null;
+/* 搜尋：符合的品項標黃框、所在層框起來，其他變淡（renderMap 重建後會重新套用） */
+let searchQ = "", searchHits = [];
+function styleSearch() {
+  document.querySelectorAll(".chip.hit,.os-chip.hit,.chip.dim,.os-chip.dim,.tier.sfocus")
+    .forEach(el => el.classList.remove("hit", "dim", "sfocus"));
+  const bar = document.getElementById("bottomBar");
+  const t = searchQ;
+  searchHits = [];
+  if (!t) { if (bar) bar.classList.remove("hasQ", "noHit"); return; }
+  document.querySelectorAll("#freezer .tier").forEach(tr => {
+    let inThis = 0;
+    tr.querySelectorAll(".chip").forEach(ch => {
+      const nm = ch.dataset.name || ch.textContent.trim();
+      if (nm.indexOf(t) >= 0) { ch.classList.add("hit"); inThis++; searchHits.push({ tier: tr.id, name: nm }); }
+      else ch.classList.add("dim");
+    });
+    if (inThis) tr.classList.add("sfocus");
+  });
+  document.querySelectorAll(".outside .os-chip").forEach(ch => {
+    const nm = ch.dataset.name || ch.textContent.trim();
+    if (nm.indexOf(t) >= 0) { ch.classList.add("hit"); searchHits.push({ tier: "outside", name: nm }); }
+    else ch.classList.add("dim");
+  });
+  if (bar) { bar.classList.add("hasQ"); bar.classList.toggle("noHit", searchHits.length === 0); }
+}
+/* 按 Enter：跳到第一個找到的位置（冰箱優先，其次食材庫） */
+function gotoFirstHit() {
+  if (!searchQ) return;
+  styleSearch();
+  const first = document.querySelector(".tier.sfocus");
+  if (first) { first.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  const os = document.querySelector(".outside .os-chip.hit");
+  if (os) os.scrollIntoView({ behavior: "smooth", block: "center" });
+  else toast("找不到「" + searchQ + "」");
+}
+$("#search").addEventListener("input", e => { searchQ = (e.target.value || "").trim(); styleSearch(); });
+$("#search").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); gotoFirstHit(); } });
+$("#searchClear").addEventListener("click", () => {
+  const el = $("#search"); el.value = ""; searchQ = ""; styleSearch(); try { el.focus(); } catch (_) {}
+});
 /* 剛放進冰箱的層＋品項：不同顏色框 3 秒後恢復 */
 let justInFloor = null, justInName = "", justInTimer = null;
 function markJustIn(floor, name) {
@@ -829,6 +893,7 @@ function renderMap() {
   }));
   refreshByList();
   renderOutside();   /* 食材庫跟著資料更新：用完／已移出的會自動列進去 */
+  styleSearch();   /* 重建後把搜尋的黃框／淡出補回來 */
   /* 上下門依「各有幾層」比例分配高度（上門3層會比下門2層高一些，每層才塞得下） */
   box.querySelectorAll(".door").forEach(d => { d.style.flexGrow = String(d.querySelectorAll(".tier").length || 1); });
   /* 重繪後把焦點框補回來（語音/掃碼指定的樓層） */
