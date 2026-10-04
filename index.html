@@ -498,12 +498,14 @@ function tierHTML(fid) {
   const f = floorOf(fid);
   const list = items.filter(i => Number(i.floor) === fid);
   const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const countTxt = total > 0 ? `${list.length} 項 / 共 ${total}`
+                 : list.length ? `${list.length} 項（用完）` : "";
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}">
       <div class="tier-head">
         <span class="fl-badge">${esc(f.door)} 第${f.local}層</span>
         <span class="fl-name">${esc(f.name)}</span>
         <span class="fl-sub">${esc(f.slot)}</span>
-        <span class="fl-count">${list.length} 項 / 共 ${total}</span>
+        <span class="fl-count">${countTxt}</span>
       </div>
       <div class="items">
         ${list.length ? list.map(chipHTML).join("") : '<span class="empty">尚無物品</span>'}
