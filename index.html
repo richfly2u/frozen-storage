@@ -781,6 +781,10 @@ function listen() {
   if (unsubItems) return;
   unsubItems = onSnapshot(query(collection(db, COLL_ITEMS), orderBy("name")), snap => {
     items = snap.docs.map(d => Object.assign({ _id: d.id }, d.data()));
+    /* 前賢：移到哪就待在哪，不要因為更新／改名就跳到該層第一位。
+       順序改成「加入冰箱的先後」（createdAt），同一時間才用 id 當次序，永遠穩定。 */
+    items.sort((a, b) => (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0)
+      || String(a._id).localeCompare(String(b._id)));
     renderMap();
   }, err => { console.error(err); sync("off", "讀取失敗"); toast("讀取失敗：" + err.code); });
 }
