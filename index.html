@@ -151,6 +151,21 @@ input[type=text],input[type=number],select,textarea{
   opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw;text-align:center
 }
 #toast.on{opacity:1}
+/* ---------- 經手人 / LINE 提示 ---------- */
+.opbar{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;color:#dff0fa}
+.opbar b{color:#fff;background:rgba(255,255,255,.18);padding:3px 9px;border-radius:8px;font-size:13px}
+.opbar button{
+  margin-left:auto;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;
+  border-radius:8px;padding:5px 11px;font-size:12.5px;font-family:inherit;cursor:pointer
+}
+.bytip{margin-top:7px;font-size:12px;line-height:1.55;color:#eaf6fd;background:rgba(255,255,255,.12);padding:7px 10px;border-radius:9px;display:none}
+.bytip.on{display:block}
+.bytip a{color:#fff}
+.logfilter{
+  width:100%;margin:0 0 10px;border:1px solid #cfe0ec;border-radius:10px;padding:9px 10px;
+  font-family:inherit;font-size:15px;background:#fbfdff;color:var(--txt)
+}
+.chip .by{font-size:11px;color:#7c93a2;white-space:nowrap}
 /* ---------- print ---------- */
 @media print{
   body{background:#fff;padding:0}
@@ -169,6 +184,13 @@ input[type=text],input[type=number],select,textarea{
   </div>
   <input id="search" type="text" autocomplete="off" placeholder="搜尋品名（例：當歸、素排）…">
   <div class="searchinfo" id="searchInfo"></div>
+  <div class="opbar">
+    <span>經手人：</span><b id="opName">未設定</b>
+    <button type="button" id="btnOp">修改</button>
+  </div>
+  <div class="bytip" id="lineTip">
+    目前在 <b>LINE 內建瀏覽器</b>。若按了沒反應，請點右上角「⋯」→ 用其他瀏覽器開啟本頁。
+  </div>
 </header>
 
 <!-- ============ 位置圖 ============ -->
@@ -181,7 +203,8 @@ input[type=text],input[type=number],select,textarea{
 
 <!-- ============ 紀錄 ============ -->
 <section class="view" id="view-log">
-  <p class="log-hint">最近的置入／移出／新增／刪除紀錄（最新 120 筆）。</p>
+  <p class="log-hint">最近的置入／移出／新增／刪除紀錄（最新 120 筆），每筆都記下經手人。</p>
+  <select class="logfilter" id="logFilter"><option value="">全部經手人</option></select>
   <div id="logList"></div>
 </section>
 
@@ -223,6 +246,9 @@ input[type=text],input[type=number],select,textarea{
         </select>
       </div>
     </div>
+    <label>經手人（放入／移出者） <span style="color:#c9455a">*</span></label>
+    <input type="text" id="fBy" list="byList" autocomplete="off" placeholder="例：陳師姐、林前賢">
+    <datalist id="byList"></datalist>
     <label>樓層</label>
     <select id="fFloor"></select>
     <label>備註（選填）</label>
@@ -268,7 +294,7 @@ const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id),
 const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-let ready = false, items = [], editId = null;
+let ready = false, items = [], editId = null, logRows = [];
 
 /* ================= 小工具 ================= */
 const $ = s => document.querySelector(s);
@@ -291,6 +317,45 @@ function sync(state, text) {
   dot.className = "dot" + (state === "on" ? " on" : state === "off" ? " off" : "");
   $("#syncTxt").textContent = text;
 }
+
+/* ================= 經手人（本機記憶，LINE 內建瀏覽器可能擋 localStorage → 退回記憶體） ================= */
+const memStore = {};
+const store = {
+  get(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return memStore[k] || ""; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { memStore[k] = v; } }
+};
+let operator = store.get("frozen_operator");
+function byHistory() {
+  const saved = (store.get("frozen_bys") || "").split("|").filter(Boolean);
+  const used = items.map(i => i.by).filter(Boolean);
+  return Array.from(new Set([...used, ...saved]));
+}
+function refreshByList() {
+  $("#byList").innerHTML = byHistory().map(n => `<option value="${esc(n)}"></option>`).join("");
+}
+function renderOperator() {
+  $("#opName").textContent = operator || "未設定（點右邊設定）";
+}
+function setOperator(v) {
+  operator = (v || "").trim();
+  store.set("frozen_operator", operator);
+  renderOperator();
+}
+function rememberBy(name) {
+  if (!name) return;
+  const arr = (store.get("frozen_bys") || "").split("|").filter(Boolean);
+  if (!arr.includes(name)) arr.unshift(name);
+  store.set("frozen_bys", arr.slice(0, 30).join("|"));
+  refreshByList();
+}
+renderOperator();
+$("#btnOp").addEventListener("click", () => {
+  const v = prompt("請輸入您的姓名（之後每次置入／移出都會記下）：", operator || "");
+  if (v !== null) { setOperator(v); toast(operator ? "經手人：" + operator : "已清除經手人"); }
+});
+
+/* LINE 內建瀏覽器提示 */
+if (/Line\/|LIFF/i.test(navigator.userAgent)) $("#lineTip").classList.add("on");
 
 /* ================= 登入（匿名，自動） ================= */
 sync("", "連線中…");
@@ -349,14 +414,16 @@ function renderMap() {
     </div>`).join("");
 
   box.querySelectorAll(".chip").forEach(el => el.addEventListener("click", () => openEdit(el.dataset.id)));
+  refreshByList();
 }
 
 function chipHTML(it) {
   const q = Number(it.qty) || 0;
-  return `<button class="chip${q < 1 ? " low" : ""}" data-id="${esc(it._id)}" data-name="${esc(it.name)}">
+  return `<button class="chip${q < 1 ? " low" : ""}" data-id="${esc(it._id)}" data-name="${esc(it.name)}"
+      title="${esc([it.name, q + (it.unit || ""), it.note ? "備註：" + it.note : "", it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　"))}">
       <span class="nm">${esc(it.name)}</span>
       <span class="q">${q} ${esc(it.unit || "")}</span>
-      ${it.note ? `<span class="nt">${esc(it.note)}</span>` : ""}
+      ${it.by ? `<span class="by">👤${esc(it.by)}</span>` : ""}
     </button>`;
 }
 
@@ -389,7 +456,9 @@ function openEdit(id, presetFloor) {
   $("#fUnit").value  = it && it.unit ? it.unit : "包";
   $("#fFloor").value = String(it ? Number(it.floor) : (presetFloor || FLOORS[0].id));
   $("#fNote").value  = it && it.note ? it.note : "";
+  $("#fBy").value    = it && it.by ? it.by : operator;
   $("#btnDel").style.display = it ? "" : "none";
+  refreshByList();
   $("#metaInfo").textContent = it
     ? `上次更新：${fmtTime(it.updatedAt)}${it.by ? "　登錄者：" + it.by : ""}`
     : "";
@@ -416,24 +485,27 @@ $("#btnSave").addEventListener("click", async () => {
   const unit = $("#fUnit").value;
   const floor = Number($("#fFloor").value);
   const note = ($("#fNote").value || "").trim();
+  const by   = ($("#fBy").value || "").trim();
   if (!name) { toast("請輸入品名"); return; }
+  if (!by)   { toast("請填經手人（放入／移出者）"); $("#fBy").focus(); return; }
+  setOperator(by); rememberBy(by);
 
   $("#btnSave").disabled = true;
   try {
     if (editId) {
       const old = items.find(i => i._id === editId) || {};
       await updateDoc(doc(db, COLL_ITEMS, editId), {
-        name, qty, unit, floor, note, updatedAt: Date.now()
+        name, qty, unit, floor, note, by, updatedAt: Date.now()
       });
       const diff = qty - (Number(old.qty) || 0);
-      if (diff !== 0) await addLog(floor, name, Math.abs(diff), unit, diff > 0 ? "in" : "out");
-      else await addLog(floor, name, qty, unit, "edit");
+      if (diff !== 0) await addLog(floor, name, Math.abs(diff), unit, diff > 0 ? "in" : "out", by);
+      else await addLog(floor, name, qty, unit, "edit", by);
       toast("已更新：" + name);
     } else {
       await addDoc(collection(db, COLL_ITEMS), {
-        name, qty, unit, floor, note, updatedAt: Date.now(), createdAt: Date.now()
+        name, qty, unit, floor, note, by, updatedAt: Date.now(), createdAt: Date.now()
       });
-      await addLog(floor, name, qty, unit, "new");
+      await addLog(floor, name, qty, unit, "new", by);
       toast("已新增：" + name);
     }
     closeEdit();
@@ -447,18 +519,21 @@ $("#btnDel").addEventListener("click", async () => {
   if (!editId || !needReady()) return;
   const it = items.find(i => i._id === editId) || {};
   if (!confirm(`確定刪除「${it.name}」？\n（紀錄會保留一筆刪除記錄）`)) return;
+  const by = ($("#fBy").value || "").trim() || operator;
+  if (!by) { toast("請填經手人（放入／移出者）"); $("#fBy").focus(); return; }
+  setOperator(by); rememberBy(by);
   try {
     await deleteDoc(doc(db, COLL_ITEMS, editId));
-    await addLog(Number(it.floor), it.name, Number(it.qty) || 0, it.unit || "", "del");
+    await addLog(Number(it.floor), it.name, Number(it.qty) || 0, it.unit || "", "del", by);
     toast("已刪除：" + it.name);
     closeEdit();
   } catch (e) { toast("刪除失敗：" + (e.code || e.message)); }
 });
 
-async function addLog(floor, name, qty, unit, action) {
+async function addLog(floor, name, qty, unit, action, by) {
   try {
     await addDoc(collection(db, COLL_LOG), {
-      floor: Number(floor), name, qty, unit, action, at: Date.now()
+      floor: Number(floor), name, qty, unit, action, by: by || "", at: Date.now()
     });
   } catch (e) { console.warn("紀錄寫入失敗", e); }
 }
@@ -472,17 +547,26 @@ const ACT = {
   edit: { ic: "✏️", txt: "修改", cls: "" }
 };
 function renderLog(rows) {
-  $("#logList").innerHTML = rows.length ? rows.map(r => {
+  logRows = rows || [];
+  const who = $("#logFilter").value;
+  const names = Array.from(new Set(logRows.map(r => r.by).filter(Boolean)));
+  const cur = $("#logFilter").value;
+  $("#logFilter").innerHTML = '<option value="">全部經手人</option>' +
+    names.map(n => `<option value="${esc(n)}"${n === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
+
+  const list = who ? logRows.filter(r => r.by === who) : logRows;
+  $("#logList").innerHTML = list.length ? list.map(r => {
     const a = ACT[r.action] || ACT.edit;
     const f = floorOf(r.floor);
     return `<div class="logitem">
       <div class="ic">${a.ic}</div>
       <div class="body">
         <div class="t1"><span class="${a.cls}">${a.txt}</span>　${esc(r.name)}　${Number(r.qty) || 0} ${esc(r.unit || "")}</div>
-        <div class="t2">第 ${r.floor} 層 ${esc(f.name)}　·　${fmtTime(r.at)}</div>
+        <div class="t2">第 ${r.floor} 層 ${esc(f.name)}　·　👤 ${esc(r.by || "未記錄")}　·　${fmtTime(r.at)}</div>
       </div></div>`;
-  }).join("") : '<p class="log-hint">目前沒有紀錄。</p>';
+  }).join("") : '<p class="log-hint">沒有符合的紀錄。</p>';
 }
+$("#logFilter").addEventListener("change", () => renderLog(logRows));
 
 /* ================= QR（向量圖內嵌，無外部依賴／離線可列印） ================= */
 const QR_SVG = {"1": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m6 0h2m1 0h6m1 0h1m2 0h7m-33 1h1m5 0h1m2 0h2m1 0h4m1 0h1m4 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h2m2 0h3m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m3 0h3m3 0h1m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m5 0h1m1 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m3 0h1m1 0h2m1 0h1m1 0h3m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m2 0h1m2 0h1m2 0h1m2 0h1m1 0h1m-24 1h1m1 0h5m2 0h1m1 0h5m1 0h1m2 0h1m1 0h3m1 0h5m-31 1h1m1 0h2m4 0h1m7 0h1m2 0h2m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h1m2 0h4m3 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-32 1h1m11 0h1m1 0h1m1 0h1m4 0h2m1 0h1m1 0h1m1 0h4m-28 1h1m1 0h2m2 0h1m7 0h2m3 0h1m1 0h1m2 0h2m1 0h1m-31 1h1m6 0h2m1 0h2m1 0h3m3 0h1m1 0h3m1 0h1m2 0h1m1 0h2m-33 1h2m1 0h2m1 0h1m1 0h2m4 0h1m4 0h1m1 0h1m3 0h2m1 0h1m2 0h1m-24 1h1m2 0h1m2 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-28 1h1m1 0h2m2 0h1m1 0h2m4 0h1m1 0h1m3 0h3m1 0h2m3 0h1m-30 1h3m2 0h1m1 0h2m1 0h2m2 0h7m1 0h3m1 0h2m1 0h1m-31 1h2m2 0h1m1 0h3m2 0h1m1 0h3m2 0h2m5 0h2m1 0h2m-32 1h4m1 0h1m1 0h1m2 0h3m3 0h10m1 0h4m1 0h1m-30 1h1m2 0h2m1 0h2m1 0h1m3 0h1m3 0h2m2 0h2m1 0h3m2 0h1m-33 1h2m3 0h1m2 0h1m3 0h4m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-33 1h1m3 0h3m3 0h2m2 0h5m1 0h1m6 0h1m1 0h3m-32 1h1m1 0h1m4 0h1m1 0h1m1 0h2m1 0h2m2 0h1m2 0h1m4 0h1m2 0h4m-33 1h1m2 0h1m2 0h1m1 0h4m1 0h3m1 0h2m3 0h1m1 0h6m1 0h2m-25 1h2m6 0h1m1 0h5m1 0h1m3 0h1m1 0h3m-33 1h7m2 0h2m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h1m2 0h2m2 0h1m3 0h3m1 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h3m3 0h2m1 0h1m2 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m1 0h2m1 0h7m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m6 0h1m1 0h1m1 0h2m3 0h2m1 0h1m-30 1h1m5 0h1m2 0h3m1 0h2m1 0h1m1 0h5m2 0h1m2 0h3m-31 1h7m1 0h1m4 0h2m2 0h1m1 0h1m3 0h5m1 0h1m1 0h1\"/></svg>", "2": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m1 0h2m3 0h2m1 0h6m1 0h1m2 0h7m-33 1h1m5 0h1m1 0h1m1 0h2m1 0h1m4 0h1m1 0h4m2 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m5 0h1m1 0h1m1 0h2m1 0h3m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3m3 0h1m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m4 0h2m1 0h1m5 0h3m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m3 0h1m1 0h1m6 0h2m3 0h1m1 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m3 0h1m1 0h1m2 0h1m2 0h1m3 0h1m-25 1h1m1 0h2m1 0h3m2 0h2m2 0h1m1 0h6m1 0h1m2 0h1m2 0h1m1 0h2m-33 1h1m1 0h2m4 0h2m6 0h1m2 0h2m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h3m3 0h1m1 0h4m2 0h1m1 0h2m4 0h2m2 0h4m1 0h2m-33 1h1m2 0h1m1 0h1m1 0h1m5 0h3m2 0h2m5 0h3m1 0h1m-30 1h1m3 0h1m1 0h5m1 0h1m5 0h2m3 0h1m1 0h1m2 0h2m1 0h1m-32 1h1m1 0h2m1 0h1m4 0h1m5 0h3m2 0h2m4 0h1m2 0h2m-30 1h2m2 0h1m3 0h2m1 0h4m1 0h1m3 0h1m1 0h1m1 0h2m2 0h1m-28 1h1m3 0h1m3 0h1m2 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-31 1h1m1 0h1m3 0h3m2 0h1m2 0h2m2 0h4m3 0h2m1 0h3m-31 1h2m3 0h1m1 0h3m1 0h2m1 0h4m2 0h1m2 0h2m1 0h1m1 0h2m1 0h2m-33 1h1m1 0h5m1 0h1m6 0h3m2 0h1m6 0h2m1 0h2m-32 1h1m4 0h1m1 0h2m5 0h3m2 0h1m5 0h2m1 0h1m-25 1h3m3 0h1m1 0h2m1 0h1m2 0h3m1 0h1m6 0h4m-33 1h1m1 0h2m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-31 1h3m1 0h1m2 0h4m3 0h1m4 0h1m1 0h2m1 0h1m4 0h2m-32 1h1m1 0h2m2 0h1m2 0h5m1 0h1m2 0h1m2 0h1m1 0h6m2 0h1m-33 1h1m2 0h1m2 0h6m1 0h3m1 0h2m3 0h1m1 0h6m1 0h2m-25 1h1m2 0h2m1 0h4m1 0h1m2 0h3m3 0h2m1 0h1m-32 1h7m1 0h3m2 0h2m4 0h1m2 0h3m1 0h1m1 0h1m-29 1h1m5 0h1m1 0h2m1 0h2m1 0h2m3 0h3m1 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m4 0h3m1 0h1m1 0h1m1 0h2m2 0h6m1 0h2m-32 1h1m1 0h3m1 0h1m1 0h1m1 0h3m1 0h1m2 0h4m1 0h2m3 0h1m3 0h2m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m4 0h1m1 0h1m1 0h2m3 0h2m1 0h1m-30 1h1m5 0h1m3 0h1m1 0h2m1 0h3m1 0h1m2 0h7m3 0h1m-33 1h7m1 0h5m1 0h5m2 0h3m2 0h1m1 0h3\"/></svg>", "3": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m6 0h2m1 0h6m1 0h1m2 0h7m-33 1h1m5 0h1m2 0h2m1 0h4m1 0h1m4 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h2m2 0h3m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h3m3 0h1m3 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m2 0h1m1 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m2 0h2m1 0h2m1 0h1m1 0h3m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h2m1 0h2m2 0h1m2 0h1m2 0h1m1 0h1m-24 1h1m1 0h5m2 0h1m2 0h4m1 0h1m2 0h1m1 0h3m1 0h5m-31 1h1m1 0h3m3 0h1m7 0h1m2 0h2m1 0h2m2 0h2m1 0h2m1 0h1m-33 1h2m1 0h2m1 0h1m3 0h1m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-32 1h2m2 0h2m3 0h2m1 0h1m1 0h1m1 0h1m4 0h2m1 0h1m1 0h1m1 0h4m-32 1h1m2 0h1m2 0h2m2 0h1m7 0h2m3 0h1m1 0h1m2 0h2m1 0h1m-31 1h2m2 0h1m1 0h1m1 0h2m3 0h3m3 0h1m1 0h3m1 0h1m2 0h1m1 0h2m-33 1h3m1 0h1m1 0h4m1 0h1m2 0h1m4 0h1m1 0h1m3 0h2m1 0h1m2 0h1m-25 1h2m3 0h1m1 0h1m1 0h1m2 0h5m1 0h2m1 0h1m1 0h1m-29 1h2m1 0h3m1 0h1m2 0h1m4 0h1m1 0h1m3 0h3m1 0h2m3 0h1m-30 1h3m2 0h1m1 0h2m1 0h2m2 0h7m1 0h3m1 0h2m1 0h1m-33 1h1m1 0h2m1 0h2m1 0h2m5 0h3m2 0h1m6 0h2m1 0h2m-31 1h4m2 0h1m3 0h4m1 0h10m1 0h4m1 0h1m-33 1h1m5 0h3m3 0h3m1 0h1m3 0h2m2 0h2m1 0h3m2 0h1m-33 1h4m1 0h1m1 0h2m2 0h1m1 0h3m2 0h1m2 0h1m1 0h2m1 0h1m2 0h1m2 0h1m-33 1h1m1 0h1m1 0h4m2 0h3m1 0h5m1 0h1m6 0h1m1 0h3m-32 1h1m1 0h2m5 0h1m4 0h2m2 0h1m2 0h1m4 0h1m2 0h4m-33 1h1m1 0h2m2 0h1m1 0h4m1 0h3m1 0h2m3 0h1m1 0h6m1 0h2m-25 1h2m3 0h1m2 0h1m1 0h5m1 0h1m3 0h1m1 0h3m-33 1h7m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h2m1 0h3m1 0h1m3 0h3m1 0h2m3 0h5m-33 1h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h1m2 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m1 0h2m3 0h1m1 0h3m2 0h2m1 0h3m2 0h1m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h3m6 0h1m1 0h1m1 0h2m3 0h2m1 0h1m-30 1h1m5 0h1m2 0h2m1 0h3m1 0h1m1 0h5m2 0h1m2 0h3m-31 1h7m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m3 0h5m1 0h1m1 0h1\"/></svg>", "4": "<svg width=\"148\" height=\"148\" class=\"segno\"><path transform=\"scale(4)\" class=\"qrline\" stroke=\"#0b4b6b\" d=\"M2 2.5h7m2 0h3m6 0h1m2 0h2m3 0h7m-33 1h1m5 0h1m1 0h3m1 0h3m2 0h1m3 0h2m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m3 0h2m2 0h3m1 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m2 0h1m8 0h2m1 0h1m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h3m3 0h1m1 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m6 0h1m2 0h1m1 0h1m1 0h1m1 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m2 0h2m5 0h1m4 0h1m-24 1h1m5 0h1m1 0h2m2 0h4m1 0h1m2 0h1m1 0h5m2 0h3m-28 1h1m5 0h1m3 0h2m3 0h1m1 0h1m1 0h1m4 0h3m-31 1h1m2 0h2m1 0h1m2 0h2m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m3 0h1m1 0h2m-29 1h2m4 0h2m1 0h1m1 0h3m5 0h1m1 0h1m1 0h6m-30 1h1m2 0h2m1 0h1m2 0h1m1 0h2m1 0h3m1 0h1m1 0h1m3 0h1m5 0h1m-30 1h1m3 0h1m6 0h1m1 0h1m3 0h5m1 0h2m1 0h1m1 0h2m-33 1h5m1 0h1m2 0h1m2 0h1m1 0h1m4 0h1m1 0h1m3 0h2m1 0h1m2 0h1m-28 1h1m4 0h2m4 0h1m3 0h1m3 0h1m1 0h1m1 0h1m2 0h1m1 0h1m-31 1h2m1 0h2m2 0h1m2 0h1m4 0h1m1 0h1m3 0h3m1 0h2m3 0h1m-28 1h1m2 0h1m1 0h2m1 0h3m1 0h4m1 0h2m1 0h2m2 0h2m1 0h1m-30 1h5m1 0h1m1 0h1m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h3m1 0h2m1 0h1m-33 1h3m1 0h1m2 0h1m1 0h4m2 0h6m2 0h3m2 0h3m1 0h1m-30 1h1m1 0h4m4 0h1m2 0h1m3 0h2m2 0h2m1 0h3m2 0h1m-33 1h1m2 0h3m2 0h2m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h3m2 0h3m-30 1h1m1 0h1m1 0h4m2 0h3m1 0h5m1 0h1m6 0h1m1 0h3m-32 1h1m6 0h2m2 0h1m2 0h1m3 0h1m7 0h2m1 0h4m-33 1h7m2 0h1m1 0h1m3 0h2m1 0h3m2 0h6m-21 1h2m5 0h2m1 0h3m1 0h1m1 0h1m3 0h1m1 0h3m-33 1h7m3 0h1m1 0h5m1 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m2 0h1m1 0h2m3 0h1m2 0h1m2 0h3m3 0h4m-32 1h1m1 0h3m1 0h1m2 0h1m2 0h3m3 0h2m1 0h1m2 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m5 0h3m1 0h2m2 0h1m2 0h3m1 0h2m1 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h2m1 0h1m3 0h2m1 0h1m1 0h1m1 0h2m2 0h2m-33 1h1m5 0h1m3 0h1m2 0h4m1 0h3m1 0h1m2 0h1m1 0h4m-31 1h7m1 0h1m2 0h1m1 0h2m2 0h1m1 0h1m3 0h5m1 0h1m1 0h1\"/></svg>"};
