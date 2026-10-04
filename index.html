@@ -483,6 +483,8 @@ function renderMap() {
   box.querySelectorAll(".chip").forEach(el => el.addEventListener("click", () => openEdit(el.dataset.id)));
   refreshByList();
 }
+/* 先畫出空冰箱骨架，資料（Firestore）回來再填內容 → 斷線／慢連線時不會整片空白 */
+renderMap();
 
 function chipHTML(it) {
   const q = Number(it.qty) || 0;
