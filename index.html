@@ -272,10 +272,13 @@ nav button.on b{filter:none;opacity:1}
   .freezer .fridge-top{display:none}
   .freezer .wheels{display:none}
 }
-/* 手機：左欄收到冰箱上方；食材庫也在上方（固定可見）；層高壓扁 */
+/* 手機：冰箱排最前面（一開頁就看得到）；再來食材庫（多欄縮短）；工具面板最後 */
 @media (max-width:759px){
-  .side{order:-2}
-  .outside{order:-1;position:sticky;top:6px;z-index:30;background:rgba(255,255,255,.95);backdrop-filter:blur(3px);margin-bottom:12px}
+  .freezer{order:-3;max-width:none}
+  .outside{order:-2;position:static;margin:10px 0 12px;background:rgba(255,255,255,.9)}
+  .side{order:-1;margin-bottom:12px}
+  .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
+  .os-chip{width:auto;justify-content:center;text-align:center;font-size:12px;line-height:1.3;padding:6px 4px}
   .tier{aspect-ratio:auto;min-height:104px;padding:5px 5px 10px}
 }
 #dropOut{
