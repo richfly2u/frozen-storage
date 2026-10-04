@@ -50,21 +50,41 @@ nav button.on b{filter:none;opacity:1}
 .view{display:none;padding:12px}
 .view.on{display:block}
 .legend{font-size:12.5px;color:var(--muted);margin:0 2px 10px;line-height:1.6}
-/* ---------- freezer ---------- */
+/* ---------- 冰箱雙門 ---------- */
 .freezer{
   background:linear-gradient(#fbfdff,#e9f4fc);border:3px solid var(--line);border-radius:20px;
   padding:10px;position:relative;box-shadow:inset 0 0 26px rgba(30,136,199,.07),0 6px 18px rgba(11,75,107,.08)
 }
-.door{position:relative;padding:6px 0 2px}
-.door + .door{margin-top:10px;border-top:3px dashed #b9d8ea;padding-top:14px}
-.door-tag{
-  position:absolute;top:-2px;left:8px;font-size:11.5px;letter-spacing:2px;color:#fff;
-  background:linear-gradient(90deg,#1e88c7,#5cb3dd);padding:2px 10px;border-radius:0 0 9px 9px
+.fridge-top{display:flex;justify-content:center;margin:-2px 0 9px}
+.fridge-top span{
+  font-size:11.5px;letter-spacing:3px;color:#fff;background:linear-gradient(90deg,#1e88c7,#5cb3dd);
+  padding:3px 16px;border-radius:0 0 10px 10px
 }
-.door.lower .door-tag{background:linear-gradient(90deg,#2b7fa8,#7fc4e8)}
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.door{
+  position:relative;background:#eef7fd;border:2px solid #cfe4f2;border-radius:14px;padding:8px 8px 10px;
+  box-shadow:inset 0 1px 6px rgba(30,136,199,.09)
+}
+.door-head{font-size:12.5px;font-weight:700;color:var(--deep);text-align:center;margin-bottom:7px;letter-spacing:3px}
+.door .handle{
+  position:absolute;top:50%;transform:translateY(-50%);width:7px;height:44%;border-radius:7px;
+  background:linear-gradient(#dceefb,#9fc9e2);box-shadow:0 1px 3px rgba(11,75,107,.28)
+}
+.door[data-door="L"] .handle{right:-5px}
+.door[data-door="R"] .handle{left:-5px}
+.shelves{display:grid;grid-template-rows:1fr 1fr;gap:8px;height:100%}
 .tier{
-  background:var(--card);border:1px solid #d9eaf5;border-radius:12px;margin:14px 6px 6px;padding:8px 10px 10px;
-  transition:box-shadow .25s,transform .25s
+  background:var(--card);border:1px solid #d9eaf5;border-radius:12px;margin:0;padding:8px 9px 9px;
+  min-height:78px;transition:box-shadow .25s,transform .25s
+}
+@media (max-width:520px){
+  .doors{gap:7px}
+  .door{padding:6px 6px 8px}
+  .fl-sub{display:none}
+  .fl-name{font-size:14px}
+  .fl-badge{font-size:11px;padding:2px 7px}
+  .tier{padding:7px 7px 8px}
+  .tier-head{gap:5px}
 }
 .tier.focus{box-shadow:0 0 0 3px rgba(30,136,199,.35);transform:scale(1.012)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(30,136,199,.30)}50%{box-shadow:0 0 0 9px rgba(30,136,199,.14)}}
@@ -85,7 +105,7 @@ nav button.on b{filter:none;opacity:1}
   align-items:center;gap:7px;max-width:100%
 }
 .chip:active{transform:scale(.97)}
-.chip .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
+.chip .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw;min-width:0}
 .chip .q{background:#1e88c7;color:#fff;border-radius:7px;font-size:12.5px;padding:1px 7px;white-space:nowrap;font-weight:700}
 .chip.low .q{background:var(--danger)}
 .chip .nt{font-size:11.5px;color:var(--muted)}
@@ -315,10 +335,10 @@ import { parseUtterance } from "./voice-parse.js";
 const COLL_ITEMS = "frozen_items";
 const COLL_LOG   = "frozen_log";
 const FLOORS = [
-  { id: 1, name: "中藥區",       sub: "上門・上層" },
-  { id: 2, name: "素料、餡料區", sub: "上門・下層" },
-  { id: 3, name: "素料",         sub: "下門・上層" },
-  { id: 4, name: "其他",         sub: "下門・下層" }
+  { id: 1, name: "中藥區",       sub: "左門・上格" },
+  { id: 2, name: "素料、餡料區", sub: "左門・下格" },
+  { id: 3, name: "素料",         sub: "右門・上格" },
+  { id: 4, name: "其他",         sub: "右門・下格" }
 ];
 const floorOf = id => FLOORS.find(f => f.id === Number(id)) || { id: Number(id), name: "未指定", sub: "" };
 
@@ -418,33 +438,39 @@ function listen() {
 }
 
 /* ================= 位置圖 ================= */
+function tierHTML(fid) {
+  const f = floorOf(fid);
+  const list = items.filter(i => Number(i.floor) === fid);
+  const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  return `<div class="tier" id="tier-${fid}" data-floor="${fid}">
+      <div class="tier-head">
+        <span class="fl-badge">第 ${fid} 層</span>
+        <span class="fl-name">${esc(f.name)}</span>
+        <span class="fl-sub">${esc(f.sub)}</span>
+        <span class="fl-count">${list.length} 項 / 共 ${total}</span>
+      </div>
+      <div class="items">
+        ${list.length ? list.map(chipHTML).join("") : '<span class="empty">尚無物品</span>'}
+      </div>
+    </div>`;
+}
+
 function renderMap() {
   const box = $("#freezer");
-  const groups = [
-    { cls: "upper", tag: "上　門", floors: [1, 2] },
-    { cls: "lower", tag: "下　門", floors: [3, 4] }
+  const doors = [
+    { key: "L", label: "左　門", floors: [1, 2] },
+    { key: "R", label: "右　門", floors: [3, 4] }
   ];
-  box.innerHTML = groups.map(g => `
-    <div class="door ${g.cls}">
-      <div class="door-tag">${g.tag}</div>
-      ${g.floors.map(fid => {
-        const f = floorOf(fid);
-        const list = items.filter(i => Number(i.floor) === fid);
-        const total = list.reduce((s, i) => s + (Number(i.qty) || 0), 0);
-        return `
-        <div class="tier" id="tier-${fid}" data-floor="${fid}">
-          <div class="tier-head">
-            <span class="fl-badge">第 ${fid} 層</span>
-            <span class="fl-name">${esc(f.name)}</span>
-            <span class="fl-sub">${esc(f.sub)}</span>
-            <span class="fl-count">${list.length} 項 / 共 ${total}</span>
-          </div>
-          <div class="items">
-            ${list.length ? list.map(chipHTML).join("") : '<span class="empty">尚無物品</span>'}
-          </div>
-        </div>`;
-      }).join("")}
-    </div>`).join("");
+  box.innerHTML = `
+    <div class="fridge-top"><span>❄️ 冷　凍　庫</span></div>
+    <div class="doors">
+      ${doors.map(d => `
+        <section class="door" data-door="${d.key}">
+          <div class="door-head">${d.label}</div>
+          <div class="shelves">${d.floors.map(tierHTML).join("")}</div>
+          <div class="handle"></div>
+        </section>`).join("")}
+    </div>`;
 
   box.querySelectorAll(".chip").forEach(el => el.addEventListener("click", () => openEdit(el.dataset.id)));
   refreshByList();

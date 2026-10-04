@@ -18,10 +18,10 @@ const OUT_WORDS = ["拿出", "拿出來", "取出來", "移出來", "移出", "�
 const IN_WORDS = ["放回去", "放回", "放進去", "放入", "置入", "補進去", "補進", "進貨", "補貨", "增加", "補", "放", "進", "加"];
 
 const FLOOR_WORDS = [
-  { id: 1, keys: ["中藥區", "中藥", "藥材區", "第一層", "第1層", "一樓", "上門上層"] },
-  { id: 2, keys: ["餡料區", "餡料", "第二層", "第2層", "二樓", "上門下層"] },
-  { id: 3, keys: ["素料區", "第三層", "第3層", "三樓", "下門上層"] },
-  { id: 4, keys: ["第四層", "第4層", "四樓", "下門下層"] }
+  { id: 1, keys: ["左門上", "左門上格", "左上格", "中藥區", "中藥", "藥材區", "第一層", "第1層", "一樓"] },
+  { id: 2, keys: ["左門下", "左門下格", "左下格", "餡料區", "餡料", "第二層", "第2層", "二樓"] },
+  { id: 3, keys: ["右門上", "右門上格", "右上格", "素料區", "第三層", "第3層", "三樓"] },
+  { id: 4, keys: ["右門下", "右門下格", "右下格", "第四層", "第4層", "四樓"] }
 ];
 
 /* 全形→半形、去標點、壓空白 */
@@ -96,11 +96,14 @@ export function parseUtterance(text, items) {
   t = stripAll(t, OUT_WORDS);
   t = stripAll(t, IN_WORDS);
 
-  /* 3. 樓層 */
+  /* 3. 樓層（取最長符合，避免「左門上格」只吃掉「左門上」留下「格」） */
+  let bestHit = null;
   for (const f of FLOOR_WORDS) {
-    const hit = f.keys.find(k => t.includes(k));
-    if (hit) { out.floor = f.id; t = t.split(hit).join(" "); break; }
+    for (const k of f.keys) {
+      if (t.includes(k) && (!bestHit || k.length > bestHit.k.length)) bestHit = { id: f.id, k };
+    }
   }
+  if (bestHit) { out.floor = bestHit.id; t = t.split(bestHit.k).join(" "); }
 
   /* 4. 數量 + 單位（取第一組） */
   const reUnit = new RegExp(`(\\d+|[零〇一壹二兩貳三參四五六七八九十]+)\\s*(${UNITS.join("|")})?`);
