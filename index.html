@@ -971,7 +971,7 @@ async function moveItemTo(it, floor) {
   try {
     await updateDoc(doc(db, COLL_ITEMS, it._id), { floor: to, updatedAt: Date.now() });
     await addLog(to, it.name, Number(it.qty) || 0, it.unit || "", "move", by, from);
-    toast(`已移動：${it.name} → ${floorLabel(to)}`);
+    /* 前賢：移出／移入不用跳狀態訊息（例如「已移動…」） */
     focusedFloor = to; markJustIn(to, it.name);
   } catch (e) { toast("移動失敗：" + (e.code || e.message)); }
 }
@@ -1096,7 +1096,7 @@ async function takeOut(it) {
     else outside.unshift({ id: it._id, name: it.name, qty: 1, unit, floor: Number(it.floor) });
     renderOutside();
     pendingHighlight = it._id;
-    toast(`已移出：${it.name} 1${unit}（要放回就把「冰箱外」的它拖回冰箱層）`);
+    /* 前賢：移出不用跳狀態訊息 */
   } catch (err) { toast("移出失敗：" + (err.code || err.message)); }
 }
 
@@ -1125,7 +1125,7 @@ async function putBack(entry, floor) {
     const e = outside.find(o => o.id === entry.id);
     if (e) { e.qty -= 1; if (e.qty <= 0) outside = outside.filter(x => x !== e); }
     renderOutside();
-    toast(`${entry.staple ? "已放入冰箱" : "已放回"}：${entry.name} → ${floorLabel(floor)}`);
+    /* 前賢：移入不用跳狀態訊息 */
   } catch (err) { toast("放回失敗：" + (err.code || err.message)); }
 }
 
@@ -1494,7 +1494,7 @@ async function confirmVoice() {
   try {
     await updateDoc(doc(db, COLL_ITEMS, it._id), { qty: newQty, by, updatedAt: Date.now() });
     await addLog(Number(it.floor), it.name, r.qty, r.unit || it.unit || "", r.action, by);
-    toast(`已${isIn ? "置入" : "移出"}：${it.name} ${r.qty}${r.unit || it.unit || ""}`);
+    /* 前賢：移出／移入不用跳狀態訊息 */
     pendingVoice = null;
     $("#vCard").innerHTML = "";
     $("#vHeard").hidden = true;
