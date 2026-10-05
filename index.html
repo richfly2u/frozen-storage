@@ -194,6 +194,10 @@ nav button.on b{filter:none;opacity:1}
   box-shadow:0 8px 22px rgba(10,40,70,.35);white-space:nowrap
 }
 .tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
+/* 前賢 2026-10-05：拖曳時手指所在的那一層加高＋高亮（純視覺，不顯示任何狀態文字） */
+.tier.hover{box-shadow:inset 0 0 0 3px #f08c00;background:rgba(240,140,0,.10);transform:scale(1.02);
+  transition:transform .12s ease-out, box-shadow .12s ease-out, background .12s ease-out;z-index:2}
+#dropOut.hot{background:#d64550;border-color:#fff;transform:translateX(-50%) scale(1.08)}
 /* 前賢 2026-10-05：點選食材庫品項後，各層要亮綠框提示可放入（程式早就加了 awaitDrop 類別，但 CSS 從來沒有這條 → 一直不會亮） */
 .tier.awaitDrop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07);cursor:copy}
 /* ---------- 版面：左邊冰箱、右邊食材庫（便當組合模式） ---------- */
@@ -1234,8 +1238,18 @@ function moveDrag(ev) {
     if (!overOut && oz && under && oz.contains(under)) overOut = true;   // 拖到下方「冰箱外」區塊也算
     /* 前賢：拖拉時不要有變色／放大的動態變化（功能照舊，放手時仍判斷是否拖到下方） */
   }
-  dragCtx.targetTier = tier;      /* 前賢：拖拉時不要顯示拖到第幾層的動態變化 */
+  dragCtx.targetTier = tier;      /* 前賢：拖拉時不要顯示拖到第幾層的「狀態文字」（純視覺高亮可以） */
   dragCtx.overOut = overOut;
+  /* 前賢 2026-10-05：手指所在的層自動加高＋高亮；移到「移出」區時垃圾桶也變紅 */
+  document.querySelectorAll(".tier.hover").forEach(t => { if (t !== tier) t.classList.remove("hover"); });
+  if (tier) tier.classList.add("hover");
+  const dz = dropOutEl;
+  if (dz) {
+    /* 垃圾桶只要手指壓上去就變紅（冰箱品項＝移出、食材庫品項＝刪除，兩種都是「回收」的意思） */
+    const dr = dz.getBoundingClientRect();
+    const overTrash = ev.clientX >= dr.left && ev.clientX <= dr.right && ev.clientY >= dr.top && ev.clientY <= dr.bottom;
+    dz.classList.toggle("hot", overTrash);
+  }
 }
 /* 前賢 2026-10-05：手勢被系統搶走（判定捲動、切窗、來電）＝取消拖曳，不做任何動作、不留殘影 */
 function cancelDrag() {
@@ -1243,7 +1257,8 @@ function cancelDrag() {
   const { el, ghost } = dragCtx;
   el.classList.remove("dragging");
   if (ghost) ghost.remove();
-  const d = ensureDropOut(); d.classList.remove("on");
+  const d = ensureDropOut(); d.classList.remove("on", "hot");
+  document.querySelectorAll(".tier.hover").forEach(t => t.classList.remove("hover"));
   const oz = document.getElementById("outsideZone");
   if (oz) oz.classList.remove("over");
   dragCtx = null;
@@ -1255,7 +1270,8 @@ function endDrag() {
   const dragBelowOut = !!dragCtx.belowOut;
   el.classList.remove("dragging");
   if (ghost) ghost.remove();
-  const d = ensureDropOut(); d.classList.remove("on");
+  const d = ensureDropOut(); d.classList.remove("on", "hot");
+  document.querySelectorAll(".tier.hover").forEach(t => t.classList.remove("hover"));
   const oz = document.getElementById("outsideZone");
   if (oz) oz.classList.remove("over");
   dragCtx = null;
