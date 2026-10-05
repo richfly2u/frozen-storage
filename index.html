@@ -137,7 +137,7 @@ nav button.on b{filter:none;opacity:1}
   .door .lock{top:7px;right:11px;width:11px;height:11px}
   .shelves{padding-top:3px}
   .tier{padding:5px 4px 18px}
-  .tier-no{font-size:10.5px;padding:2px 7px}
+  .tier-no{font-size:10px;padding:2px 6px}   /* 前賢：層數那行改成「第N層 ＋ 分類內容」，字縮一點才塞得下 */
   .fl-name{font-size:12.5px}
   .tier-head{gap:5px}
   h1{font-size:15px;letter-spacing:0}
@@ -869,14 +869,12 @@ function tierHTML(fid) {
   /* 只顯示冰箱裡還有的（數量 0 的用完品項不顯示） */
   const list = items.filter(i => Number(i.floor) === fid && (Number(i.qty) || 0) > 0);
   /* 前賢：每層有幾項不用顯示，只顯示層名 + 品項名稱 */
+  /* 前賢 2026-10-05：每層只留「第N層 ＋ 分類內容」一行（原本分類另外顯示在上方，現移到層數那） */
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}" data-door="${f.key}">
-      <div class="tier-head">
-        <span class="fl-name">${esc(f.name)}</span>
-      </div>
       <div class="items">
         ${list.length ? list.map(chipHTML).join("") : '<span class="empty">尚無物品</span>'}
       </div>
-      <span class="tier-no">第${floorNo(fid)}層</span>
+      <span class="tier-no">第${floorNo(fid)}層　${esc(f.name)}</span>
     </div>`;
 }
 
