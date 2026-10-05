@@ -460,7 +460,9 @@ input[type=text],input[type=number],select,textarea{
 #bottomBar.hasQ #searchClear{display:inline-block}
 #bottomBar.noHit .sbox{border-color:#e79aad;background:#fff5f7}
 .voice-float{position:relative;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.voice-float #vCard,.voice-float .vheard{position:absolute;bottom:calc(100% + 8px);right:0;min-width:min(86vw,330px)}
+/* 語音彈出層：聽到的字與卡片改成上下堆疊（原本兩者絕對定位在同一點 → 藍條會蓋住卡片下半與按鈕；前賢 2026-10-05 回報） */
+.voice-float .vpop{position:absolute;bottom:calc(100% + 8px);right:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:min(86vw,330px)}
+.voice-float .vpop>*{width:100%}
 .voice-float #vCard:empty{display:none}
 .voice-float .vheard{margin-bottom:0}
 .vfrow{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dbeaf4;border-radius:14px;
@@ -588,8 +590,10 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
     <button type="button" id="searchClear" title="清除">✕</button>
   </div>
   <div class="voice-float" id="voiceFloat">
-    <div id="vCard"></div>
-    <div class="vheard" id="vHeard" hidden></div>
+    <div class="vpop" id="vPop">
+      <div class="vheard" id="vHeard" hidden></div>
+      <div id="vCard"></div>
+    </div>
     <div class="vfrow">
       <span class="vdot" id="vDot"></span>
       <span id="vState">未開始</span>
@@ -1476,6 +1480,8 @@ function handleVoice(text) {
 
 function renderVoiceCard(r) {
   const box = $("#vCard");
+  /* 前賢 2026-10-05：卡片一出現就把「聽到的字」藍條收掉，不要留在底部 */
+  $("#vHeard").hidden = true;
   const isIn = r.action === "in";
   if (!r.name) {
     pendingVoice = null;
