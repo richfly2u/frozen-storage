@@ -1491,7 +1491,7 @@ function startListen() {
       const r = e.results[i];
       if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript;
     }
-    if (interim || final.trim()) $("#vHeard").hidden = false;
+    if (interim || final.trim()) { $("#vHeard").hidden = false; centerVPop(); }
     if (interim) $("#vHeard").innerHTML = "…" + esc(interim);
     if (final.trim()) { $("#vHeard").innerHTML = "<b>" + esc(final.trim()) + "</b>"; handleVoice(final.trim()); }
   };
@@ -1518,10 +1518,25 @@ function handleVoice(text) {
   renderVoiceCard(r);
 }
 
+/* 前賢 2026-10-05：語音卡與「聽到的字」要置中；原本靠語音列右緣對齊，而語音列在手機上靠左 → 整張卡被推出畫面外 119px */
+function centerVPop() {
+  const vp = document.getElementById("vPop");
+  if (!vp) return;
+  const host = vp.parentElement;
+  if (!host) return;
+  const w = Math.max(220, Math.min(330, window.innerWidth - 20));
+  const left = Math.round((window.innerWidth - w) / 2 - host.getBoundingClientRect().left);
+  vp.style.width = w + "px";
+  vp.style.left = left + "px";
+  vp.style.right = "auto";
+}
+window.addEventListener("resize", () => centerVPop());
+
 function renderVoiceCard(r) {
   const box = $("#vCard");
   /* 前賢 2026-10-05：卡片一出現就把「聽到的字」藍條收掉，不要留在底部 */
   $("#vHeard").hidden = true;
+  centerVPop();
   const isIn = r.action === "in";
   if (!r.name) {
     pendingVoice = null;
