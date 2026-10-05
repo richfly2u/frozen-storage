@@ -1213,7 +1213,7 @@ function moveDrag(ev) {
   if (!dragCtx) return;
   dragCtx.lastY = ev.clientY;
   dragCtx.lastX = ev.clientX;
-  if (dragCtx.ghost) { dragCtx.ghost.style.left = ev.clientX + "px"; dragCtx.ghost.style.top = ev.clientY + "px"; }
+  if (dragCtx.ghost) { dragCtx.ghost.style.left = ev.clientX + "px"; dragCtx.ghost.style.top = (ev.clientY - 46) + "px"; }   /* 前賢 2026-10-05：幽靈卡上移 46px，避免被手指遮住 */
   const under = document.elementFromPoint(ev.clientX, ev.clientY);
   const tier = under && under.closest ? under.closest(".tier") : null;
   /* 前賢：把食材庫的食材拖到「食材庫框的下方外面」＝刪除（要在 tier 之後才算，否則 TDZ 會讓整個拖曳掛掉） */
