@@ -185,7 +185,12 @@ nav button.on b{filter:none;opacity:1}
 .chip .more:hover{background:rgba(30,136,199,.22)}
 .chip{touch-action:pan-y}
 .chip.dragging{opacity:.32}
-.chip.dragging{opacity:.45}   /* 正在被拖的品項淡掉（不再有跟手的說明標籤） */
+.chip.dragging{opacity:.45}
+.chip-ghost{
+  position:fixed;z-index:90;pointer-events:none;transform:translate(-50%,-50%) scale(1.05);
+  background:#1e88c7;color:#fff;border-radius:10px;padding:6px 11px;font-size:13.5px;font-weight:600;
+  box-shadow:0 8px 22px rgba(10,40,70,.35);white-space:nowrap
+}
 .tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
 /* ---------- 版面：左邊冰箱、右邊食材庫（便當組合模式） ---------- */
 .mapmain{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
@@ -205,7 +210,6 @@ nav button.on b{filter:none;opacity:1}
   text-align:center;font-size:11.5px;line-height:1.2;padding:1px 12px 1px 4px;border-radius:8px;overflow-wrap:anywhere}
 .os-chip .q{position:absolute;right:1px;bottom:1px;background:#1e88c7;color:#fff;border-radius:6px;
   padding:0 2px;font-size:9.5px;line-height:1.4;margin:0}
-.os-chip .more{position:absolute;right:1px;top:1px;width:14px;height:14px;font-size:10.5px;line-height:1;margin:0}
 .os-chip.staple{background:#eef7fd;border-color:#c9e2f2;color:#1a5c8c}
 .os-chip.sel{outline:3px solid #2f9e6b;outline-offset:1px;background:#e8f8f0;border-color:#8fd3b4}
 .outside #btnAdd{margin-bottom:9px;background:#1e88c7;color:#fff;border:none}
@@ -319,7 +323,6 @@ nav button.on b{filter:none;opacity:1}
   .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:4px;margin:7px 0 0;
     flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
   .outside .os-chip{width:100%;min-height:29px;height:auto;font-size:11px;line-height:1.2;padding:1px 11px 1px 4px}
-  .outside .os-chip .more{width:15px;height:15px;font-size:11px}
   .side{order:-1;margin-bottom:0}
   /* 手機省空間：長期說明文字收掉（前賢偏好不要說明；操作提示在按鈕與標題上） */
   .side p.legend:not(#focusBar){display:none}
@@ -1083,8 +1086,9 @@ function renderOutside() {
   const staples = stapleEntries().filter(s => !goneNames.has(s.name));   // 已列在「冰箱裡沒有的」就不要重複
   const list = [...staples, ...gone];
   if (!list.length) { box.innerHTML = '<span class="empty">（空）</span>'; return; }
+  /* 前賢：食材庫格子不要「⋯」小點點 */
   const chip = (o, i) => `<button class="chip os-chip${o.staple ? " staple" : ""}${(pendingPlace && pendingPlace.name === o.name) ? " sel" : ""}" data-os="${i}" data-name="${esc(o.name)}"
-      title="${o.staple ? "拖進冰箱任一層＝放進冰箱（或點一下再點樓層）" : "拖回冰箱任一層＝放回（或點一下再點樓層）"}">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}${o.staple ? "" : '<span class="more" title="更多">⋯</span>'}</button>`;
+      title="${o.staple ? "拖進冰箱任一層＝放進冰箱（或點一下再點樓層）" : "拖回冰箱任一層＝放回（或點一下再點樓層）"}">${esc(o.name)}${o.qty > 1 ? `<span class="q">${o.qty}${esc(o.unit || "")}</span>` : ""}</button>`;
   box.innerHTML = list.map((o, i) => chip(o, i)).join("");
   box.querySelectorAll(".os-chip").forEach(el => bindOutsideGestures(el, list[Number(el.dataset.os)]));
 }
@@ -1165,9 +1169,14 @@ function autoScroll() {
 
 /* 拖曳：滑鼠可直接拖；手指要橫向起手（直向＝捲動頁面） */
 function startDrag(el, it, ev, kind) {
+  /* 前賢：長按準備拖拉時，品名要跟著手勢跑（冰箱與食材庫都要） */
+  const g = document.createElement("div");
+  g.className = "chip-ghost";
+  const q0 = Number(it.qty) || 0;
+  g.textContent = [it.name, q0 > 0 ? `${q0}${it.unit || ""}` : "", (showBy && it.by) ? `👤${it.by}` : ""].filter(Boolean).join("　");
+  document.body.appendChild(g);
   el.classList.add("dragging");
-  /* 前賢：移動時的狀態說明不要 → 不再顯示跟手的品名／數量標籤（舊版動態也一律不做） */
-  dragCtx = { el, it, kind: kind || "item", ghost: null, targetTier: null, overOut: false, lastY: ev.clientY };
+  dragCtx = { el, it, kind: kind || "item", ghost: g, targetTier: null, overOut: false, lastY: ev.clientY };
   suppressClick = true;
   ensureDropOut().classList.add("on");
   try { el.setPointerCapture(ev.pointerId); } catch (_) {}
@@ -1177,6 +1186,7 @@ function startDrag(el, it, ev, kind) {
 function moveDrag(ev) {
   if (!dragCtx) return;
   dragCtx.lastY = ev.clientY;
+  if (dragCtx.ghost) { dragCtx.ghost.style.left = ev.clientX + "px"; dragCtx.ghost.style.top = ev.clientY + "px"; }
   const under = document.elementFromPoint(ev.clientX, ev.clientY);
   const tier = under && under.closest ? under.closest(".tier") : null;
   let overOut = false;
