@@ -1093,7 +1093,7 @@ function setPendingPlace(entry) {
   pendingPlace = entry || null;
   document.querySelectorAll(".tier").forEach(t => t.classList.toggle("awaitDrop", !!pendingPlace));
   renderOutside();
-  if (pendingPlace) toast(`已選「${pendingPlace.name}」→ 請點要放進哪一層（再點一次取消）`);
+  /* 前賢：點選食材後不要在下方跳「要放進哪一層」的提示（選中的綠框＋各層綠虛線框已經夠清楚） */
 }
 function renderOutside() {
   const box = $("#osItems");
