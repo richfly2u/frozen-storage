@@ -160,7 +160,7 @@ nav button.on b{filter:none;opacity:1}
 .fl-name{font-weight:700;font-size:13.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fl-count{display:none}   /* 前賢：層的品項數不用顯示 */
 .items{display:flex;flex-wrap:wrap;gap:8px;margin-top:0;padding-top:6px;min-width:0}   /* 品項貼齊層的上方（原本 margin-top:auto 會全部壓到最底部，看起來像被切掉） */
-.items .empty{font-size:13px;color:#9db4c2;padding:4px 2px}
+.items .empty{font-size:12px;color:#9db4c2;padding:3px 9px;border:1px dashed #c9d8e3;border-radius:8px}   /* 前賢：空層顯示「＋ 放入」提示 */
 .chip{
   border:1px solid #cfe6f4;background:#f0f8fe;border-radius:11px;padding:7px 10px;
   font-family:inherit;font-size:14px;color:var(--txt);cursor:pointer;display:inline-flex;
@@ -317,7 +317,7 @@ nav button.on b{filter:none;opacity:1}
   .htools .bytoggle{color:#ffe066;gap:4px;padding:2px 8px;font-size:11px}
 
   /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
-  .outside{order:-2;position:relative;display:flex;flex-direction:column;flex:0 1 auto;min-height:132px;max-height:42vh;margin:0;padding:9px 10px;
+  .outside{order:-2;position:relative;display:flex;flex-direction:column;flex:0 1 auto;min-height:120px;max-height:30vh;margin:0;padding:9px 10px;   /* 前賢 2026-10-05：42vh→30vh，把高度讓給冷凍庫 */
     border-radius:13px;border:2px dashed #b9cddb;background:rgba(255,255,255,.8);box-shadow:none}   /* 裝不下時在食材庫內部捲動（前賢：冰箱與食材庫同在一頁） */
   .outside .os-head{font-size:13px;padding-right:96px}   /* 前賢：搜尋放標題旁，右邊留給「＋ 新增物品」 */
   .outside #btnAdd{position:absolute;right:10px;top:8px;margin:0;width:auto;padding:4px 10px;font-size:12px;border-radius:8px}
@@ -874,7 +874,7 @@ function tierHTML(fid) {
   /* 前賢 2026-10-05：每層只留「第N層 ＋ 分類內容」一行（原本分類另外顯示在上方，現移到層數那） */
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}" data-door="${f.key}">
       <div class="items">
-        ${list.length ? list.map(chipHTML).join("") : '<span class="empty">尚無物品</span>'}
+        ${list.length ? list.map(chipHTML).join("") : '<span class="empty">＋ 放入</span>'}
       </div>
       <span class="tier-no">第${floorNo(fid)}層　${esc(f.name)}</span>
     </div>`;
