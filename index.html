@@ -1486,6 +1486,7 @@ function startListen() {
   rec.lang = "zh-TW"; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
   rec.onstart = () => vState("聽取中…請講「品名＋數量」", true);
   rec.onresult = e => {
+    if (!listening) return;   /* 前賢 2026-10-05：講完就停 → 遲到的辨識結果不要再用 */
     let interim = "", final = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const r = e.results[i];
@@ -1493,7 +1494,7 @@ function startListen() {
     }
     if (interim || final.trim()) { $("#vHeard").hidden = false; centerVPop(); }
     if (interim) $("#vHeard").innerHTML = "…" + esc(interim);
-    if (final.trim()) { $("#vHeard").innerHTML = "<b>" + esc(final.trim()) + "</b>"; handleVoice(final.trim()); }
+    if (final.trim()) { $("#vHeard").innerHTML = "<b>" + esc(final.trim()) + "</b>"; handleVoice(final.trim()); stopListen(); }   /* 前賢 2026-10-05：講完一句就停，要再講再點「開始聽」 */
   };
   rec.onerror = e => {
     if (e.error === "not-allowed" || e.error === "service-not-allowed") {
