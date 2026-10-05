@@ -317,7 +317,7 @@ nav button.on b{filter:none;opacity:1}
   /* 食材庫：直接接在冰箱正下方，格子多列排開（上下能看更多品項） */
   .outside{order:-2;position:static;display:flex;flex-direction:column;flex:0 1 auto;min-height:132px;max-height:42vh;margin:0;padding:9px 10px;
     border-radius:13px;border:2px dashed #b9cddb;background:rgba(255,255,255,.8);box-shadow:none}   /* 裝不下時在食材庫內部捲動（前賢：冰箱與食材庫同在一頁） */
-  .outside .os-head{font-size:13px}
+  .outside .os-head{font-size:13px;padding-right:96px}   /* 前賢：搜尋放標題旁，右邊留給「＋ 新增物品」 */
   .outside #btnAdd{position:absolute;right:10px;top:8px;margin:0;width:auto;padding:4px 10px;font-size:12px;border-radius:8px}
   .outside #osClear{display:none}
   .outside .os-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:4px;margin:7px 0 0;
@@ -449,16 +449,19 @@ input[type=text],input[type=number],select,textarea{
 #bottomBar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;align-items:center;gap:8px;
   padding:7px 10px calc(7px + env(safe-area-inset-bottom,0px));
   background:rgba(255,255,255,.97);border-top:1px solid #d7e7f1;box-shadow:0 -3px 12px rgba(18,38,56,.09)}
-#bottomBar .sbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:5px;
+/* 前賢 2026-10-05：搜尋從底部固定列移到「📦 食材庫」標題旁 */
+.os-head{display:flex;align-items:center;gap:8px}
+.os-head .os-title{flex:0 0 auto}
+.os-head .sbox{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:5px;
   background:#f1f7fb;border:1px solid #cfe0eb;border-radius:11px;padding:0 3px 0 9px}
-#bottomBar .sbox .sico{font-size:13px;opacity:.7;flex:0 0 auto}
-#bottomBar #search{flex:1 1 auto;min-width:0;border:0;background:transparent;font-family:inherit;
-  font-size:14px;padding:8px 0;outline:none;color:var(--txt);-webkit-appearance:none;appearance:none}
-#bottomBar #search::-webkit-search-cancel-button{display:none}
-#bottomBar #searchClear{display:none;border:0;background:transparent;color:#7b93a4;font-size:14px;
+.os-head .sbox .sico{font-size:13px;opacity:.7;flex:0 0 auto}
+.os-head #search{flex:1 1 auto;min-width:0;border:0;background:transparent;font-family:inherit;
+  font-size:13.5px;padding:6px 0;outline:none;color:var(--txt);-webkit-appearance:none;appearance:none}
+.os-head #search::-webkit-search-cancel-button{display:none}
+.os-head #searchClear{display:none;border:0;background:transparent;color:#7b93a4;font-size:14px;
   padding:5px 7px;cursor:pointer;line-height:1}
-#bottomBar.hasQ #searchClear{display:inline-block}
-#bottomBar.noHit .sbox{border-color:#e79aad;background:#fff5f7}
+.os-head.hasQ #searchClear{display:inline-block}
+.os-head.noHit .sbox{border-color:#e79aad;background:#fff5f7}
 .voice-float{position:relative;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 /* 語音彈出層：聽到的字與卡片改成上下堆疊（原本兩者絕對定位在同一點 → 藍條會蓋住卡片下半與按鈕；前賢 2026-10-05 回報） */
 .voice-float .vpop{position:absolute;bottom:calc(100% + 8px);right:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:min(86vw,330px)}
@@ -533,7 +536,14 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
     <div class="freezer" id="freezer"></div>
     <aside class="outside" id="outsideZone">
       <button class="btn add" id="btnAdd">＋ 新增物品</button>
-      <div class="os-head">📦 食材庫</div>
+      <div class="os-head" id="osHead">
+        <span class="os-title">📦 食材庫</span>
+        <div class="sbox">
+          <span class="sico">🔍</span>
+          <input type="search" id="search" placeholder="找食材…" autocomplete="off" enterkeyhint="search">
+          <button type="button" id="searchClear" title="清除">✕</button>
+        </div>
+      </div>
       <div class="os-items" id="osItems"></div>
       <button type="button" id="osClear">清暫存</button>
     </aside>
@@ -584,11 +594,6 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
 
 <!-- 底部固定列（浮在頁面底層）：搜尋（左）＋ 開始聽（右）同一列（前賢 2026-10-05） -->
 <div id="bottomBar">
-  <div class="sbox">
-    <span class="sico">🔍</span>
-    <input type="search" id="search" placeholder="找食材…" autocomplete="off" enterkeyhint="search">
-    <button type="button" id="searchClear" title="清除">✕</button>
-  </div>
   <div class="voice-float" id="voiceFloat">
     <div class="vpop" id="vPop">
       <div class="vheard" id="vHeard" hidden></div>
@@ -682,7 +687,7 @@ let searchQ = "", searchHits = [];
 function styleSearch() {
   document.querySelectorAll(".chip.hit,.os-chip.hit,.chip.dim,.os-chip.dim,.tier.sfocus")
     .forEach(el => el.classList.remove("hit", "dim", "sfocus"));
-  const bar = document.getElementById("bottomBar");
+  const bar = document.getElementById("osHead");
   const t = searchQ;
   searchHits = [];
   if (!t) { if (bar) bar.classList.remove("hasQ", "noHit"); return; }
