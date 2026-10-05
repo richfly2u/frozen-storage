@@ -185,7 +185,7 @@ nav button.on b{filter:none;opacity:1}
 .chip .more:hover{background:rgba(30,136,199,.22)}
 .chip{touch-action:pan-y}
 .chip.dragging{opacity:.32}
-.chip.dragging{opacity:.45}
+.chip.dragging{opacity:0}   /* 前賢：拖走時原格不要留字（跟著手走） */
 .chip-ghost{
   position:fixed;z-index:90;pointer-events:none;transform:translate(-50%,-50%) scale(1.05);
   background:#1e88c7;color:#fff;border-radius:10px;padding:6px 11px;font-size:13.5px;font-weight:600;
@@ -1004,6 +1004,23 @@ async function removeItem(it) {
   } catch (e) { toast("刪除失敗：" + (e.code || e.message)); }
 }
 
+/* 前賢：把食材庫的食材拖到「食材庫框的下方外面」＝刪除（會先問一次，避免誤刪） */
+async function deleteOutsideEntry(entry) {
+  if (!entry) return;
+  if (!entry.id) { toast(`「${entry.name}」是常備食材，沒有紀錄可刪`); return; }
+  if (!ensureOperator() || !needReady()) return;
+  const by = operator || "";
+  if (!by) { toast("請先設定經手人"); return; }
+  if (!confirm(`確定刪除「${entry.name}」？\n（紀錄會保留一筆刪除記錄）`)) return;
+  try {
+    await deleteDoc(doc(db, COLL_ITEMS, entry.id));
+    await addLog(Number(entry.floor) || 0, entry.name, 0, entry.unit || "", "del", by);
+    outside = outside.filter(o => o.id !== entry.id);
+    renderOutside();
+    renderMap();
+  } catch (e) { toast("刪除失敗：" + (e.code || e.message)); }
+}
+
 function openChipMenu(it, anchor) {
   if (!ensureOperator()) return;
   closeChipMenu();
@@ -1186,7 +1203,16 @@ function startDrag(el, it, ev, kind) {
 function moveDrag(ev) {
   if (!dragCtx) return;
   dragCtx.lastY = ev.clientY;
+  dragCtx.lastX = ev.clientX;
   if (dragCtx.ghost) { dragCtx.ghost.style.left = ev.clientX + "px"; dragCtx.ghost.style.top = ev.clientY + "px"; }
+  /* 前賢：把食材庫的食材拖到「食材庫框的下方外面」＝刪除 */
+  if (dragCtx.kind === "outside") {
+    const oz2 = document.getElementById("outsideZone");
+    if (oz2) {
+      const r2 = oz2.getBoundingClientRect();
+      dragCtx.belowOut = (ev.clientY > r2.bottom + 6) && !tier;
+    }
+  }
   const under = document.elementFromPoint(ev.clientX, ev.clientY);
   const tier = under && under.closest ? under.closest(".tier") : null;
   let overOut = false;
@@ -1203,6 +1229,7 @@ function moveDrag(ev) {
 function endDrag() {
   if (!dragCtx) return;
   const { el, it, kind, ghost, targetTier, overOut } = dragCtx;
+  const dragBelowOut = !!dragCtx.belowOut;
   el.classList.remove("dragging");
   if (ghost) ghost.remove();
   const d = ensureDropOut(); d.classList.remove("on");
@@ -1217,6 +1244,8 @@ function endDrag() {
     }
   } else if (targetTier) {
     putBack(it, Number(targetTier.dataset.floor));   // 從「冰箱外」拖回某層＝放回
+  } else if (dragBelowOut) {
+    deleteOutsideEntry(it);                          // 前賢：拖到食材庫框下方外面＝刪除
   }
   setTimeout(() => { suppressClick = false; }, 250);
 }
