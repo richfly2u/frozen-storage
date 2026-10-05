@@ -168,6 +168,8 @@ nav button.on b{filter:none;opacity:1}
 }
 .chip:active{transform:scale(.97)}
 .chip .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw;min-width:0}
+/* 前賢 2026-10-05：勾「顯示經手人」時，卡片要真的顯示 👤（原本 chipHTML 根本沒渲染，勾了沒反應） */
+.chip .by{font-size:10px;color:#5b7183;background:#eef4f9;border-radius:6px;padding:1px 5px;white-space:nowrap;flex:0 0 auto}
 .chip .q{background:#1e88c7;color:#fff;border-radius:7px;font-size:12.5px;padding:1px 7px;white-space:nowrap;font-weight:700}
 .chip.low .q{background:var(--danger)}
 .chip .nt{font-size:11.5px;color:var(--muted)}
@@ -957,7 +959,7 @@ function chipHTML(it) {
   const detail = [it.name, q > 0 ? q + (it.unit || "") : "", it.note ? "備註：" + it.note : "",
                   it.by ? "放入：" + it.by : "", it.updatedAt ? "更新：" + fmtTime(it.updatedAt) : ""].filter(Boolean).join("　");
   return `<button class="chip" data-id="${esc(it._id)}" data-name="${esc(it.name)}" title="${esc(detail)}">
-      <span class="nm">${esc(it.name)}</span>
+      <span class="nm">${esc(it.name)}</span>${(showBy && it.by) ? `<span class="by">👤${esc(it.by)}</span>` : ""}
     </button>`;
 }
 
