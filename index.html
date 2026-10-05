@@ -1230,6 +1230,18 @@ function moveDrag(ev) {
   dragCtx.targetTier = tier;      /* 前賢：拖拉時不要顯示拖到第幾層的動態變化 */
   dragCtx.overOut = overOut;
 }
+/* 前賢 2026-10-05：手勢被系統搶走（判定捲動、切窗、來電）＝取消拖曳，不做任何動作、不留殘影 */
+function cancelDrag() {
+  if (!dragCtx) return;
+  const { el, ghost } = dragCtx;
+  el.classList.remove("dragging");
+  if (ghost) ghost.remove();
+  const d = ensureDropOut(); d.classList.remove("on");
+  const oz = document.getElementById("outsideZone");
+  if (oz) oz.classList.remove("over");
+  dragCtx = null;
+  setTimeout(() => { suppressClick = false; }, 250);
+}
 function endDrag() {
   if (!dragCtx) return;
   const { el, it, kind, ghost, targetTier, overOut } = dragCtx;
@@ -1275,6 +1287,8 @@ function bindChipGestures(el, it, kind) {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     if (e.target.closest(".more")) return;              // ⋯ 只開選單，不拖
     if (!ensureOperator()) return;                      // 還沒有經手人 → 先請他填一次
+    /* 前賢 2026-10-05：長按拖曳前先把搜尋框的鍵盤收掉，避免畫面位移讓手勢被判成捲動 */
+    try { const ae = document.activeElement; if (ae && ae.tagName === "INPUT" && ae.blur) ae.blur(); } catch (_) {}
     const mouse = e.pointerType === "mouse";
     const sx = e.clientX, sy = e.clientY;
     let mode = "pending";
@@ -1290,7 +1304,8 @@ function bindChipGestures(el, it, kind) {
     const onMove = ev2 => {
       const dx = ev2.clientX - sx, dy = ev2.clientY - sy;
       if (mode === "pending") {
-        const far = Math.hypot(dx, dy) > (mouse ? 6 : 9);
+        /* 前賢 2026-10-05：手機長按時手指常有一點位移，門檻太小會被誤判成捲動而拖不動 → 放寬到 24px */
+        const far = Math.hypot(dx, dy) > (mouse ? 6 : 24);
         if (far) {
           if (longTimer) { clearTimeout(longTimer); longTimer = null; }
           if (mouse || Math.abs(dx) >= Math.abs(dy)) begin(ev2);
@@ -1299,6 +1314,8 @@ function bindChipGestures(el, it, kind) {
       } else if (mode === "drag") moveDrag(ev2);
     };
     const onUp = () => { if (longTimer) { clearTimeout(longTimer); longTimer = null; } if (mode === "drag") endDrag(); cleanup(); };
+    /* 前賢 2026-10-05：被系統搶手勢 → 取消（不寫入、不留殘影）；先前會當成放手而誤移物品 */
+    const onCancel = () => { if (longTimer) { clearTimeout(longTimer); longTimer = null; } if (mode === "drag") cancelDrag(); cleanup(); };
     const cleanup = () => {
       if (longTimer) { clearTimeout(longTimer); longTimer = null; }
       document.removeEventListener("pointermove", onMove);
@@ -1307,7 +1324,7 @@ function bindChipGestures(el, it, kind) {
     };
     document.addEventListener("pointermove", onMove);
     document.addEventListener("pointerup", onUp);
-    document.addEventListener("pointercancel", onUp);
+    document.addEventListener("pointercancel", onCancel);
   });
   /* 拖曳中不要讓頁面跟著捲動（手機長按拖曳時必須擋掉預設捲動） */
   el.addEventListener("touchmove", e => { if (dragCtx && dragCtx.el === el) e.preventDefault(); }, { passive: false });
