@@ -194,6 +194,8 @@ nav button.on b{filter:none;opacity:1}
   box-shadow:0 8px 22px rgba(10,40,70,.35);white-space:nowrap
 }
 .tier.drop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07)}
+/* 前賢 2026-10-05：點選食材庫品項後，各層要亮綠框提示可放入（程式早就加了 awaitDrop 類別，但 CSS 從來沒有這條 → 一直不會亮） */
+.tier.awaitDrop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07);cursor:copy}
 /* ---------- 版面：左邊冰箱、右邊食材庫（便當組合模式） ---------- */
 .mapmain{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
 .outside{
