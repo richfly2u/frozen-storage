@@ -1516,7 +1516,7 @@ function renderVoiceCard(r) {
       <button class="btn ghost" id="vCancel">取消</button>
       <button class="btn ok" id="vOk">✅ 確認</button>
     </div>
-    <div class="tiny">聽到：「${esc(r.raw)}」</div></div>`;
+    <div class="tiny">聽到：「${esc(r.raw)}」${r.phonetic ? `　🔉 同音對到「${esc(it.name)}」` : ""}</div></div>`;
   refreshByList();
   $("#vCancel").addEventListener("click", () => { pendingVoice = null; box.innerHTML = ""; });
   $("#vOk").addEventListener("click", confirmVoice);
