@@ -1205,7 +1205,9 @@ function moveDrag(ev) {
   dragCtx.lastY = ev.clientY;
   dragCtx.lastX = ev.clientX;
   if (dragCtx.ghost) { dragCtx.ghost.style.left = ev.clientX + "px"; dragCtx.ghost.style.top = ev.clientY + "px"; }
-  /* 前賢：把食材庫的食材拖到「食材庫框的下方外面」＝刪除 */
+  const under = document.elementFromPoint(ev.clientX, ev.clientY);
+  const tier = under && under.closest ? under.closest(".tier") : null;
+  /* 前賢：把食材庫的食材拖到「食材庫框的下方外面」＝刪除（要在 tier 之後才算，否則 TDZ 會讓整個拖曳掛掉） */
   if (dragCtx.kind === "outside") {
     const oz2 = document.getElementById("outsideZone");
     if (oz2) {
@@ -1213,8 +1215,6 @@ function moveDrag(ev) {
       dragCtx.belowOut = (ev.clientY > r2.bottom + 6) && !tier;
     }
   }
-  const under = document.elementFromPoint(ev.clientX, ev.clientY);
-  const tier = under && under.closest ? under.closest(".tier") : null;
   let overOut = false;
   if (dragCtx.kind === "item") {
     const d = ensureDropOut(), r = d.getBoundingClientRect();
