@@ -335,7 +335,7 @@ nav button.on b{filter:none;opacity:1}
 #dropOut{
   position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:88;pointer-events:none;
   display:none;align-items:center;gap:8px;background:#1e88c7;color:#fff;border-radius:15px;
-  padding:13px 20px;font-size:14.5px;font-weight:700;border:3px dashed rgba(255,255,255,.7);
+  padding:13px 20px;font-size:18px;font-weight:700;border:3px dashed rgba(255,255,255,.7);
   box-shadow:0 10px 26px rgba(10,40,70,.35)
 }
 #dropOut.on{display:flex}
@@ -1181,7 +1181,7 @@ function ensureDropOut() {
   if (dropOutEl) return dropOutEl;
   dropOutEl = document.createElement("div");
   dropOutEl.id = "dropOut";
-  dropOutEl.textContent = "📤";          /* 前賢：不要說明文字，只留圖示 */
+  dropOutEl.textContent = "🗑️";          /* 前賢 2026-10-05：原本用 📤，看不出是回收 → 改垃圾桶 */
   document.body.appendChild(dropOutEl);
   return dropOutEl;
 }
