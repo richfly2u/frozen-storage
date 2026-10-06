@@ -108,17 +108,13 @@ nav button.on b{filter:none;opacity:1}
 .shelves{position:relative;z-index:1;display:grid;grid-auto-rows:auto;
   gap:6px;min-width:0;padding-top:3px;padding-bottom:0}
 .tier{
-  position:relative;margin:0;padding:7px 6px 18px;min-width:0;display:flex;flex-direction:column;
+  position:relative;margin:0;padding:7px 6px 8px;min-width:0;display:flex;flex-direction:column;
   aspect-ratio:4 / 3;   /* 高:寬 = 3:4 */
   background:transparent;border:1px solid rgba(43,67,86,.18);border-radius:10px;
   transition:box-shadow .25s,transform .25s,border-color .25s
 }
-/* 層架橫槓（不鏽鋼前緣）：下門最下層會切齊門的底緣 */
-.tier::after{
-  content:"";position:absolute;left:1px;right:1px;bottom:1px;height:13px;border-radius:3px 3px 9px 9px;
-  background:linear-gradient(180deg,#ffffff 0%,#eaf0f5 42%,#bcc9d4 100%);
-  box-shadow:0 1px 2px rgba(0,0,0,.18),inset 0 -1px 0 rgba(255,255,255,.7)
-}
+/* 前賢 2026-10-07：層號改成該層標題列後，各層底部的層架橫槓就不需要了 → 移除 */
+.tier::after{content:none}
 /* 層數：顯示在橫槓正中間 */
 .tier-no{
   position:static;display:block;width:fit-content;margin:0 auto 4px;pointer-events:none;   /* 前賢 2026-10-07：層號改成該層的「標題列」放最上面（原本絕對定位貼在層底，緊鄰下門內容，被讀成下門那一層的名字） */
@@ -126,9 +122,7 @@ nav button.on b{filter:none;opacity:1}
   background:linear-gradient(180deg,#ffffff,#e7eff5);border:1px solid #b6c4d0;border-radius:8px;
   padding:3px 9px;box-shadow:0 1px 2px rgba(0,0,0,.16)
 }
-/* 每扇門最下層的橫槓切齊門的底緣：把最下層「壓」到門框底線上，橫槓就貼住冰箱底 */
-.door .tier:last-child{margin-bottom:-3px}
-.door .tier:last-child::after{bottom:1px;border-radius:3px 3px 9px 9px}
+
 @media (max-width:520px){
   .freezer{padding:8px 9px 0;border-radius:14px 14px 6px 6px}
   .doors{gap:10px;padding-right:6px}
@@ -268,7 +262,7 @@ nav button.on b{filter:none;opacity:1}
   .freezer .doors{display:flex;flex-direction:column;flex:1;min-height:0;gap:8px}
   .freezer .door{flex:1 1 0;display:flex;flex-direction:column;min-height:0;padding:6px 30px 0 10px}
   .freezer .shelves{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(78px,1fr);gap:5px;padding-top:3px}
-  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:visible;padding:2px 4px 18px}   /* 前賢：字被切到底部 → 不再裁切 */
+  .freezer .tier{aspect-ratio:auto;min-height:0;overflow:visible;padding:2px 4px 8px}   /* 前賢：字被切到底部 → 不再裁切 */
   .freezer .tier .items{overflow:visible;align-content:flex-start;
     display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px}
   .freezer .tier .items .chip{width:100%;max-width:100%;min-height:36px;height:auto;font-size:11.5px;line-height:1.25;
@@ -303,7 +297,7 @@ nav button.on b{filter:none;opacity:1}
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;padding:5px 18px 0 8px}
   .freezer .door-head{font-size:10px;letter-spacing:2px;padding:6px 3px;right:-1px}
   .freezer .shelves{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(84px,1fr);gap:5px;padding-top:3px}
-  .freezer .tier{aspect-ratio:auto;min-height:84px;overflow:visible;padding:2px 4px 18px}
+  .freezer .tier{aspect-ratio:auto;min-height:84px;overflow:visible;padding:2px 4px 8px}
   .freezer .tier .items{overflow:visible;align-content:flex-start}
 
   /* 手機：最上面就只有一列（標題＋經手人＋顯示開關），不多佔高度 */
