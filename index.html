@@ -638,7 +638,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
         <li>上門 第2層：餡料／素料</li>
         <li>上門 第3層：素料</li>
         <li>下門 第1層：素料</li>
-        <li>下門 第2層：其他</li>
+        <li>下門 第2層：其他／私人</li>
       </ul>
       <div class="rn">3. 同類集中不混層；包裝完整封緊，湯汁類務必密封。</div>
       <div class="rn">4. 先進先出：新進的往後放，先放的往前擺先用；熱食務必完全放涼再冰。</div>
@@ -727,7 +727,7 @@ const FLOORS = [
   { id: 2, door: "上門", key: "U", name: "餡料 素料" },
   { id: 5, door: "上門", key: "U", name: "素料" },
   { id: 3, door: "下門", key: "D", name: "素料" },
-  { id: 4, door: "下門", key: "D", name: "其他" }
+  { id: 4, door: "下門", key: "D", name: "其他 私人" }
 ];
 /* 自動算「第幾層」與格位名稱（二層＝上/下格，三層＝上/中/下格） */
 FLOORS.forEach(f => {
