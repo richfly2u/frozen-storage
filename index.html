@@ -386,6 +386,15 @@ nav button.on b{filter:none;opacity:1}
 }
 .btn.ghost{background:#eaf4fb;color:var(--deep);border:1px solid #cfe4f2}
 .btn.sm{padding:7px 11px;font-size:13.5px;border-radius:9px}
+/* ---------- 使用規則（前賢 2026-10-06：規則也放在冷凍位置圖這邊） ---------- */
+.rules{font-size:14px;line-height:1.7}
+.rules h3{margin:14px 0 6px;font-size:14.5px;color:var(--deep);border-left:4px solid #1e88c7;padding-left:8px}
+.rules h3:first-child{margin-top:2px}
+.rules ol{margin:0;padding-left:20px}
+.rules li{margin-bottom:5px}
+.rules b{color:var(--deep)}
+#rulesSheet{max-height:88vh}
+#btnRules{flex:0 0 auto;white-space:nowrap}
 /* ---------- modal ---------- */
 .mask{
   position:fixed;inset:0;background:rgba(8,38,55,.55);z-index:50;display:none;
@@ -526,6 +535,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
       <button type="button" id="btnOp">修改</button>
     </div>
     <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"><span class="byti">👤</span><span class="bytl">顯示經手人</span></label>
+    <button type="button" class="btn sm ghost" id="btnRules" title="冷凍庫使用規則">📋 規則</button>
   </div>
 </header>
 
@@ -597,6 +607,52 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
       <button class="btn danger" id="btnDel" style="display:none">刪除</button>
     </div>
     <div class="tiny" id="metaInfo"></div>
+  </div>
+</div>
+
+<!-- ============ 冷凍庫使用規則（前賢 2026-10-06） ============ -->
+<div class="mask" id="rulesMask">
+  <div class="sheet" id="rulesSheet">
+    <h2>📋 冷凍庫使用規則</h2>
+    <div class="rules">
+      <h3>一、總則</h3>
+      <ol>
+        <li>本庫<b>全素專用</b>：不得存放葷食，也不得存放五辛（蔥、薑、蒜、韭菜、興渠）。</li>
+        <li>物品一律標示<b>品名 ＋ 日期 ＋ 經手人</b>。</li>
+        <li>放入／取出／清理／丟棄，都在本 App 登記經手人。</li>
+      </ol>
+      <h3>二、標示與擺放</h3>
+      <ol start="4">
+        <li>物品要<b>寫名字</b>，寫在袋口明顯處、字面朝外。</li>
+        <li>依層分類：上門 第1層 中藥／甜餡／湯料、第2層 素料、第3層 素料；下門 第1層 素料、第2層 其他。</li>
+        <li>同類集中不混層；湯汁類務必封好。</li>
+        <li><b>先進先出</b>：新進的往後放，先放的先用。</li>
+      </ol>
+      <h3>三、沒寫名字的怎麼辦（認領區）</h3>
+      <ol start="8">
+        <li>沒寫名字或無法辨識的，移到「<b>認領區</b>」（位置：＿＿＿＿）。</li>
+        <li>認領區<b>公告 2 週</b>，每週提醒一次。</li>
+        <li>2 週期滿無人認領：<b>能用的轉為公用、不能用的丟棄</b>，並在本 App 登記。</li>
+      </ol>
+      <h3>四、每月清理（三個月一輪）</h3>
+      <ol start="11">
+        <li>每月固定一天（每月第＿週的＿＿）<b>全面清點</b>，逐層逐項清過。</li>
+        <li>每月清一次＝<b>3 個月內每一層都被完整清過一遍</b>。</li>
+        <li>清理重點：過期、變質、無標示、久未動用的品項。</li>
+        <li>清理後登記「清理日期／執行人／處理結果」。</li>
+      </ol>
+      <h3>五、經手人責任</h3>
+      <ol start="15">
+        <li>每次動作（放入／取出／移出／刪除）都要選經手人。</li>
+        <li>物品出問題（外漏、放錯層、沒標示）由該筆紀錄的經手人負責整理。</li>
+      </ol>
+      <h3>六、其他</h3>
+      <ol start="17">
+        <li>包裝要完整；熱食<b>完全放涼</b>再冰。</li>
+        <li>取用公用食材／公共品項，用完歸位並登記。</li>
+      </ol>
+    </div>
+    <div class="acts"><button class="btn ghost" id="btnRulesClose">關閉</button></div>
   </div>
 </div>
 
@@ -1388,6 +1444,11 @@ $("#mask").addEventListener("click", e => { if (e.target.id === "mask") closeEdi
 $("#minus").addEventListener("click", () => { const q = $("#fQty"); q.value = Math.max(0, (Number(q.value) || 0) - 1); });
 $("#plus").addEventListener("click",  () => { const q = $("#fQty"); q.value = (Number(q.value) || 0) + 1; });
 $("#btnAdd").addEventListener("click", () => openEdit(null));
+
+/* 📋 冷凍庫使用規則（前賢 2026-10-06：規則也放在冷凍位置圖這邊） */
+$("#btnRules").addEventListener("click", () => $("#rulesMask").classList.add("on"));
+$("#btnRulesClose").addEventListener("click", () => $("#rulesMask").classList.remove("on"));
+$("#rulesMask").addEventListener("click", e => { if (e.target.id === "rulesMask") $("#rulesMask").classList.remove("on"); });
 
 /* ================= 寫入資料 ================= */
 function needReady() {
