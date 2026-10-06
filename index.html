@@ -394,6 +394,11 @@ nav button.on b{filter:none;opacity:1}
 .rules li{margin-bottom:5px}
 .rules b{color:var(--deep)}
 #rulesSheet{max-height:88vh}
+#rulesSheet .rh{position:sticky;top:-16px;z-index:2;background:#fff;display:flex;align-items:center;
+  justify-content:space-between;gap:8px;padding:6px 0 8px;margin:-6px 0 6px}
+#rulesSheet .rh h2{margin:0}
+.rclose{border:0;background:#eef7fd;color:#12486b;width:36px;height:36px;border-radius:50%;
+  font-size:16px;font-weight:700;cursor:pointer;flex:0 0 auto;line-height:1;font-family:inherit}
 #btnRules{flex:0 0 auto;white-space:nowrap}
 /* ---------- modal ---------- */
 .mask{
@@ -613,7 +618,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
 <!-- ============ 冷凍庫使用規則（前賢 2026-10-06） ============ -->
 <div class="mask" id="rulesMask">
   <div class="sheet" id="rulesSheet">
-    <h2>📋 冷凍庫使用規則</h2>
+    <div class="rh"><h2>📋 冷凍庫使用規則</h2><button type="button" class="rclose" id="btnRulesClose2" aria-label="關閉">✕</button></div>
     <div class="rules">
       <h3>一、總則</h3>
       <ol>
@@ -1448,6 +1453,7 @@ $("#btnAdd").addEventListener("click", () => openEdit(null));
 /* 📋 冷凍庫使用規則（前賢 2026-10-06：規則也放在冷凍位置圖這邊） */
 $("#btnRules").addEventListener("click", () => $("#rulesMask").classList.add("on"));
 $("#btnRulesClose").addEventListener("click", () => $("#rulesMask").classList.remove("on"));
+$("#btnRulesClose2").addEventListener("click", () => $("#rulesMask").classList.remove("on"));
 $("#rulesMask").addEventListener("click", e => { if (e.target.id === "rulesMask") $("#rulesMask").classList.remove("on"); });
 
 /* ================= 寫入資料 ================= */
