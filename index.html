@@ -59,7 +59,7 @@ nav button.on b{filter:none;opacity:1}
   border:2px solid #b6c3ce;border-radius:16px 16px 8px 8px;
   box-shadow:0 12px 28px rgba(18,38,56,.20),inset 0 1px 0 #fff
 }
-.doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:14px;padding-right:8px}
+.doors{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:18px;padding-right:8px}
 .door{
   position:relative;border-radius:12px;padding:9px 28px 0 11px;min-width:0;
   background:linear-gradient(165deg,rgba(232,245,255,.62),rgba(198,224,243,.40));
@@ -121,7 +121,7 @@ nav button.on b{filter:none;opacity:1}
 }
 /* 層數：顯示在橫槓正中間 */
 .tier-no{
-  position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);z-index:3;pointer-events:none;
+  position:absolute;left:50%;bottom:4px;transform:translateX(-50%);z-index:3;pointer-events:none;   /* 前賢：層號原本 bottom:-1px 凸出到層外，壓在上下門交界，看起來像跑到下門 → 移回該層內部（槓條上） */
   font-size:11.5px;font-weight:700;line-height:1;letter-spacing:.5px;color:#2b4356;white-space:nowrap;
   background:linear-gradient(180deg,#ffffff,#e7eff5);border:1px solid #b6c4d0;border-radius:8px;
   padding:3px 9px;box-shadow:0 1px 2px rgba(0,0,0,.16)
