@@ -121,7 +121,7 @@ nav button.on b{filter:none;opacity:1}
 }
 /* 層數：顯示在橫槓正中間 */
 .tier-no{
-  position:absolute;left:50%;bottom:4px;transform:translateX(-50%);z-index:3;pointer-events:none;   /* 前賢：層號原本 bottom:-1px 凸出到層外，壓在上下門交界，看起來像跑到下門 → 移回該層內部（槓條上） */
+  position:static;display:block;width:fit-content;margin:0 auto 4px;pointer-events:none;   /* 前賢 2026-10-07：層號改成該層的「標題列」放最上面（原本絕對定位貼在層底，緊鄰下門內容，被讀成下門那一層的名字） */
   font-size:11.5px;font-weight:700;line-height:1;letter-spacing:.5px;color:#2b4356;white-space:nowrap;
   background:linear-gradient(180deg,#ffffff,#e7eff5);border:1px solid #b6c4d0;border-radius:8px;
   padding:3px 9px;box-shadow:0 1px 2px rgba(0,0,0,.16)
@@ -938,11 +938,13 @@ function tierHTML(fid) {
   const list = items.filter(i => Number(i.floor) === fid && (Number(i.qty) || 0) > 0);
   /* 前賢：每層有幾項不用顯示，只顯示層名 + 品項名稱 */
   /* 前賢 2026-10-05：每層只留「第N層 ＋ 分類內容」一行（原本分類另外顯示在上方，現移到層數那） */
+  /* 前賢 2026-10-07：層號(第N層＋層名)原本排在品項後面、被擠到該層最底部，緊鄰下面那扇門，
+     看起來像「上門第3層跑到下門」→ 改成該層的標題列放在最上面，品項接在它下面 */
   return `<div class="tier" id="tier-${fid}" data-floor="${fid}" data-door="${f.key}">
+      <span class="tier-no">第${floorNo(fid)}層　${esc(f.name)}</span>
       <div class="items">
         ${list.length ? list.map(chipHTML).join("") : '<span class="empty">＋ 放入</span>'}
       </div>
-      <span class="tier-no">第${floorNo(fid)}層　${esc(f.name)}</span>
     </div>`;
 }
 
