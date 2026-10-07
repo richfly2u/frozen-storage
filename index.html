@@ -667,7 +667,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
     <div class="vfrow">
       <span class="vdot" id="vDot"></span>
       <span id="vState">未開始</span>
-      <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」">🎤 開始聽</button>
+      <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」">❄️ 開始聽</button>
       <button class="btn sm ghost" id="btnStop">停止</button>
     </div>
   </div>
@@ -1533,7 +1533,7 @@ function vState(txt, live) {
   $("#vState").textContent = txt;
   $("#vDot").classList.toggle("live", !!live);
   const f = $("#voiceFloat"); if (f) f.classList.toggle("on", !!live);
-  const b = $("#btnListen"); if (b) b.textContent = live ? "⏹ 停止聽取" : "🎤 開始聽";
+  const b = $("#btnListen"); if (b) b.textContent = live ? "⏹ 停止聽取" : "❄️ 開始聽";
 }
 async function keepAwake(on) {
   try {
@@ -1734,7 +1734,7 @@ function toggleVoiceFill() {
   if (fillListening) { try { fillRec.stop(); } catch (_) {} return; }
   stopListen();                              // 避免與主頁語音搶麥克風
   fillListening = true;
-  $("#btnVoiceFill").textContent = "🎤 聽取中…";
+  $("#btnVoiceFill").textContent = "❄️ 聽取中…";
   $("#fVoiceHint").style.display = "";
   $("#fVoiceHint").textContent = "請講「品名＋數量」，例如：香菇頭兩包";
   fillRec = new SR();
