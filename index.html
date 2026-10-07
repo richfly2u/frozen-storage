@@ -290,6 +290,9 @@ nav button.on b{filter:none;opacity:1}
   .mapmain{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;gap:8px}
   .freezer{flex:1 1 auto;min-height:132px}
   .freezer .doors{display:flex;flex-direction:row;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}   /* 門跟著冰箱長高（層均分） */
+  /* 前賢 2026-10-07：手機把門變寬 —— 收掉左右多餘邊距（原本 430px 只用到 378px） */
+  #freezer{margin-left:0;margin-right:0;padding-left:3px;padding-right:8px}
+  .freezer .doors{gap:5px;padding-right:2px}
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;padding:5px 18px 0 8px}
   .freezer .door-head{font-size:10px;letter-spacing:2px;padding:6px 3px;right:-1px}
   .freezer .shelves{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(84px,1fr);gap:5px;padding-top:3px}
@@ -1791,7 +1794,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261007-1501";
+  var MY="20261007-2055";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
