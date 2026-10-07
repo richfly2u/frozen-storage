@@ -1536,7 +1536,7 @@ function vState(txt, live) {
   $("#vState").textContent = txt;
   $("#vDot").classList.toggle("live", !!live);
   const f = $("#voiceFloat"); if (f) f.classList.toggle("on", !!live);
-  const b = $("#btnListen"); if (b) b.innerHTML = live ? "⏹ 停止聽取" : LISTEN_HTML + " 開始聽";
+  const b = $("#btnListen"); if (b) b.innerHTML = live ? "⏹ 停止聽取" : LISTEN_L + " 開始聽 " + LISTEN_R;
 }
 async function keepAwake(on) {
   try {
@@ -1547,7 +1547,8 @@ async function keepAwake(on) {
   } catch (e) { /* 不支援就算了 */ }
 }
 /* 前賢 2026-10-07：開始聽＝左右聲波紋＋正立麥克風（不用斜的 🎤 emoji） */
-const LISTEN_HTML = '<svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="0" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/><rect x="4.2" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/></svg><svg class="mic" width="12" height="17" viewBox="0 0 12 17" fill="none" aria-hidden="true"><rect x="3.4" y="0" width="5.2" height="9" rx="2.6" fill="currentColor"/><path d="M1 7.4a5 5 0 0 0 10 0" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="5.2" y="12.2" width="1.6" height="3.2" rx="0.8" fill="currentColor"/><rect x="2.6" y="15" width="6.8" height="1.7" rx="0.85" fill="currentColor"/></svg> 開始聽 <svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="3.6" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/><rect x="7.8" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="12" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/></svg>';
+const LISTEN_L = '<svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="0" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/><rect x="4.2" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/></svg><svg class="mic" width="12" height="17" viewBox="0 0 12 17" fill="none" aria-hidden="true"><rect x="3.4" y="0" width="5.2" height="9" rx="2.6" fill="currentColor"/><path d="M1 7.4a5 5 0 0 0 10 0" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="5.2" y="12.2" width="1.6" height="3.2" rx="0.8" fill="currentColor"/><rect x="2.6" y="15" width="6.8" height="1.7" rx="0.85" fill="currentColor"/></svg>';
+const LISTEN_R = '<svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="3.6" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/><rect x="7.8" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="12" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/></svg>';
 
 function startListen() {
   if (!SR) { toast("此瀏覽器不支援語音辨識，請用 Android Chrome 開啟"); return; }
