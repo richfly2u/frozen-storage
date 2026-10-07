@@ -89,13 +89,6 @@ nav button.on b{filter:none;opacity:1}
 }
 .door[data-door="U"] .door-head{color:#0d4a72;background:rgba(31,127,181,.18)}
 .door[data-door="D"] .door-head{color:#0c5642;background:rgba(19,133,103,.18)}
-/* 門鉸鏈 */
-.door .hinge{
-  position:absolute;left:-9px;width:10px;height:26px;border-radius:3px 0 0 3px;z-index:0;
-  background:linear-gradient(180deg,#e3eaee,#98a5ae);box-shadow:0 1px 3px rgba(0,0,0,.3)
-}
-.door .hinge.h1{top:20%}
-.door .hinge.h2{bottom:20%}
 .shelves{position:relative;z-index:1;display:grid;grid-auto-rows:auto;
   gap:6px;min-width:0;padding-top:3px;padding-bottom:0}
 .tier{
@@ -125,7 +118,6 @@ nav button.on b{filter:none;opacity:1}
   .doors{gap:10px;padding-right:6px}
   .door{padding:8px 26px 0 10px;border-width:2px}
   .door-head{font-size:11px;letter-spacing:3px;padding:7px 4px;right:-1px}
-  .door .hinge{left:-7px;width:8px;height:20px}
   .shelves{padding-top:3px}
   .tier{padding:5px 4px 18px}
   .tier-no{font-size:10px;padding:2px 6px}   /* 前賢：層數那行改成「第N層 ＋ 分類內容」，字縮一點才塞得下 */
@@ -954,8 +946,7 @@ function renderMap() {
     <div class="doors">
       ${doors.map(d => `
         <section class="door" data-door="${d.key}">
-          <div class="hinge h1"></div><div class="hinge h2"></div>
-          <div class="door-head">${d.label}</div>
+                    <div class="door-head">${d.label}</div>
           <div class="shelves">${d.floors.map(tierHTML).join("")}</div>
         </section>`).join("")}
     </div>`;
