@@ -109,9 +109,15 @@ nav button.on b{filter:none;opacity:1}
 /* 層數：顯示在橫槓正中間 */
 .tier-no{
   position:static;display:block;width:fit-content;margin:0 auto 4px;pointer-events:none;   /* 前賢 2026-10-07：層號改成該層的「標題列」放最上面（原本絕對定位貼在層底，緊鄰下門內容，被讀成下門那一層的名字） */
-  font-size:11.5px;font-weight:700;line-height:1;letter-spacing:.5px;color:#2b4356;white-space:nowrap;
-  background:linear-gradient(180deg,#ffffff,#e7eff5);border:1px solid #b6c4d0;border-radius:8px;
-  padding:3px 9px;box-shadow:0 1px 2px rgba(0,0,0,.16)
+  font-size:11.5px;font-weight:800;line-height:1.15;letter-spacing:.5px;white-space:nowrap;
+  color:#3f3226;
+  background-color:#e7ddcc;
+  background-image:
+    repeating-linear-gradient(88deg,rgba(120,102,78,.10) 0 1px,rgba(255,255,255,0) 1px 9px),
+    repeating-linear-gradient(92deg,rgba(96,80,60,.07) 0 1.5px,rgba(255,255,255,0) 1.5px 17px),
+    linear-gradient(180deg,#f0e9dc 0%,#e5dac8 60%,#dbcdb6 100%);
+  border:1px solid #c2b39c;
+  box-shadow:0 1px 1px rgba(60,45,25,.14),inset 0 1px 0 rgba(255,255,255,.5);
 }
 
 @media (max-width:520px){
@@ -1785,7 +1791,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261007-1450";
+  var MY="20261007-1501";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
