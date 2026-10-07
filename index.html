@@ -1781,5 +1781,20 @@ if (m) gotoFloor(m);
 /* 首次渲染後若有 ?f= 再次定位（等資料進來） */
 setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 </script>
-</body>
+
+<!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
+<script id="autoVersion">
+(function(){
+  var MY="20261007-1450";
+  try{
+    fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+      if(j&&j.v&&j.v!==MY){
+        var u=new URL(location.href);
+        if(u.searchParams.get("v")!==j.v){u.searchParams.set("v",j.v);location.replace(u.toString());}
+      }
+    }).catch(function(){});
+  }catch(e){}
+})();
+</script>
+
 </html>
