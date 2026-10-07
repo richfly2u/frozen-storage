@@ -96,15 +96,6 @@ nav button.on b{filter:none;opacity:1}
 }
 .door .hinge.h1{top:20%}
 .door .hinge.h2{bottom:20%}
-/* 門鎖（門右上角） */
-.door .lock{
-  position:absolute;top:9px;right:14px;width:13px;height:13px;border-radius:3px;z-index:2;
-  background:linear-gradient(180deg,#454f57,#1b2126);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 1px 2px rgba(0,0,0,.4)
-}
-.door .lock::after{
-  content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:4px;height:6px;border-radius:2px;background:#0a0e11
-}
 .shelves{position:relative;z-index:1;display:grid;grid-auto-rows:auto;
   gap:6px;min-width:0;padding-top:3px;padding-bottom:0}
 .tier{
@@ -129,7 +120,6 @@ nav button.on b{filter:none;opacity:1}
   .door{padding:8px 26px 0 10px;border-width:2px}
   .door-head{font-size:11px;letter-spacing:3px;padding:7px 4px;right:-1px}
   .door .hinge{left:-7px;width:8px;height:20px}
-  .door .lock{top:7px;right:11px;width:11px;height:11px}
   .shelves{padding-top:3px}
   .tier{padding:5px 4px 18px}
   .tier-no{font-size:10px;padding:2px 6px}   /* 前賢：層數那行改成「第N層 ＋ 分類內容」，字縮一點才塞得下 */
@@ -958,7 +948,6 @@ function renderMap() {
           <div class="hinge h1"></div><div class="hinge h2"></div>
           <div class="door-head">${d.label}</div>
           <div class="shelves">${d.floors.map(tierHTML).join("")}</div>
-          <div class="lock"></div>
         </section>`).join("")}
     </div>`;
 
