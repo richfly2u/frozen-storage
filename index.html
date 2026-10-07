@@ -633,7 +633,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
       <div class="rn">2. 依層分類擺放：</div>
       <ul class="rul">
         <li>上門 第1層：中藥／湯料／五穀</li>
-        <li>上門 第2層：餡料／素料</li>
+        <li>上門 第2層：素料／餡料</li>
         <li>上門 第3層：素料</li>
         <li>下門 第1層：素料</li>
         <li>下門 第2層：其他／私人</li>
@@ -722,7 +722,7 @@ const STAPLES = ["當歸", "枸杞", "紅棗", "豆包", "麵腸", "火腿", "�
    ※ id 是資料庫用的固定編號：新增樓層要給「沒用過的號碼」，不要動舊號碼，免得住錯位置 */
 const FLOORS = [
   { id: 1, door: "上門", key: "U", name: "中藥 湯料 五穀" },   /* 前賢：層名用空白分隔、不要標點 */
-  { id: 2, door: "上門", key: "U", name: "餡料 素料" },
+  { id: 2, door: "上門", key: "U", name: "素料/餡料" },
   { id: 5, door: "上門", key: "U", name: "素料" },
   { id: 3, door: "下門", key: "D", name: "素料/其他" },
   { id: 4, door: "下門", key: "D", name: "雜物/私人" }
