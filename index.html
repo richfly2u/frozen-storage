@@ -500,6 +500,9 @@ input[type=text],input[type=number],select,textarea{
 .voice-float #btnStop{display:none}                 /* 只用同一顆鈕切換開始／停止 */
 .voice-float.on .vfrow{background:#fff2f5;border-color:#f0b4c3}
 .voice-float.on #btnListen{background:linear-gradient(180deg,#e0355a,#c0203f);border-color:#a5183a;color:#fff}
+#btnListen{display:inline-flex;align-items:center;gap:4px}
+#btnListen .wv{opacity:.92}
+#btnListen .mic{margin:0 1px}
 #bottomBar .voice-float .vfrow{padding:4px 4px 4px 8px;border-radius:11px;box-shadow:none;gap:6px;background:#fff;border:1px solid #dbeaf4}
 #bottomBar .vfrow #vState{font-size:12px;max-width:78px}
 #bottomBar .voice-float .btn{padding:6px 10px;font-size:13px;border-radius:9px}
@@ -667,7 +670,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
     <div class="vfrow">
       <span class="vdot" id="vDot"></span>
       <span id="vState">未開始</span>
-      <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」">🎤 開始聽</button>
+      <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」"><svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="0" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/><rect x="4.2" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/></svg><svg class="mic" width="12" height="17" viewBox="0 0 12 17" fill="none" aria-hidden="true"><rect x="3.4" y="0" width="5.2" height="9" rx="2.6" fill="currentColor"/><path d="M1 7.4a5 5 0 0 0 10 0" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="5.2" y="12.2" width="1.6" height="3.2" rx="0.8" fill="currentColor"/><rect x="2.6" y="15" width="6.8" height="1.7" rx="0.85" fill="currentColor"/></svg> 開始聽 <svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="3.6" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/><rect x="7.8" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="12" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/></svg></button>
       <button class="btn sm ghost" id="btnStop">停止</button>
     </div>
   </div>
@@ -1533,7 +1536,7 @@ function vState(txt, live) {
   $("#vState").textContent = txt;
   $("#vDot").classList.toggle("live", !!live);
   const f = $("#voiceFloat"); if (f) f.classList.toggle("on", !!live);
-  const b = $("#btnListen"); if (b) b.textContent = live ? "⏹ 停止聽取" : "🎤 開始聽";
+  const b = $("#btnListen"); if (b) b.innerHTML = live ? "⏹ 停止聽取" : LISTEN_HTML + " 開始聽";
 }
 async function keepAwake(on) {
   try {
@@ -1543,6 +1546,9 @@ async function keepAwake(on) {
     } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
   } catch (e) { /* 不支援就算了 */ }
 }
+/* 前賢 2026-10-07：開始聽＝左右聲波紋＋正立麥克風（不用斜的 🎤 emoji） */
+const LISTEN_HTML = '<svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="0" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/><rect x="4.2" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/></svg><svg class="mic" width="12" height="17" viewBox="0 0 12 17" fill="none" aria-hidden="true"><rect x="3.4" y="0" width="5.2" height="9" rx="2.6" fill="currentColor"/><path d="M1 7.4a5 5 0 0 0 10 0" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="5.2" y="12.2" width="1.6" height="3.2" rx="0.8" fill="currentColor"/><rect x="2.6" y="15" width="6.8" height="1.7" rx="0.85" fill="currentColor"/></svg> 開始聽 <svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="3.6" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/><rect x="7.8" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="12" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/></svg>';
+
 function startListen() {
   if (!SR) { toast("此瀏覽器不支援語音辨識，請用 Android Chrome 開啟"); return; }
   if (listening) return;
