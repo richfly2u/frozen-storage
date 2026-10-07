@@ -488,6 +488,9 @@ input[type=text],input[type=number],select,textarea{
 .voice-float{position:relative;flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 /* 語音彈出層：聽到的字與卡片改成上下堆疊（原本兩者絕對定位在同一點 → 藍條會蓋住卡片下半與按鈕；前賢 2026-10-05 回報） */
 .voice-float .vpop{position:absolute;bottom:calc(100% + 8px);right:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:min(86vw,330px)}
+/* 前賢 2026-10-07：語音確認卡裡「第X層」用不同顏色標示，一眼看到放哪一層 */
+.vcard .flchip{display:inline-block;background:rgba(31,122,84,.15);color:#0f5132;border:1px solid rgba(31,122,84,.38);
+ border-radius:7px;padding:0 7px;font-weight:800;letter-spacing:.5px}
 .voice-float .vpop>*{width:100%}
 .voice-float #vCard:empty{display:none}
 .voice-float .vheard{margin-bottom:0}
@@ -1595,6 +1598,11 @@ function centerVPop() {
 }
 window.addEventListener("resize", () => centerVPop());
 
+/* 前賢 2026-10-07：樓層標籤裡的「第X層」單獨上色（其餘照原文顏色） */
+function flChip(id) {
+  return esc(floorLabel(id)).replace(/第\d+層/, m => `<span class="flchip">${m}</span>`);
+}
+
 function renderVoiceCard(r) {
   const box = $("#vCard");
   /* 前賢 2026-10-05：卡片一出現就把「聽到的字」藍條收掉，不要留在底部 */
@@ -1624,10 +1632,10 @@ function renderVoiceCard(r) {
   const after = Math.max(0, cur + (isIn ? r.qty : -r.qty));
   const f = floorOf(it.floor);
   const floorWarn = (r.floor && Number(r.floor) !== Number(it.floor))
-    ? `<br><span style="color:#c9455a">⚠️ 你講的是 ${esc(floorLabel(r.floor))}，但這個品項記在 ${esc(floorLabel(it.floor))}</span>` : "";
+    ? `<br><span style="color:#c9455a">⚠️ 你講的是 ${flChip(r.floor)}，但這個品項記在 ${flChip(it.floor)}</span>` : "";
   box.innerHTML = `<div class="vcard">
     <div class="big">${isIn ? "⬇️ 置入" : "⬆️ 移出"}　<span class="nm">${esc(it.name)}</span>　${r.qty}${esc(r.unit || it.unit || "")}</div>
-    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　${esc(floorLabel(it.floor))} ${esc(f.name)}${floorWarn}</div>
+    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　${flChip(it.floor)} ${esc(f.name)}${floorWarn}</div>
     <label>經手人</label>
     <input type="text" id="vBy" list="byList" value="${esc(operator)}" placeholder="例：陳師姐">
     <div class="acts">
