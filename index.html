@@ -489,8 +489,8 @@ input[type=text],input[type=number],select,textarea{
 /* 語音彈出層：聽到的字與卡片改成上下堆疊（原本兩者絕對定位在同一點 → 藍條會蓋住卡片下半與按鈕；前賢 2026-10-05 回報） */
 .voice-float .vpop{position:absolute;bottom:calc(100% + 8px);right:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:min(86vw,330px)}
 /* 前賢 2026-10-07：語音確認卡裡「第X層」用不同顏色標示，一眼看到放哪一層 */
-.vcard .flchip{display:inline-block;background:rgba(31,122,84,.15);color:#0f5132;border:1px solid rgba(31,122,84,.38);
- border-radius:7px;padding:0 7px;font-weight:800;letter-spacing:.5px}
+.vcard .flchip{display:inline-block;background:#1b4f8a;color:#fff;border-radius:7px;padding:1px 8px;font-weight:800;
+ letter-spacing:.5px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
 .voice-float .vpop>*{width:100%}
 .voice-float #vCard:empty{display:none}
 .voice-float .vheard{margin-bottom:0}
