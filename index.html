@@ -1301,7 +1301,10 @@ async function takeOut(it) {
 async function putBack(entry, floor) {
   if (!entry || !ensureOperator() || !needReady()) return;
   setPendingPlace(null);
-  const found = items.find(i => i._id === entry.id);
+  /* 前賢 2026-10-08：同名食材只保留一筆 → 先以 id 找，找不到就用「名字」找既有的來合併 */
+  const nmKey = String(entry.name || "").trim();
+  const found = items.find(i => i._id === entry.id) ||
+                items.find(i => i && String(i.name).trim() === nmKey);
   const by = operator || (found && found.by) || "";
   if (!by) { toast("請先設定經手人"); return; }
   /* 前賢：放錯層先警告（可選「仍要放入」） */
@@ -1596,11 +1599,24 @@ $("#btnSave").addEventListener("click", async () => {
       toast("已更新：" + name);
       pendingHighlight = editId;
     } else {
-      await addDoc(collection(db, COLL_ITEMS), {
-        name, qty, unit, floor, note, by, updatedAt: Date.now(), createdAt: Date.now()
-      });
-      await addLog(floor, name, qty, unit, "new", by);
-      toast("已新增：" + name);
+      /* 前賢 2026-10-08：同名食材只保留一筆 → 有同名的直接併入數量，不新增第二筆 */
+      const dup = items.find(i => i && String(i.name).trim() === name);
+      if (dup) {
+        await updateDoc(doc(db, COLL_ITEMS, dup._id), {
+          qty: (Number(dup.qty) || 0) + qty,
+          floor, unit: unit || dup.unit || "", note: note || dup.note || "",
+          by, updatedAt: Date.now()
+        });
+        await addLog(floor, name, qty, unit, "in", by);
+        pendingHighlight = dup._id;
+        toast("已有「" + name + "」→ 已合併數量");
+      } else {
+        await addDoc(collection(db, COLL_ITEMS), {
+          name, qty, unit, floor, note, by, updatedAt: Date.now(), createdAt: Date.now()
+        });
+        await addLog(floor, name, qty, unit, "new", by);
+        toast("已新增：" + name);
+      }
     }
     closeEdit();
     /* 存完直接帶到該層：捲過去、框起來 */
@@ -1904,7 +1920,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-152019";
+  var MY="20261008-152654";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
