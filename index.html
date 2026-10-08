@@ -355,7 +355,7 @@ nav button.on b{filter:none;opacity:1}
 .freezer .tier .chip{width:auto!important;flex:0 0 auto!important;padding:0 calc(4px*var(--dz,1))!important;max-width:100%!important}
 .freezer .tier .chip .nm{max-width:none!important}
 /* 前賢 2026-10-08：冰箱食材加橢圓（膠囊）外框 —— 米黃底＋棕框 */
-.freezer .tier .chip{border-radius:999px!important;border:1px solid #c8a97a!important;background:#fdf3dd!important;padding:0 calc(6px*var(--dz,1))!important}
+.freezer .tier .chip{border-radius:999px!important;border:1.5px solid #c8a97a!important;background:#fff!important;padding:0 calc(9px*var(--dz,1))!important}   /* 前賢 2026-10-08：框稍加大＋白底 */
 /* 前賢 2026-10-08：食材庫卡片左右空白收小（欄寬 64→52、卡片內距 11→5） */
 .outside .os-items{grid-template-columns:repeat(auto-fill,minmax(62px,1fr))!important}   /* 52 會讓「綠豆沙餡」擠成兩行 → 62 維持單行 */
 .outside .os-chip{padding:1px 5px 1px 5px!important}
@@ -1950,7 +1950,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-183723";
+  var MY="20261008-184354";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
