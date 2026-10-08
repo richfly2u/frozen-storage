@@ -349,6 +349,11 @@ nav button.on b{filter:none;opacity:1}
 .outside #btnAdd{font-size:calc(14px*var(--dz,1))!important;padding:calc(6px*var(--dz,1)) calc(11px*var(--dz,1))!important}
 .os-head .sbox input{font-size:calc(14px*var(--dz,1))!important}
 .os-head .sbox .sico{font-size:calc(15px*var(--dz,1))!important}
+/* 前賢 2026-10-08：冰箱品項卡片也改成「依文字自動寬」——左右白 2→10px(內距)、每層更多個 */
+/* 關鍵：容器必須 flex-direction:row（先前變成一條直線就是因為它是 column） */
+.freezer .tier .items{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;gap:calc(2px*var(--dz,1))!important;width:100%!important;align-content:flex-start!important;justify-content:flex-start!important}
+.freezer .tier .chip{width:auto!important;flex:0 0 auto!important;padding:0 calc(4px*var(--dz,1))!important;max-width:100%!important}
+.freezer .tier .chip .nm{max-width:none!important}
 /* 前賢 2026-10-08：食材庫卡片左右空白收小（欄寬 64→52、卡片內距 11→5） */
 .outside .os-items{grid-template-columns:repeat(auto-fill,minmax(62px,1fr))!important}   /* 52 會讓「綠豆沙餡」擠成兩行 → 62 維持單行 */
 .outside .os-chip{padding:1px 5px 1px 5px!important}
@@ -1943,7 +1948,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-165730";
+  var MY="20261008-175640";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
