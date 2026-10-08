@@ -1357,6 +1357,9 @@ function bindChipGestures(el, it, kind) {
       setPendingPlace((pendingPlace && pendingPlace.name === it.name) ? null : it);
       return;
     }
+    /* 前賢 2026-10-08：置入模式中（已點選食材庫某項）點到冰箱裡既有品名時，
+       直接放進「那一層」，不要跳出編輯視窗 —— 點到哪層就置入哪層 */
+    if (pendingPlace) { putBack(pendingPlace, Number(it.floor)); return; }
     openEdit(it._id);
   });
   el.addEventListener("keydown", e => {
@@ -1791,7 +1794,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-1116";
+  var MY="20261008-1121";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
