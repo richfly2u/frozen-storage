@@ -103,8 +103,8 @@ nav button.on b{filter:none;opacity:1}
 .tier-no{
   position:static;display:block;width:fit-content;margin:0 auto 4px;pointer-events:none;   /* 前賢 2026-10-07：層號改成該層的「標題列」放最上面（原本絕對定位貼在層底，緊鄰下門內容，被讀成下門那一層的名字） */
   font-size:11.5px;font-weight:700;line-height:1.15;letter-spacing:.3px;white-space:nowrap;
-  color:rgba(64,48,32,.80);                              /* 前賢 2026-10-08：層字改成「鏤進去」凹雕感 */
-  text-shadow:0 1px 0 rgba(255,255,255,.95),0 -1px 0 rgba(38,26,16,.62);   /* 無模糊：下緣亮線＋上緣暗線＝銳利刻痕 */
+  color:#3a2d1f;                              /* 前賢 2026-10-08：層字改成「鏤進去」凹雕感 */
+  /* 前賢 2026-10-08：凹雕看不清 → 取消內嵌效果，用清楚的深色字 */
   background-color:#e7ddcc;
   background-image:
     repeating-linear-gradient(88deg,rgba(120,102,78,.10) 0 1px,rgba(255,255,255,0) 1px 9px),
@@ -537,10 +537,10 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   /* 前賢 2026-10-08：自動密度 —— 東西變多時自動縮字／縮框；最高原則＝同頁不捲動 */
   .freezer .tier{min-height:calc(44px*var(--dz,1))!important;padding:0 3px calc(3px*var(--dz,1))!important}
   .freezer .tier .tier-no{font-size:calc(11.5px*var(--dz,1))!important;letter-spacing:0!important;line-height:1.12;padding:calc(1px*var(--dz,1)) calc(6px*var(--dz,1)) calc(1px*var(--dz,1)) calc(2px*var(--dz,1))}
-  .freezer .tier .chip{padding:0 calc(4px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.12!important;min-height:0!important;height:auto!important;align-self:start!important}   /* 前賢 2026-10-08：白框內留白太多 → 收掉 */
+  .freezer .tier .chip{padding:0 calc(2px*var(--dz,1))!important;font-size:calc(12.5px*var(--dz,1))!important;line-height:1.12!important;min-height:0!important;height:auto!important;align-self:start!important}   /* 前賢 2026-10-08：字大一點、左右留白少一點 */
   .freezer .tier .items{align-items:start!important;grid-auto-rows:auto!important}   /* 欄寬固定後文字本來就放得下，不需強制溢出 */
   .os-chip{padding:calc(1px*var(--dz,1)) calc(5px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important;min-height:0!important}
-  .freezer .tier .items{gap:calc(3px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(54px,1fr))!important}   /* 欄寬固定：字不會被截 */
+  .freezer .tier .items{gap:calc(3px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(50px,1fr))!important}   /* 前賢：縮欄寬以放三列 */
   .outside .os-grid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))!important;gap:calc(4px*var(--dz,1))!important}   /* 欄寬固定 */
   .outside .os-head{font-size:calc(13.5px*var(--dz,1))}
   .outside #btnAdd{font-size:calc(12.5px*var(--dz,1));padding:calc(4px*var(--dz,1)) calc(8px*var(--dz,1))}
@@ -1829,7 +1829,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-123512";
+  var MY="20261008-130820";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
