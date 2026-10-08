@@ -341,6 +341,15 @@ nav button.on b{filter:none;opacity:1}
   box-shadow:0 10px 26px rgba(10,40,70,.35)
 }
 #dropOut.on{display:flex}
+/* 前賢 2026-10-08：分類不符警告彈窗 */
+#warnSheet{max-width:420px;border-radius:16px;padding:16px 16px 18px;text-align:left}
+#warnSheet .whead{font-size:16px;font-weight:800;color:#8a4b00;margin-bottom:8px}
+#warnSheet .wbody{font-size:14px;line-height:1.75;color:#22323f}
+#warnSheet .wbody b{color:#0b4b6b}
+#warnSheet .wq{color:#b35c00;font-weight:700}
+#warnSheet .acts{margin-top:14px}
+#warnSheet .acts .btn{flex:1 1 auto;padding:11px 12px}
+
 /* 前賢 2026-10-08：冰箱食材拖近食材庫＝可入庫，方框變橙色閃爍 */
 .outside.invHot{animation:invBlink 1.5s ease-in-out infinite}
 @keyframes invBlink{
@@ -1086,11 +1095,50 @@ function outsideCloseMenu(e) {
   if (chipMenuEl && !chipMenuEl.contains(e.target) && !onMore) closeChipMenu();
 }
 
+/* 前賢 2026-10-08：把關 —— 食材要對應到相對的分類層，放錯層先警告（可覆蓋） */
+function esc(s) { return String(s == null ? "" : s).split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;"); }
+function floorLabel(id) {
+  const f = floorOf(id);
+  return (f.door ? f.door + " " : "") + "第" + f.local + "層" + (f.name ? "（" + f.name + "）" : "");
+}
+function homeFloorOf(name, excludeId) {
+  const n = String(name == null ? "" : name).trim();
+  if (!n) return null;
+  const hit = items.find(i => i && String(i.name).trim() === n && i._id !== excludeId);
+  return hit ? Number(hit.floor) : null;
+}
+function askFloorWarn(name, fromFloor, toFloor) {
+  return new Promise(resolve => {
+    const mask = $("#warnMask");
+    if (!mask || !$("#warnText")) { resolve(true); return; }
+    $("#warnText").innerHTML = "「<b>" + esc(name) + "</b>」目前屬於 <b>" + floorLabel(fromFloor) +
+      "</b>，<br>你要放到 <b>" + floorLabel(toFloor) + "</b>。<br>" +
+      '<span class="wq">分類看起來不一樣，確定要放嗎？</span>';
+    mask.classList.add("on");
+    const done = ok => {
+      mask.classList.remove("on");
+      $("#warnOk").onclick = null; $("#warnCancel").onclick = null;
+      resolve(ok);
+    };
+    $("#warnOk").onclick = () => done(true);
+    $("#warnCancel").onclick = () => done(false);
+  });
+}
+/* 回傳 true＝放行；false＝使用者取消 */
+async function floorGuard(name, toFloor, fromFloor, excludeId) {
+  const target = Number(toFloor);
+  const home = (fromFloor === null || fromFloor === undefined)
+    ? homeFloorOf(name, excludeId) : Number(fromFloor);
+  if (!home || home === target) return true;
+  return await askFloorWarn(name, home, target);
+}
 async function moveItemTo(it, floor) {
   const from = Number(it.floor), to = Number(floor);
   if (!needReady() || from === to) return;
   const by = operator || it.by || "";
   if (!by) { toast("請先設定經手人"); return; }
+  /* 前賢：換層＝換分類，先警告（可選「仍要放入」） */
+  if (!(await floorGuard(it.name, to, from, it._id))) return;
   try {
     await updateDoc(doc(db, COLL_ITEMS, it._id), { floor: to, updatedAt: Date.now() });
     await addLog(to, it.name, Number(it.qty) || 0, it.unit || "", "move", by, from);
@@ -1255,6 +1303,8 @@ async function putBack(entry, floor) {
   const found = items.find(i => i._id === entry.id);
   const by = operator || (found && found.by) || "";
   if (!by) { toast("請先設定經手人"); return; }
+  /* 前賢：放錯層先警告（可選「仍要放入」） */
+  if (!(await floorGuard(entry.name, floor, null, null))) return;
   const it = found;
   try {
     if (it) {
@@ -1523,6 +1573,14 @@ $("#btnSave").addEventListener("click", async () => {
   if (!name) { toast("請輸入品名"); return; }
   if (!by)   { toast("請填經手人（放入／移出者）"); $("#fBy").focus(); return; }
   setOperator(by); rememberBy(by);
+
+  /* 前賢：存檔前把關 —— 食材要對應正確分類層 */
+  if (editId) {
+    const oldF = Number((items.find(i => i._id === editId) || {}).floor);
+    if (oldF !== floor && !(await floorGuard(name, floor, oldF, editId))) return;
+  } else {
+    if (!(await floorGuard(name, floor, null, null))) return;
+  }
 
   $("#btnSave").disabled = true;
   try {
@@ -1845,7 +1903,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-145054";
+  var MY="20261008-151802";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
@@ -1887,4 +1945,16 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 })();
 </script>
 
+
+<!-- 前賢 2026-10-08：分類不符警告 -->
+<div class="mask" id="warnMask">
+  <div class="sheet" id="warnSheet">
+    <div class="whead">⚠️ 分類可能不符</div>
+    <div class="wbody" id="warnText"></div>
+    <div class="acts">
+      <button class="btn ghost" id="warnCancel" type="button">取消</button>
+      <button class="btn ok" id="warnOk" type="button">仍要放入</button>
+    </div>
+  </div>
+</div>
 </html>
