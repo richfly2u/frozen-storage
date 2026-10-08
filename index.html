@@ -103,15 +103,15 @@ nav button.on b{filter:none;opacity:1}
 .tier-no{
   position:static;display:block;width:fit-content;margin:0 auto 4px;pointer-events:none;   /* 前賢 2026-10-07：層號改成該層的「標題列」放最上面（原本絕對定位貼在層底，緊鄰下門內容，被讀成下門那一層的名字） */
   font-size:11.5px;font-weight:700;line-height:1.15;letter-spacing:.3px;white-space:nowrap;
-  color:rgba(56,43,30,.72);                              /* 前賢 2026-10-08：層字改成「鏤進去」凹雕感 */
-  text-shadow:0 1px 0 rgba(255,255,255,.8),0 -1px 1px rgba(58,44,30,.3);   /* 下緣透光、上緣壓暗＝刻痕 */
+  color:rgba(74,58,42,.60);                              /* 前賢 2026-10-08：層字改成「鏤進去」凹雕感 */
+  text-shadow:0 1px 0 rgba(255,255,255,.98),0 -1px 1px rgba(44,32,20,.55),0 -1px 0 rgba(255,255,255,.18);   /* 下緣強亮線＋上緣深陰影＝刻痕 */
   background-color:#e7ddcc;
   background-image:
     repeating-linear-gradient(88deg,rgba(120,102,78,.10) 0 1px,rgba(255,255,255,0) 1px 9px),
     repeating-linear-gradient(92deg,rgba(96,80,60,.07) 0 1.5px,rgba(255,255,255,0) 1.5px 17px),
     linear-gradient(180deg,#f0e9dc 0%,#e5dac8 60%,#dbcdb6 100%);
   border:1px solid rgba(150,128,100,.42);
-  box-shadow:inset 0 1px 3px rgba(88,68,48,.30),inset 0 -1px 0 rgba(255,255,255,.5),0 1px 1px rgba(60,45,25,.10);
+  box-shadow:inset 0 2px 4px rgba(84,64,44,.42),inset 0 -1px 1px rgba(255,255,255,.62),0 1px 1px rgba(60,45,25,.10);
 }
 
 @media (max-width:520px){
@@ -1828,7 +1828,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-122758";
+  var MY="20261008-123116";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
