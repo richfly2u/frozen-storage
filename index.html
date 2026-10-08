@@ -1125,12 +1125,21 @@ function askFloorWarn(name, fromFloor, toFloor) {
     document.getElementById("warnCancel").onclick = () => done(false);
   });
 }
+/* 前賢 2026-10-08：取分類「根」——「素料/餡料」「素料」「素料/其他」都算同一大類「素料」 */
+function floorRoot(id) {
+  const f = floorOf(id);
+  const nm = String((f && f.name) || "");
+  const root = nm.split("/")[0].trim();
+  return root || nm;
+}
 /* 回傳 true＝放行；false＝使用者取消 */
 async function floorGuard(name, toFloor, fromFloor, excludeId) {
   const target = Number(toFloor);
   const home = (fromFloor === null || fromFloor === undefined)
     ? homeFloorOf(name, excludeId) : Number(fromFloor);
   if (!home || home === target) return true;
+  /* 前賢：同一大類之間搬移不提醒（素料有三層：素料/餡料、素料、素料/其他） */
+  if (floorRoot(home) === floorRoot(target)) return true;
   return await askFloorWarn(name, home, target);
 }
 async function moveItemTo(it, floor) {
@@ -1920,7 +1929,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-152654";
+  var MY="20261008-153000";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
