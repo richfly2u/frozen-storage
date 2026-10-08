@@ -537,9 +537,8 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   /* 前賢 2026-10-08：自動密度 —— 東西變多時自動縮字／縮框；最高原則＝同頁不捲動 */
   .freezer .tier{min-height:calc(44px*var(--dz,1))!important;padding:0 3px calc(3px*var(--dz,1))!important}
   .freezer .tier .tier-no{font-size:calc(10px*var(--dz,1))!important;line-height:1.12;padding:calc(1px*var(--dz,1)) calc(6px*var(--dz,1)) calc(1px*var(--dz,1)) calc(2px*var(--dz,1))}
-  .freezer .tier .chip{padding:calc(1px*var(--dz,1)) calc(4px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap!important}
-  .freezer .tier .chip .nm,.freezer .tier .chip span{overflow:visible!important;text-overflow:clip!important}   /* 前賢 2026-10-08：字要完整，不得截斷 */
-  .os-chip{padding:calc(1px*var(--dz,1)) calc(5px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important;min-height:0!important;overflow:visible!important;text-overflow:clip!important}
+  .freezer .tier .chip{padding:calc(1px*var(--dz,1)) calc(4px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important}   /* 欄寬固定後文字本來就放得下，不需強制溢出 */
+  .os-chip{padding:calc(1px*var(--dz,1)) calc(5px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important;min-height:0!important}
   .freezer .tier .items{gap:calc(3px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(54px,1fr))!important}   /* 欄寬固定：字不會被截 */
   .outside .os-grid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))!important;gap:calc(4px*var(--dz,1))!important}   /* 欄寬固定 */
   .outside .os-head{font-size:calc(13.5px*var(--dz,1))}
@@ -1829,7 +1828,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-122502";
+  var MY="20261008-122758";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
