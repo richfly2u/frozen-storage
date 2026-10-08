@@ -341,6 +341,14 @@ nav button.on b{filter:none;opacity:1}
   box-shadow:0 10px 26px rgba(10,40,70,.35)
 }
 #dropOut.on{display:flex}
+/* 前賢 2026-10-08：食材庫的字全部調大（品項 11.5→14、標題→15、按鈕→14、搜尋→14） */
+.outside .os-head{font-size:calc(15px*var(--dz,1))!important}
+.outside .os-items .empty{font-size:calc(14px*var(--dz,1))!important}
+.outside .os-items{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))!important}
+.outside .os-chip{font-size:calc(14px*var(--dz,1))!important;min-height:calc(32px*var(--dz,1))!important;line-height:1.25!important}
+.outside #btnAdd{font-size:calc(14px*var(--dz,1))!important;padding:calc(6px*var(--dz,1)) calc(11px*var(--dz,1))!important}
+.os-head .sbox input{font-size:calc(14px*var(--dz,1))!important}
+.os-head .sbox .sico{font-size:calc(15px*var(--dz,1))!important}
 /* 前賢 2026-10-08：分類不符警告彈窗 */
 #warnSheet{max-width:420px;border-radius:16px;padding:16px 16px 18px;text-align:left}
 #warnSheet .whead{font-size:16px;font-weight:800;color:#8a4b00;margin-bottom:8px}
@@ -1929,7 +1937,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-153000";
+  var MY="20261008-163015";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
