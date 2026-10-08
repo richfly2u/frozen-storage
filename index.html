@@ -534,10 +534,16 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
 /* 前賢 2026-10-08：手機壓縮——讓「冰箱＋食材庫」同頁都看得到完整、不出捲軸 */
 @media (max-width:759px){
   .freezer{min-height:0}
-  .freezer .tier{min-height:44px;padding:0 3px 3px}
-  .freezer .tier .tier-no{font-size:10px;line-height:1.12;padding:1px 6px 1px 2px}
-  .freezer .tier .chip{padding:1px 4px;font-size:11.5px;line-height:1.15}
-  .os-chip{padding:1px 5px;font-size:11.5px;line-height:1.15;min-height:22px}
+  /* 前賢 2026-10-08：自動密度 —— 東西變多時自動縮字／縮框；最高原則＝同頁不捲動 */
+  .freezer .tier{min-height:calc(44px*var(--dz,1));padding:0 3px calc(3px*var(--dz,1))}
+  .freezer .tier .tier-no{font-size:calc(10px*var(--dz,1));line-height:1.12;padding:calc(1px*var(--dz,1)) calc(6px*var(--dz,1)) calc(1px*var(--dz,1)) calc(2px*var(--dz,1))}
+  .freezer .tier .chip{padding:calc(1px*var(--dz,1)) calc(4px*var(--dz,1));font-size:calc(11.5px*var(--dz,1));line-height:1.15}
+  .os-chip{padding:calc(1px*var(--dz,1)) calc(5px*var(--dz,1));font-size:calc(11.5px*var(--dz,1));line-height:1.15;min-height:0}
+  .freezer .tier .items{gap:calc(3px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(calc(54px*var(--dz,1)),1fr))}
+  .outside .os-grid{grid-template-columns:repeat(auto-fill,minmax(calc(56px*var(--dz,1)),1fr));gap:calc(4px*var(--dz,1))}
+  .outside .os-head{font-size:calc(13.5px*var(--dz,1))}
+  .outside #btnAdd{font-size:calc(12.5px*var(--dz,1));padding:calc(4px*var(--dz,1)) calc(8px*var(--dz,1))}
+  .freezer{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}   /* 保底：極端多時只有冰箱區自己捲 */
   #bottomBar{padding-top:3px;padding-bottom:3px}
   #bottomBar .bbtools{display:flex;align-items:center;gap:6px;margin-left:auto}
   #bottomBar .bytoggle{color:#2b5a76}
@@ -1822,7 +1828,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-121811";
+  var MY="20261008-122137";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
@@ -1831,6 +1837,36 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
       }
     }).catch(function(){});
   }catch(e){}
+})();
+</script>
+
+<script id="autoFit">
+/* 前賢 2026-10-08：最高原則——冰箱＋食材庫同頁不捲動。
+   東西變多時不長高，改為自動把字體／框框縮小（--dz 由 1 往下調）。 */
+(function(){
+  var root = document.documentElement;
+  function fits(){ return document.documentElement.scrollHeight <= window.innerHeight + 1; }
+  function run(){
+    if (!window.matchMedia('(max-width:759px)').matches) { root.style.removeProperty('--dz'); root.removeAttribute('data-dz'); return; }
+    var dz = 1; root.style.setProperty("--dz", dz); void document.body.offsetHeight;
+    var guard = 0;
+    while (!fits() && dz > 0.55 && guard++ < 24) {
+      dz = Math.round((dz - 0.03) * 100) / 100;
+      if (dz < 0.55) dz = 0.55;
+      root.style.setProperty("--dz", dz);
+      void document.body.offsetHeight;
+    }
+    root.setAttribute("data-dz", String(dz));
+  }
+  var t = null;
+  function soon(){ if (t) clearTimeout(t); t = setTimeout(run, 120); }
+  window.addEventListener('resize', soon);
+  window.addEventListener('orientationchange', soon);
+  function boot(){
+    soon();
+    try { new MutationObserver(soon).observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class','style','hidden'] }); } catch(e){}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>
 
