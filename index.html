@@ -605,7 +605,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   #view-map{padding-bottom:0}
 }
 /* 前賢 2026-10-08：冰箱食材膠囊外框（放最後以蓋過前面的 padding:0） */
-.freezer .tier .chip{padding:0 calc(12px*var(--dz,1))!important;border-radius:999px!important;border:2px solid #c8a97a!important;background:#fff!important}
+.freezer .tier .chip{padding:0 calc(12px*var(--dz,1))!important;border-radius:999px!important;border:1px solid #c8a97a!important;background:#fff!important}
 </style>
 </head>
 <body>
@@ -1952,7 +1952,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-184554";
+  var MY="20261008-190057";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
