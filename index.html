@@ -538,6 +538,9 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   .freezer .tier .chip{padding:1px 4px;font-size:11.5px;line-height:1.15}
   .os-chip{padding:1px 5px;font-size:11.5px;line-height:1.15;min-height:22px}
   #bottomBar{padding-top:3px;padding-bottom:3px}
+  .outside{padding:5px 8px;min-height:0}
+  .outside #btnAdd{margin-bottom:5px}
+  .outside #osClear{font-size:11px;padding:1px 7px}
   #view-map{padding-bottom:0;margin-bottom:0}
   #view-map{padding-bottom:0}
 }
@@ -1807,7 +1810,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-1209";
+  var MY="20261008-1212";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
