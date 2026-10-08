@@ -538,6 +538,15 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   .freezer .tier .chip{padding:1px 4px;font-size:11.5px;line-height:1.15}
   .os-chip{padding:1px 5px;font-size:11.5px;line-height:1.15;min-height:22px}
   #bottomBar{padding-top:3px;padding-bottom:3px}
+  #bottomBar .bbtools{display:flex;align-items:center;gap:6px;margin-left:auto}
+  #bottomBar .bytoggle{color:#2b5a76}
+  #bottomBar .bytoggle .byti{background:#e7f2fa;color:#12486b}
+  header{display:flex;align-items:center;gap:6px}      /* 前賢 2026-10-08：上方盡量矮（單列） */
+  header .hrow{flex:1 1 auto;min-width:0;margin:0;padding:0;display:flex;align-items:center;gap:5px}
+  header .htools{margin:0;padding:0;flex:0 0 auto;display:flex;align-items:center;gap:5px}
+  header .opbar{margin:0;gap:4px}
+  #bottomBar .bytoggle .bytl{display:none}             /* 空間有限：只留 👤 圖示（滑過有提示） */
+  #bottomBar #btnRules{padding:3px 8px;font-size:11.5px}
   .outside{padding:5px 8px;min-height:0}
   .outside #btnAdd{margin-bottom:5px}
   .outside #osClear{font-size:11px;padding:1px 7px}
@@ -559,8 +568,6 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
       <span>經手人：</span><b id="opName">未設定</b>
       <button type="button" id="btnOp">修改</button>
     </div>
-    <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"><span class="byti">👤</span><span class="bytl">顯示經手人</span></label>
-    <button type="button" class="btn sm ghost" id="btnRules" title="冷凍庫使用規則">📋 規則</button>
   </div>
 </header>
 
@@ -686,6 +693,10 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
       <button class="btn sm" id="btnListen" title="按一下開始聽：講「香菇頭 一包」「移出素排骨兩袋」「放回當歸五包」"><svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="0" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/><rect x="4.2" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="8.4" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/></svg><svg class="mic" width="12" height="17" viewBox="0 0 12 17" fill="none" aria-hidden="true"><rect x="3.4" y="0" width="5.2" height="9" rx="2.6" fill="currentColor"/><path d="M1 7.4a5 5 0 0 0 10 0" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><rect x="5.2" y="12.2" width="1.6" height="3.2" rx="0.8" fill="currentColor"/><rect x="2.6" y="15" width="6.8" height="1.7" rx="0.85" fill="currentColor"/></svg> 開始聽 <svg class="wv" width="15" height="16" viewBox="0 0 15 16" fill="none" aria-hidden="true"><rect x="3.6" y="6" width="2.4" height="4" rx="1.2" fill="currentColor"/><rect x="7.8" y="2" width="2.4" height="12" rx="1.2" fill="currentColor"/><rect x="12" y="5" width="2.4" height="6" rx="1.2" fill="currentColor"/></svg></button>
       <button class="btn sm ghost" id="btnStop">停止</button>
     </div>
+  </div>
+  <div class="bbtools">
+    <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"><span class="byti">👤</span><span class="bytl">顯示經手人</span></label>
+    <button type="button" class="btn sm ghost" id="btnRules" title="冷凍庫使用規則">📋 規則</button>
   </div>
 </div>
 
@@ -1810,7 +1821,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-1212";
+  var MY="20261008-1213";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
