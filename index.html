@@ -350,7 +350,7 @@ nav button.on b{filter:none;opacity:1}
 .os-head .sbox input{font-size:calc(14px*var(--dz,1))!important}
 .os-head .sbox .sico{font-size:calc(15px*var(--dz,1))!important}
 /* 前賢 2026-10-08：食材庫卡片左右空白收小（欄寬 64→52、卡片內距 11→5） */
-.outside .os-items{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))!important}
+.outside .os-items{grid-template-columns:repeat(auto-fill,minmax(62px,1fr))!important}   /* 52 會讓「綠豆沙餡」擠成兩行 → 62 維持單行 */
 .outside .os-chip{padding:1px 5px 1px 5px!important}
 /* 前賢 2026-10-08：分類不符警告彈窗 */
 #warnSheet{max-width:420px;border-radius:16px;padding:16px 16px 18px;text-align:left}
@@ -1940,7 +1940,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-165153";
+  var MY="20261008-165516";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
