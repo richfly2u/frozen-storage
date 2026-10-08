@@ -284,13 +284,13 @@ nav button.on b{filter:none;opacity:1}
   .freezer{flex:1 1 auto;min-height:132px}
   .freezer .doors{display:flex;flex-direction:row;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}   /* 門跟著冰箱長高（層均分） */
   /* 前賢 2026-10-07：手機把門變寬 —— 收掉左右多餘邊距（原本 430px 只用到 378px） */
-  #view-map{padding-top:2px;padding-left:3px;padding-right:5px}
-  #freezer{margin-left:0;margin-right:0;padding-top:2px;padding-left:2px;padding-right:6px}
+  #view-map{padding-top:2px;padding-left:1px;padding-right:1px}
+  #freezer{margin-left:0;margin-right:0;padding-top:2px;padding-left:1px;padding-right:1px}
   .freezer .doors{gap:5px;padding-right:1px}
   /* 前賢 2026-10-07：手機門名（上門／下門）改到【層數外】——浮在門面板「上方」，不與層標籤排同一列 */
   .freezer .doors{padding-top:32px}   /* 前賢 2026-10-08：上方不留空 */
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;
-    position:relative;padding:6px 3px 0 3px}
+    position:relative;padding:6px 2px 0 2px}
   /* 前賢 2026-10-08：門名再往上移、字體放大 */
   .freezer .door-head{position:absolute;left:50%;top:-32px;right:auto;transform:translateX(-50%);
     writing-mode:horizontal-tb;width:fit-content;margin:0;padding:4px 15px;font-size:13.5px;font-weight:700;letter-spacing:2px;border-radius:9px;
@@ -555,7 +555,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   header .opbar{margin:0;gap:4px}
   #bottomBar .bytoggle .bytl{display:none}             /* 空間有限：只留 👤 圖示（滑過有提示） */
   #bottomBar #btnRules{padding:3px 8px;font-size:11.5px}
-  .outside{padding:5px 8px;min-height:0}
+  .outside{padding:4px 3px;min-height:0}
   .outside #btnAdd{margin-bottom:5px}
   .outside #osClear{font-size:11px;padding:1px 7px}
   #view-map{padding-bottom:0;margin-bottom:0}
@@ -1829,7 +1829,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-131048";
+  var MY="20261008-131117";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
