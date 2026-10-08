@@ -285,14 +285,6 @@ nav button.on b{filter:none;opacity:1}
   .freezer .doors{display:flex;flex-direction:row;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}   /* 門跟著冰箱長高（層均分） */
   /* 前賢 2026-10-07：手機把門變寬 —— 收掉左右多餘邊距（原本 430px 只用到 378px） */
   #view-map{padding-top:2px;padding-left:0;padding-right:0}
-  /* 前賢 2026-10-08：上下門高度改成動態 —— 吃滿螢幕剩餘高度（螢幕越高門越高），不捲動 */
-  body{display:flex!important;flex-direction:column!important;height:100vh!important;overflow:hidden!important}
-  header{flex:0 0 auto!important}
-  #view-map{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
-  #view-map .mapmain{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important}
-  .freezer{flex:1 1 auto!important;min-height:0!important}
-  .freezer .tier{flex:1 1 auto!important}
-  .outside{flex:0 0 auto!important}
   #freezer{margin-left:0;margin-right:0;padding-top:2px;padding-left:0;padding-right:0}
   .freezer .doors{gap:5px;padding-right:1px}
   /* 前賢 2026-10-07：手機門名（上門／下門）改到【層數外】——浮在門面板「上方」，不與層標籤排同一列 */
@@ -548,13 +540,12 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   .freezer .tier .chip{padding:0!important;gap:0!important;font-size:calc(15px*var(--dz,1))!important;line-height:1.12!important;min-height:0!important;height:auto!important;align-self:start!important;min-width:0!important}   /* 前賢 2026-10-08：字加大、內距與內部間距歸零（避免名字被截） */
   .freezer .tier .chip .nm{overflow:visible!important;text-overflow:clip!important;min-width:0!important}   /* 名字要完整 */
 @media (max-width:374px){   /* 窄螢幕（≤374px）：字降一階，4 字名字仍完整 */
-  .freezer .tier .items{grid-template-columns:repeat(auto-fill,minmax(54px,1fr))!important}
   .freezer .tier .chip{font-size:calc(13.5px*var(--dz,1))!important}
   .freezer .tier .tier-no{font-size:calc(13px*var(--dz,1))!important}
 }
   .freezer .tier .items{align-items:start!important;grid-auto-rows:auto!important}   /* 欄寬固定後文字本來就放得下，不需強制溢出 */
   .os-chip{padding:calc(1px*var(--dz,1)) calc(5px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important;min-height:0!important}
-  .freezer .tier .items{gap:calc(1px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(60px,1fr))!important}   /* 前賢：維持三欄（不擠成四欄） */
+  .freezer .tier .items{gap:calc(1px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(46px,1fr))!important}   /* 前賢：確保三列 */
   .outside .os-grid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))!important;gap:calc(4px*var(--dz,1))!important}   /* 欄寬固定 */
   .outside .os-head{font-size:calc(13.5px*var(--dz,1))}
   .outside #btnAdd{font-size:calc(12.5px*var(--dz,1));padding:calc(4px*var(--dz,1)) calc(8px*var(--dz,1))}
@@ -1843,7 +1834,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-134429";
+  var MY="20261008-132015";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
