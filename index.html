@@ -284,13 +284,13 @@ nav button.on b{filter:none;opacity:1}
   .freezer{flex:1 1 auto;min-height:132px}
   .freezer .doors{display:flex;flex-direction:row;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}   /* 門跟著冰箱長高（層均分） */
   /* 前賢 2026-10-07：手機把門變寬 —— 收掉左右多餘邊距（原本 430px 只用到 378px） */
-  #view-map{padding-top:2px;padding-left:1px;padding-right:1px}
-  #freezer{margin-left:0;margin-right:0;padding-top:2px;padding-left:1px;padding-right:1px}
+  #view-map{padding-top:2px;padding-left:0;padding-right:0}
+  #freezer{margin-left:0;margin-right:0;padding-top:2px;padding-left:0;padding-right:0}
   .freezer .doors{gap:5px;padding-right:1px}
   /* 前賢 2026-10-07：手機門名（上門／下門）改到【層數外】——浮在門面板「上方」，不與層標籤排同一列 */
   .freezer .doors{padding-top:32px}   /* 前賢 2026-10-08：上方不留空 */
   .freezer .door{flex:1 1 50%;flex-grow:1 !important;min-width:0;display:flex;flex-direction:column;align-self:stretch;
-    position:relative;padding:6px 2px 0 2px}
+    position:relative;padding:6px 0 0 0}
   /* 前賢 2026-10-08：門名再往上移、字體放大 */
   .freezer .door-head{position:absolute;left:50%;top:-32px;right:auto;transform:translateX(-50%);
     writing-mode:horizontal-tb;width:fit-content;margin:0;padding:4px 15px;font-size:13.5px;font-weight:700;letter-spacing:2px;border-radius:9px;
@@ -535,17 +535,17 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
 @media (max-width:759px){
   .freezer{min-height:0}
   /* 前賢 2026-10-08：自動密度 —— 東西變多時自動縮字／縮框；最高原則＝同頁不捲動 */
-  .freezer .tier{min-height:calc(44px*var(--dz,1))!important;padding:0 1px calc(3px*var(--dz,1))!important}
+  .freezer .tier{min-height:calc(44px*var(--dz,1))!important;padding:0 0 calc(2px*var(--dz,1))!important}
   .freezer .tier .tier-no{font-size:calc(14px*var(--dz,1))!important;letter-spacing:0!important;line-height:1.12;padding:calc(1px*var(--dz,1)) calc(6px*var(--dz,1)) calc(1px*var(--dz,1)) calc(2px*var(--dz,1))}
-  .freezer .tier .chip{padding:0!important;gap:0!important;font-size:calc(13.5px*var(--dz,1))!important;line-height:1.12!important;min-height:0!important;height:auto!important;align-self:start!important;min-width:0!important}   /* 前賢 2026-10-08：字加大、內距與內部間距歸零（避免名字被截） */
+  .freezer .tier .chip{padding:0!important;gap:0!important;font-size:calc(15px*var(--dz,1))!important;line-height:1.12!important;min-height:0!important;height:auto!important;align-self:start!important;min-width:0!important}   /* 前賢 2026-10-08：字加大、內距與內部間距歸零（避免名字被截） */
   .freezer .tier .chip .nm{overflow:visible!important;text-overflow:clip!important;min-width:0!important}   /* 名字要完整 */
 @media (max-width:374px){   /* 窄螢幕（≤374px）：字降一階，4 字名字仍完整 */
-  .freezer .tier .chip{font-size:calc(12.5px*var(--dz,1))!important}
+  .freezer .tier .chip{font-size:calc(13.5px*var(--dz,1))!important}
   .freezer .tier .tier-no{font-size:calc(13px*var(--dz,1))!important}
 }
   .freezer .tier .items{align-items:start!important;grid-auto-rows:auto!important}   /* 欄寬固定後文字本來就放得下，不需強制溢出 */
   .os-chip{padding:calc(1px*var(--dz,1)) calc(5px*var(--dz,1))!important;font-size:calc(11.5px*var(--dz,1))!important;line-height:1.15!important;min-height:0!important}
-  .freezer .tier .items{gap:calc(2px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(46px,1fr))!important}   /* 前賢：確保三列 */
+  .freezer .tier .items{gap:calc(1px*var(--dz,1));grid-template-columns:repeat(auto-fill,minmax(46px,1fr))!important}   /* 前賢：確保三列 */
   .outside .os-grid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))!important;gap:calc(4px*var(--dz,1))!important}   /* 欄寬固定 */
   .outside .os-head{font-size:calc(13.5px*var(--dz,1))}
   .outside #btnAdd{font-size:calc(12.5px*var(--dz,1));padding:calc(4px*var(--dz,1)) calc(8px*var(--dz,1))}
@@ -1834,7 +1834,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-131611";
+  var MY="20261008-132015";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
