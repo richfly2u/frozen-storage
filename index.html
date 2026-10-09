@@ -1123,9 +1123,15 @@ function warnFloorText(id) {
   const f = floorOf(id);
   return (f.door ? f.door + " " : "") + "第" + f.local + "層" + (f.name ? "（" + f.name + "）" : "");
 }
+/* 前賢 2026-10-08：「餡料」＝上門第2層（素料/餡料）→ 所有月餅餡等「品名含餡」的都算這一層 */
+function xianFloorId() {
+  const f = FLOORS.find(x => String(x.name).indexOf("餡料") >= 0);
+  return f ? Number(f.id) : null;
+}
 function homeFloorOf(name, excludeId) {
   const n = String(name == null ? "" : name).trim();
   if (!n) return null;
+  if (n.indexOf("餡") >= 0) { const x = xianFloorId(); if (x !== null) return x; }   /* 餡類專屬規則 */
   const hit = items.find(i => i && String(i.name).trim() === n && i._id !== excludeId);
   return hit ? Number(hit.floor) : null;
 }
@@ -1952,7 +1958,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261008-190057";
+  var MY="20261009-204811";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
