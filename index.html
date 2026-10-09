@@ -1164,6 +1164,12 @@ function floorRoot(id) {
 /* 回傳 true＝放行；false＝使用者取消 */
 async function floorGuard(name, toFloor, fromFloor, excludeId) {
   const target = Number(toFloor);
+  /* 前賢 2026-10-08：餡類一律「上門第2層」為家 —— 不管它現在在哪一層，放到第2層都不提醒 */
+  if (String(name == null ? "" : name).indexOf("餡") >= 0) {
+    const xf = xianFloorId();
+    if (xf === null || xf === target) return true;
+    return await askFloorWarn(name, xf, target);
+  }
   const home = (fromFloor === null || fromFloor === undefined)
     ? homeFloorOf(name, excludeId) : Number(fromFloor);
   if (!home || home === target) return true;
@@ -1958,7 +1964,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261009-204811";
+  var MY="20261009-205418";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
