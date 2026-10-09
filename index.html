@@ -1132,6 +1132,10 @@ function homeFloorOf(name, excludeId) {
   const n = String(name == null ? "" : name).trim();
   if (!n) return null;
   if (n.indexOf("餡") >= 0) { const x = xianFloorId(); if (x !== null) return x; }   /* 餡類專屬規則 */
+  if (n.indexOf("豆包") >= 0) {                                                      /* 前賢 2026-10-08：豆包＝素料 */
+    const f = FLOORS.find(x => String(x.name).trim() === "素料");
+    if (f) return Number(f.id);
+  }
   const hit = items.find(i => i && String(i.name).trim() === n && i._id !== excludeId);
   return hit ? Number(hit.floor) : null;
 }
@@ -1964,7 +1968,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261009-205418";
+  var MY="20261009-212444";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
