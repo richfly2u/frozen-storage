@@ -70,6 +70,9 @@ export function cn2num(s) {
   if (/^\d+(\.\d+)?$/.test(t)) return Number(t);
   const m = t.match(/^([零〇一壹二兩貳三參四五六七八九])?十([零〇一壹二兩貳三參四五六七八九])?$/);
   if (m) return (m[1] ? CN_DIGIT[m[1]] : 1) * 10 + (m[2] ? CN_DIGIT[m[2]] : 0);
+  if (/^半$/.test(t)) return 0.5;                                  /* 前賢 2026-10-10：半斤＝0.5 */
+  const mHalf = t.match(/^([零〇一壹二兩貳三參四五六七八九]+)半$/);
+  if (mHalf) return Number([...mHalf[1]].map(c => CN_DIGIT[c]).join("")) + 0.5;
   if (/^[零〇一壹二兩貳三參四五六七八九]+$/.test(t)) {
     return Number([...t].map(c => CN_DIGIT[c]).join(""));
   }
@@ -148,11 +151,11 @@ export function parseUtterance(text, items) {
   if (bestHit) { out.floor = bestHit.id; t = t.split(bestHit.k).join(" "); }
 
   /* 4. 數量 + 單位（取第一組） */
-  const reUnit = new RegExp(`(\\d+|[零〇一壹二兩貳三參四五六七八九十]+)\\s*(${UNITS.join("|")})?`);
+  const reUnit = new RegExp(`(\\d+(?:\\.\\d+)?|半|[零〇一壹二兩貳三參四五六七八九十]+半?)\\s*(${UNITS.join("|")})?\\s*(半)?`);
   const mQ = t.match(reUnit);
   if (mQ) {
     const n = cn2num(mQ[1]);
-    if (n != null) { out.qty = n; out.unit = mQ[2] || ""; t = t.replace(mQ[0], " "); }
+    if (n != null) { out.qty = n + (mQ[3] ? 0.5 : 0); out.unit = mQ[2] || ""; t = t.replace(mQ[0], " "); }
   } else {
     /* 只講單位沒講數量：「香菇頭 包」→ 1 包 */
     const mU = t.match(new RegExp(`(${UNITS.join("|")})`));

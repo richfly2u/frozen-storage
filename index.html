@@ -605,7 +605,10 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   #view-map{padding-bottom:0}
 }
 /* 前賢 2026-10-08：冰箱食材膠囊外框（放最後以蓋過前面的 padding:0） */
-.freezer .tier .chip{padding:0 calc(12px*var(--dz,1))!important;border-radius:999px!important;border:1px solid #c8a97a!important;background:#fff!important}
+.freezer .tier .chip{padding:0 calc(12px*var(--dz,1))!important;border-radius:999px!important;border:1px solid #c8a97a!important;background:#fff!important}
+/* 前賢 2026-10-10：卡片外觀完全不變，只把「觸控區」撐大（戴手套也好按） */
+.freezer .tier .chip{position:relative!important}
+.freezer .tier .chip::after{content:"";position:absolute;inset:-9px -2px}
 </style>
 </head>
 <body>
@@ -780,7 +783,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot,
-         query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+         query, orderBy, limit, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { parseUtterance } from "./voice-parse.js";
 
 /* ================= 設定 ================= */
@@ -1335,7 +1338,7 @@ async function takeOut(it) {
   if (!by) { toast("請先設定經手人"); return; }
   const unit = it.unit || "";
   try {
-    await updateDoc(doc(db, COLL_ITEMS, it._id), { qty: q - 1, updatedAt: Date.now() });
+    await updateDoc(doc(db, COLL_ITEMS, it._id), { qty: increment(-1), updatedAt: Date.now() });
     await addLog(Number(it.floor), it.name, 1, unit, "out", by);
     const e = outside.find(o => o.id === it._id);
     if (e) e.qty += 1;
@@ -1360,8 +1363,8 @@ async function putBack(entry, floor) {
   const it = found;
   try {
     if (it) {
-      await updateDoc(doc(db, COLL_ITEMS, entry.id),
-        { qty: (Number(it.qty) || 0) + 1, floor: Number(floor), updatedAt: Date.now() });
+      await updateDoc(doc(db, COLL_ITEMS, it._id),
+        { qty: increment(1), floor: Number(floor), updatedAt: Date.now() });
       await addLog(Number(floor), entry.name, 1, entry.unit || it.unit || "", "in", by);
       markJustIn(floor, entry.name);
     } else {
@@ -1651,7 +1654,7 @@ $("#btnSave").addEventListener("click", async () => {
       const dup = items.find(i => i && String(i.name).trim() === name);
       if (dup) {
         await updateDoc(doc(db, COLL_ITEMS, dup._id), {
-          qty: (Number(dup.qty) || 0) + qty,
+          qty: increment(qty),
           floor, unit: unit || dup.unit || "", note: note || dup.note || "",
           by, updatedAt: Date.now()
         });
@@ -1809,12 +1812,13 @@ function renderVoiceCard(r) {
   const it = r.match;
   const cur = Number(it.qty) || 0;
   const after = Math.max(0, cur + (isIn ? r.qty : -r.qty));
-  const f = floorOf(it.floor);
-  const floorWarn = (r.floor && Number(r.floor) !== Number(it.floor))
-    ? `<br><span style="color:#c9455a">⚠️ 你講的是 ${flChip(r.floor)}，但這個品項記在 ${flChip(it.floor)}</span>` : "";
+  /* 前賢 2026-10-10：你講了樓層就照你講的放（原本只警告、不生效） */
+  const spokenFloor = (r.floor && Number(r.floor) !== Number(it.floor)) ? Number(r.floor) : Number(it.floor);
+  const f = floorOf(spokenFloor);
+  const floorWarn = "";
   box.innerHTML = `<div class="vcard">
     <div class="big">${isIn ? "⬇️ 置入" : "⬆️ 移出"}　<span class="nm">${esc(it.name)}</span>　${r.qty}${esc(r.unit || it.unit || "")}</div>
-    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　${flChip(it.floor)} ${esc(f.name)}${floorWarn}</div>
+    <div class="sub">目前庫存：${cur}${esc(it.unit || "")} → <b>${after}${esc(it.unit || "")}</b>　·　${flChip(spokenFloor)} ${esc(f.name)}${floorWarn}</div>
     <label>經手人</label>
     <input type="text" id="vBy" list="byList" value="${esc(operator)}" placeholder="例：陳師姐">
     <div class="acts">
@@ -1847,18 +1851,22 @@ async function confirmVoice() {
   setOperator(by); rememberBy(by);
   const it = r.match;
   const isIn = r.action === "in";
+  const targetFloor = (r.floor && Number(r.floor) !== Number(it.floor)) ? Number(r.floor) : Number(it.floor);
+  const moved = targetFloor !== Number(it.floor);
   const newQty = Math.max(0, (Number(it.qty) || 0) + (isIn ? r.qty : -r.qty));
   $("#vOk").disabled = true;
   try {
-    await updateDoc(doc(db, COLL_ITEMS, it._id), { qty: newQty, by, updatedAt: Date.now() });
-    await addLog(Number(it.floor), it.name, r.qty, r.unit || it.unit || "", r.action, by);
+    await updateDoc(doc(db, COLL_ITEMS, it._id),
+      Object.assign({ qty: increment(isIn ? r.qty : -r.qty), by, updatedAt: Date.now() },
+                    moved ? { floor: targetFloor } : {}));
+    await addLog(targetFloor, it.name, r.qty, r.unit || it.unit || "", r.action, by, moved ? Number(it.floor) : null);
     /* 前賢：移出／移入不用跳狀態訊息 */
     pendingVoice = null;
     $("#vCard").innerHTML = "";
     $("#vHeard").hidden = true;
     /* 直接反映在冷凍格層：捲到該層、品項閃一下 */
-    markJustIn(it.floor, it.name);
-    focusTier(it.floor);
+    markJustIn(targetFloor, it.name);
+    focusTier(targetFloor);
     setTimeout(() => { if (pendingHighlight) renderMap(); }, 900);
   } catch (e) {
     console.error(e);
@@ -1968,7 +1976,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261009-212444";
+  var MY="20261010-130633";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
