@@ -605,9 +605,12 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   #view-map{padding-bottom:0}
 }
 /* 前賢 2026-10-08：冰箱食材膠囊外框（放最後以蓋過前面的 padding:0） */
-.freezer .tier .chip{padding:0 calc(12px*var(--dz,1))!important;border-radius:999px!important;border:1px solid #c8a97a!important;background:#fff!important}
-/* 前賢 2026-10-10：卡片外觀完全不變，只把「觸控區」撐大（戴手套也好按） */
-.freezer .tier .chip{position:relative!important}
+.freezer .tier .chip{padding:0 calc(12px*var(--dz,1))!important;border-radius:999px!important;border:1px solid #c8a97a!important;background:#fff!important}
+
+/* 前賢 2026-10-10：卡片外觀完全不變，只把「觸控區」撐大（戴手套也好按） */
+
+.freezer .tier .chip{position:relative!important}
+
 .freezer .tier .chip::after{content:"";position:absolute;inset:-9px -2px}
 </style>
 </head>
@@ -714,8 +717,8 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
         <li>上門 第1層：中藥／湯料／五穀堅果</li>
         <li>上門 第2層：素料／餡料</li>
         <li>上門 第3層：素料</li>
-        <li>下門 第1層：素料</li>
-        <li>下門 第2層：其他／私人</li>
+        <li>下門 第1層：其他／私人</li>
+        <li>下門 第2層：其他／粉類</li>
       </ul>
       <div class="rn">3. 同類集中不混層；包裝完整封緊，湯汁類務必密封。</div>
       <div class="rn">4. 先進先出：新進的往後放，先放的往前擺先用；熱食務必完全放涼再冰。</div>
@@ -807,8 +810,8 @@ const FLOORS = [
   { id: 1, door: "上門", key: "U", name: "中藥 湯料 五穀堅果" },   /* 前賢：層名用空白分隔、不要標點 */
   { id: 2, door: "上門", key: "U", name: "素料/餡料" },
   { id: 5, door: "上門", key: "U", name: "素料" },
-  { id: 3, door: "下門", key: "D", name: "素料/其他" },
-  { id: 4, door: "下門", key: "D", name: "雜物/私人" }
+  { id: 3, door: "下門", key: "D", name: "其他/私人" },
+  { id: 4, door: "下門", key: "D", name: "其他/粉類" }
 ];
 /* 自動算「第幾層」與格位名稱（二層＝上/下格，三層＝上/中/下格） */
 FLOORS.forEach(f => {
