@@ -1164,7 +1164,7 @@ function askFloorWarn(name, fromFloor, toFloor) {
     document.getElementById("warnCancel").onclick = () => done(false);
   });
 }
-/* 前賢 2026-10-08：取分類「根」——「素料/餡料」「素料」「素料/其他」都算同一大類「素料」 */
+/* 前賢 2026-10-08：取分類「根」——「素料/餡料」「素料」都算同一大類「素料」（下門兩層 2026-10-12 起改名為「其他/…」故自成「其他」大類） */
 function floorRoot(id) {
   const f = floorOf(id);
   const nm = String((f && f.name) || "");
@@ -1183,7 +1183,7 @@ async function floorGuard(name, toFloor, fromFloor, excludeId) {
   const home = (fromFloor === null || fromFloor === undefined)
     ? homeFloorOf(name, excludeId) : Number(fromFloor);
   if (!home || home === target) return true;
-  /* 前賢：同一大類之間搬移不提醒（素料有三層：素料/餡料、素料、素料/其他） */
+  /* 前賢：同一大類之間搬移不提醒（素料有兩層：素料/餡料、素料；下門兩層為「其他」大類） */
   if (floorRoot(home) === floorRoot(target)) return true;
   return await askFloorWarn(name, home, target);
 }
