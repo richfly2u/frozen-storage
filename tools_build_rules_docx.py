@@ -89,7 +89,7 @@ p.paragraph_format.space_after = Pt(6)
 
 # --- QR（從 index.html 內嵌 SVG 解出的網址，用 segno 重繪成高解析 PNG）---
 import segno
-QR_URL = 'https://richfly2u.github.io/frozen-storage/'
+QR_URL = 'https://richfly2u.github.io/frozen-storage/#items'
 QR_PNG = r'C:\Users\alan\frozen-storage\rules_qr.png'
 segno.make(QR_URL, error='m').save(QR_PNG, scale=12, border=2)
 
@@ -98,7 +98,7 @@ p.paragraph_format.space_after = Pt(2)
 p.add_run().add_picture(QR_PNG, width=Cm(3.0))
 p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p.paragraph_format.space_after = Pt(12)
-setfont(p.add_run('樓層位置圖　掃碼開啟 App 位置圖'), 9.5, None, (0x66, 0x66, 0x66))
+setfont(p.add_run('材料清單　掃碼開啟 App 材料清單'), 9.5, None, (0x66, 0x66, 0x66))
 
 for kind, val in items:
     if kind == 'h3':

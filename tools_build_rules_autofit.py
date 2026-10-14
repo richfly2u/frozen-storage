@@ -17,7 +17,7 @@ import segno
 ROOT = r'C:\Users\alan\frozen-storage'
 SRC = os.path.join(ROOT, 'index.html')
 QR_PNG = os.path.join(ROOT, 'rules_qr.png')
-QR_URL = 'https://richfly2u.github.io/frozen-storage/'
+QR_URL = 'https://richfly2u.github.io/frozen-storage/#items'
 CHROME = r'C:\Users\alan\Chromium\chrome-win\chrome.exe'
 HTML = os.path.join(ROOT, '_twocol_try.html')
 PNG = os.path.join(ROOT, '_twocol_try.png')
@@ -80,7 +80,7 @@ li{margin:0}
 </style></head><body>
 <table class="head"><tr>
 <td><h1>冷凍庫使用規則</h1><p class="sub">炊事組　2026/10/25 訂立</p></td>
-<td class="qr"><img src="rules_qr.png"><p class="qrc">掃碼看位置圖</p></td>
+<td class="qr"><img src="rules_qr.png"><p class="qrc">掃碼看材料清單</p></td>
 </tr></table>
 <table class="cols"><tr>
 <td>__LEFT__</td>
@@ -173,7 +173,7 @@ p2 = hc0.add_paragraph(); sf(p2.add_run('炊事組　2026/10/25 訂立'), max(8,
 pq = hc1.paragraphs[0]; pq.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 pq.add_run().add_picture(QR_PNG, width=Cm((PT + 9) / 10 * 1.0 * 1.0))
 pq2 = hc1.add_paragraph(); pq2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-sf(pq2.add_run('掃碼看位置圖'), max(7, PT - 6), False, (0x77, 0x77, 0x77))
+sf(pq2.add_run('掃碼看材料清單'), max(7, PT - 6), False, (0x77, 0x77, 0x77))
 
 bt = doc.add_table(rows=1, cols=2); bt.autofit = False; bt.alignment = WD_TABLE_ALIGNMENT.CENTER
 cc0, cc1 = bt.rows[0].cells
