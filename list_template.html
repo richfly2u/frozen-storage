@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>凱德佛堂 冷凍庫 材料清單</title>
+<style>
+  :root{--ink:#12323f;--dim:#6b8299;--line:#d7e3ec;--gold:#c8a97a;--green:#1e4d3b}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;padding:14px 14px 26px;background:#f4f8fa;color:var(--ink);
+       font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif}
+  h1{margin:0 0 4px;font-size:22px;color:var(--green);letter-spacing:.5px}
+  .sub{margin:0 0 12px;font-size:13px;color:var(--dim)}
+  #status{font-size:13px;color:var(--dim);margin-bottom:10px}
+  h2{margin:16px 0 8px;font-size:16px;color:var(--green);
+     border-left:4px solid var(--gold);padding-left:8px}
+  .floor{margin:0 0 10px;background:#fff;border:1px solid var(--line);border-radius:12px;
+         padding:10px 12px;box-shadow:0 1px 2px rgba(18,50,63,.05)}
+  .floor .fh{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+  .floor .fh b{font-size:15px}
+  .floor .fh span{font-size:12.5px;color:var(--dim)}
+  .items{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:#fff;border:1px solid var(--gold);border-radius:999px;
+        padding:6px 12px;font-size:15px;font-weight:700;white-space:nowrap}
+  .chip i{font-style:normal;font-weight:400;color:var(--dim);font-size:13px;margin-left:5px}
+  .chip.zero{border-style:dashed;border-color:var(--line);color:var(--dim);font-weight:400}
+  .empty{font-size:13.5px;color:var(--dim);padding:2px 0}
+  .stp{display:flex;flex-wrap:wrap;gap:6px;background:#fff;border:1px solid var(--line);
+       border-radius:12px;padding:10px 12px}
+  .stp .chip{border-color:#bcd3e4;font-weight:400;background:#fbfdff}
+  .foot{margin-top:20px;font-size:12.5px;color:var(--dim);text-align:center;line-height:1.9}
+  .foot a{color:var(--dim)}
+  .warn{background:#fff5f5;border:1px solid #f0c0c0;color:#8a2b2b;border-radius:10px;
+        padding:10px 12px;font-size:13.5px}
+</style>
+</head>
+<body>
+<h1>❄️ 冷凍庫 材料清單</h1>
+<p class="sub">凱德佛堂　炊事組</p>
+<div id="status">連線中…</div>
+
+<section id="freezerSec">
+  <h2>冰箱內（依層位）</h2>
+  <div id="floors"></div>
+</section>
+
+<section id="stapleSec">
+  <h2>食材庫（常備材料・尚未冰）</h2>
+  <div class="stp" id="staples"></div>
+</section>
+
+<p class="foot">資料即時同步 ｜ 最後更新 <span id="upd">—</span><br>
+<a href="./">← 回操作介面（僅管理者）</a></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const STAPLES = __STAPLES__;
+const FLOORS  = __FLOORS__;
+
+const $ = id => document.getElementById(id);
+const app = initializeApp(window.FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function floorLabel(f){
+  if (!f) return '（未指定層位）';
+  const x = FLOORS.find(y=>y.id===f.id) || f;
+  return (x.door||'') + '　第' + (FLOORS.filter(y=>y.door===x.door).sort((a,b)=>a.local-b.local).findIndex(y=>y.id===x.id)+1) + '層' + (x.slot?'・'+x.slot:'');
+}
+
+let ITEMS = [];
+
+function render(){
+  const box = $('floors');
+  const byFloor = {};
+  ITEMS.forEach(it => { const k = it.floor && it.floor.id ? it.floor.id : 0; (byFloor[k] = byFloor[k] || []).push(it); });
+  const order = FLOORS.map(f=>f.id).concat([0]);
+  let html = '';
+  order.forEach(fid => {
+    const list = byFloor[fid]; if (!list || !list.length) return;
+    list.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'zh-Hant'));
+    const f = FLOORS.find(x=>x.id===fid);
+    html += '<div class="floor"><div class="fh"><b>' + esc(floorLabel(f)) + '</b>' +
+            (f && f.name ? '<span>' + esc(f.name) + '</span>' : '') +
+            '<span>・' + list.length + ' 項</span></div><div class="items">' +
+            list.map(it => '<div class="chip">' + esc(it.name) +
+              ((it.qty||0) > 0 ? '<i>' + esc(it.qty) + esc(it.unit||'') + '</i>' : '') +
+              '</div>').join('') +
+            '</div></div>';
+  });
+  if (!html) html = '<div class="floor"><div class="empty">冰箱內目前沒有登記的品項</div></div>';
+  box.innerHTML = html;
+
+  const have = new Set(ITEMS.map(i=>i.name));
+  const rest = STAPLES.filter(n=>!have.has(n));
+  $('staples').innerHTML = rest.length
+    ? rest.map(n=>'<span class="chip">'+esc(n)+'</span>').join('')
+    : '<div class="empty">常備材料都已在冰箱內</div>';
+
+  $('upd').textContent = new Date().toLocaleString('zh-TW',{hour12:false});
+}
+
+signInAnonymously(auth).then(()=>{
+  $('status').textContent = '';
+  onSnapshot(query(collection(db,'frozen_items'), orderBy('name')), snap=>{
+    ITEMS = snap.docs.map(d=>({_id:d.id, ...d.data()}));
+    render();
+  }, err=>{
+    $('status').innerHTML = '<div class="warn">讀取失敗：' + esc(err.message) + '</div>';
+  });
+}).catch(e=>{
+  $('status').innerHTML = '<div class="warn">無法連線：' + esc(e.message) + '</div>';
+});
+</script>
+
+<script>window.FIREBASE_CONFIG = __FBCONFIG__;</script>
+</body>
+</html>

@@ -89,7 +89,7 @@ p.paragraph_format.space_after = Pt(6)
 
 # --- QR（從 index.html 內嵌 SVG 解出的網址，用 segno 重繪成高解析 PNG）---
 import segno
-QR_URL = 'https://richfly2u.github.io/frozen-storage/#items'
+QR_URL = 'https://richfly2u.github.io/frozen-storage/list.html'
 QR_PNG = r'C:\Users\alan\frozen-storage\rules_qr.png'
 segno.make(QR_URL, error='m').save(QR_PNG, scale=12, border=2)
 

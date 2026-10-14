@@ -17,7 +17,7 @@ import segno
 ROOT = r'C:\Users\alan\frozen-storage'
 SRC = os.path.join(ROOT, 'index.html')
 QR_PNG = os.path.join(ROOT, 'rules_qr.png')
-QR_URL = 'https://richfly2u.github.io/frozen-storage/#items'
+QR_URL = 'https://richfly2u.github.io/frozen-storage/list.html'
 CHROME = r'C:\Users\alan\Chromium\chrome-win\chrome.exe'
 HTML = os.path.join(ROOT, '_twocol_try.html')
 PNG = os.path.join(ROOT, '_twocol_try.png')

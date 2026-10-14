@@ -186,7 +186,6 @@ nav button.on b{filter:none;opacity:1}
 .tier.awaitDrop{box-shadow:inset 0 0 0 3px #2f9e6b;border-radius:12px;background:rgba(47,158,107,.07);cursor:copy}
 /* ---------- 版面：左邊冰箱、右邊食材庫（便當組合模式） ---------- */
 .mapmain{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
-.outside.qrFocus{box-shadow:0 0 0 4px #ffd54a,0 0 26px rgba(255,213,74,.9);border-color:#e6b422!important;transition:box-shadow .35s,border-color .35s}
 .outside{
   border:2px dashed #b9cddb;border-radius:13px;padding:9px 10px;background:rgba(255,255,255,.75);
   display:flex;flex-direction:column;min-height:110px
@@ -986,22 +985,6 @@ if (/Line\/|LIFF/i.test(navigator.userAgent)) {
 
 }
 
-/* 📷 掃碼 #items：進來直接強調「材料清單（食材庫）」（2026-10-14 前賢指示） */
-(function qrFocusItems(){
-  if (!/^#items?$/.test(location.hash)) return;
-  const z = document.getElementById('outsideZone');
-  if (!z) return;
-  const on = () => {
-    z.classList.add('qrFocus');
-    try { z.scrollIntoView({ block: 'nearest' }); } catch (e) {}
-    // 持續亮著，直到使用者點一下材料清單（或 20 秒後自動淡出）
-    const off = () => { z.classList.remove('qrFocus'); z.removeEventListener('click', off); };
-    z.addEventListener('click', off);
-    setTimeout(off, 20000);
-  };
-  if (document.readyState === 'complete') setTimeout(on, 350);
-  else window.addEventListener('load', () => setTimeout(on, 350));
-})();
 
 
 /* ================= 匿名登入，自動） ================= */
