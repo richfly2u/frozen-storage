@@ -991,7 +991,10 @@ if (/Line\/|LIFF/i.test(navigator.userAgent)) {
   const on = () => {
     z.classList.add('qrFocus');
     try { z.scrollIntoView({ block: 'nearest' }); } catch (e) {}
-    setTimeout(() => z.classList.remove('qrFocus'), 4000);
+    // 持續亮著，直到使用者點一下材料清單（或 20 秒後自動淡出）
+    const off = () => { z.classList.remove('qrFocus'); z.removeEventListener('click', off); };
+    z.addEventListener('click', off);
+    setTimeout(off, 20000);
   };
   if (document.readyState === 'complete') setTimeout(on, 350);
   else window.addEventListener('load', () => setTimeout(on, 350));
