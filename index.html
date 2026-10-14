@@ -983,6 +983,9 @@ $("#showBy").addEventListener("change", e => {
 if (/Line\/|LIFF/i.test(navigator.userAgent)) {
   $("#lineTip").classList.add("on");
   const sd = document.querySelector(".side"); if (sd) sd.classList.add("show");
+
+}
+
 /* 📷 掃碼 #items：進來直接強調「材料清單（食材庫）」（2026-10-14 前賢指示） */
 (function qrFocusItems(){
   if (!/^#items?$/.test(location.hash)) return;
@@ -999,7 +1002,7 @@ if (/Line\/|LIFF/i.test(navigator.userAgent)) {
   if (document.readyState === 'complete') setTimeout(on, 350);
   else window.addEventListener('load', () => setTimeout(on, 350));
 })();
-}
+
 
 /* ================= 匿名登入，自動） ================= */
 sync("", "連線中…");
@@ -2034,7 +2037,6 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>
-
 
 <!-- 前賢 2026-10-08：分類不符警告 -->
 <div class="mask" id="warnMask">
