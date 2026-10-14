@@ -66,42 +66,54 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function floorLabel(f){
-  if (!f) return '（未指定層位）';
-  const x = FLOORS.find(y=>y.id===f.id) || f;
-  return (x.door||'') + '　第' + (FLOORS.filter(y=>y.door===x.door).sort((a,b)=>a.local-b.local).findIndex(y=>y.id===x.id)+1) + '層' + (x.slot?'・'+x.slot:'');
+function floorLabel(fid){
+  const x = FLOORS.find(y => y.id === Number(fid));
+  if (!x) return '（未指定層位）';
+  const peers = FLOORS.filter(y => y.door === x.door);
+  const n = peers.findIndex(y => y.id === x.id) + 1;
+  return x.door + '　第' + n + '層';
 }
 
 let ITEMS = [];
 
 function render(){
-  const box = $('floors');
-  const byFloor = {};
-  ITEMS.forEach(it => { const k = it.floor && it.floor.id ? it.floor.id : 0; (byFloor[k] = byFloor[k] || []).push(it); });
-  const order = FLOORS.map(f=>f.id).concat([0]);
-  let html = '';
-  order.forEach(fid => {
-    const list = byFloor[fid]; if (!list || !list.length) return;
-    list.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'zh-Hant'));
-    const f = FLOORS.find(x=>x.id===fid);
-    html += '<div class="floor"><div class="fh"><b>' + esc(floorLabel(f)) + '</b>' +
-            (f && f.name ? '<span>' + esc(f.name) + '</span>' : '') +
-            '<span>・' + list.length + ' 項</span></div><div class="items">' +
-            list.map(it => '<div class="chip">' + esc(it.name) +
-              ((it.qty||0) > 0 ? '<i>' + esc(it.qty) + esc(it.unit||'') + '</i>' : '') +
-              '</div>').join('') +
-            '</div></div>';
+  const inF = [], out = [];
+  ITEMS.forEach(it => {
+    const fid = Number(it.floor);
+    const qty = Number(it.qty) || 0;
+    if (qty > 0 && FLOORS.some(f => f.id === fid)) inF.push(it);
+    else out.push(it);
   });
-  if (!html) html = '<div class="floor"><div class="empty">冰箱內目前沒有登記的品項</div></div>';
-  box.innerHTML = html;
 
-  const have = new Set(ITEMS.map(i=>i.name));
-  const rest = STAPLES.filter(n=>!have.has(n));
-  $('staples').innerHTML = rest.length
-    ? rest.map(n=>'<span class="chip">'+esc(n)+'</span>').join('')
+  const byFloor = {};
+  inF.forEach(it => { const k = Number(it.floor); (byFloor[k] = byFloor[k] || []).push(it); });
+
+  let html = '';
+  FLOORS.forEach(f => {
+    const list = byFloor[f.id] || [];
+    html += '<div class="floor"><div class="fh"><b>' + esc(floorLabel(f.id)) + '</b>' +
+            (f.name ? '<span>' + esc(f.name) + '</span>' : '') +
+            '<span>・' + (list.length ? list.length + ' 項' : '目前空的') + '</span></div>';
+    html += list.length
+      ? '<div class="items">' + list.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'zh-Hant'))
+          .map(it => '<div class="chip">' + esc(it.name) +
+            '<i>' + esc(it.qty) + esc(it.unit || '') + '</i></div>').join('') + '</div>'
+      : '<div class="empty">（這一層目前沒有登記品項）</div>';
+    html += '</div>';
+  });
+  document.getElementById('floors').innerHTML = html;
+
+  // 食材庫＝冰箱外：常見備品（沒冰的）＋ 其他未指定層位者
+  const names = new Set(ITEMS.map(i => i.name));
+  const rest = STAPLES.filter(n => !names.has(n));
+  const other = out.map(i => i.name).filter(n => !STAPLES.includes(n));
+  const all = rest.concat(other);
+  const el = document.getElementById('staples');
+  el.innerHTML = all.length
+    ? all.map(n => '<span class="chip">' + esc(n) + '</span>').join('')
     : '<div class="empty">常備材料都已在冰箱內</div>';
 
-  $('upd').textContent = new Date().toLocaleString('zh-TW',{hour12:false});
+  document.getElementById('upd').textContent = new Date().toLocaleString('zh-TW', { hour12: false });
 }
 
 signInAnonymously(auth).then(()=>{
