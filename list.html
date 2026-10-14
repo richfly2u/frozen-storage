@@ -7,50 +7,46 @@
 <style>
   :root{--ink:#12323f;--dim:#6b8299;--line:#d7e3ec;--gold:#c8a97a;--green:#1e4d3b}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{margin:0;padding:14px 14px 26px;background:#f4f8fa;color:var(--ink);
+  body{margin:0;padding:12px 12px 22px;background:#f4f8fa;color:var(--ink);
        font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif}
-  h1{margin:0 0 4px;font-size:22px;color:var(--green);letter-spacing:.5px}
-  .sub{margin:0 0 12px;font-size:13px;color:var(--dim)}
-  #status{font-size:13px;color:var(--dim);margin-bottom:10px}
-  h2{margin:16px 0 8px;font-size:16px;color:var(--green);
-     border-left:4px solid var(--gold);padding-left:8px}
-  .floor{margin:0 0 10px;background:#fff;border:1px solid var(--line);border-radius:12px;
-         padding:10px 12px;box-shadow:0 1px 2px rgba(18,50,63,.05)}
-  .floor .fh{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
-  .floor .fh b{font-size:15px}
-  .floor .fh span{font-size:12.5px;color:var(--dim)}
-  .items{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{background:#fff;border:1px solid var(--gold);border-radius:999px;
-        padding:6px 12px;font-size:15px;font-weight:700;white-space:nowrap}
-  .chip i{font-style:normal;font-weight:400;color:var(--dim);font-size:13px;margin-left:5px}
-  .chip.zero{border-style:dashed;border-color:var(--line);color:var(--dim);font-weight:400}
-  .empty{font-size:13.5px;color:var(--dim);padding:2px 0}
-  .stp{display:flex;flex-wrap:wrap;gap:6px;background:#fff;border:1px solid var(--line);
-       border-radius:12px;padding:10px 12px}
-  .stp .chip{border-color:#bcd3e4;font-weight:400;background:#fbfdff}
-  .foot{margin-top:20px;font-size:12.5px;color:var(--dim);text-align:center;line-height:1.9}
-  .foot a{color:var(--dim)}
+  h1{margin:0 0 2px;font-size:20px;color:var(--green)}
+  .sub{margin:0 0 10px;font-size:12.5px;color:var(--dim)}
+  #status{font-size:13px;color:var(--dim)}
+  .doors{display:flex;flex-direction:column;gap:11px}
+  .door{border:2px solid var(--line);border-radius:14px;background:#eef4f8;padding:8px 8px 9px}
+  .door[data-door="U"]{border-color:#cfe0ee}
+  .door[data-door="D"]{border-color:#cfe8de}
+  .door-head{display:inline-block;font-size:14px;font-weight:700;padding:3px 12px;
+             border-radius:999px;margin:0 0 7px}
+  .door[data-door="U"] .door-head{color:#0d4a72;background:rgba(31,127,181,.20)}
+  .door[data-door="D"] .door-head{color:#0c5642;background:rgba(19,133,103,.20)}
+  .shelves{display:flex;flex-direction:column;gap:6px}
+  .tier{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);
+        border-radius:10px;padding:6px 9px 7px}
+  .tier-no{font-size:12.5px;font-weight:700;color:#33566b;margin-bottom:5px}
+  .items{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--gold);
+        border-radius:999px;padding:5px 11px;font-size:14.5px;font-weight:600;white-space:nowrap}
+  .chip b{background:#1e88c7;color:#fff;border-radius:7px;font-size:12px;padding:1px 6px;font-weight:700}
+  .empty{font-size:13px;color:#a8bcc9}
+  .lib{margin-top:12px;background:#fff;border:2px dashed #b9cddb;border-radius:14px;padding:9px 10px}
+  .lib h2{margin:0 0 7px;font-size:14px;color:#33566b}
+  .lib .chip{border-color:#bcd3e4;font-weight:400;background:#fbfdff}
+  .foot{margin-top:14px;font-size:12px;color:var(--dim);text-align:center;line-height:1.9}
   .warn{background:#fff5f5;border:1px solid #f0c0c0;color:#8a2b2b;border-radius:10px;
-        padding:10px 12px;font-size:13.5px}
+        padding:10px 12px;font-size:13.5px;margin-top:10px}
 </style>
 </head>
 <body>
 <h1>❄️ 冷凍庫 材料清單</h1>
 <p class="sub">凱德佛堂　炊事組</p>
 <div id="status">連線中…</div>
-
-<section id="freezerSec">
-  <h2>冰箱內（依層位）</h2>
-  <div id="floors"></div>
-</section>
-
-<section id="stapleSec">
-  <h2>食材庫（常備材料・尚未冰）</h2>
-  <div class="stp" id="staples"></div>
-</section>
-
-<p class="foot">資料即時同步 ｜ 最後更新 <span id="upd">—</span><br>
-<a href="./">← 回操作介面（僅管理者）</a></p>
+<div id="map"></div>
+<div class="lib" id="libBox" style="display:none">
+  <h2>📦 食材庫（常備材料・尚未冰）</h2>
+  <div class="items" id="lib"></div>
+</div>
+<p class="foot">資料即時同步 ｜ 更新 <span id="upd">—</span></p>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -59,72 +55,62 @@ import { getFirestore, collection, onSnapshot, query, orderBy } from "https://ww
 
 const STAPLES = ["當歸", "枸杞", "紅棗", "豆包", "麵腸", "火腿", "素丸子", "牛蒡排", "鱈魚排", "飯巾布", "麵線", "饅頭", "包子", "綠豆沙餡", "小魚干", "紅糟麵腸", "黑豆", "花生仁", "大薏仁", "豆干", "大胖干", "核桃", "腰果", "海帶芽", "味噌"];
 const FLOORS  = [{"id": 1, "door": "上門", "name": "中藥 湯料 五穀堅果"}, {"id": 2, "door": "上門", "name": "素料/餡料"}, {"id": 5, "door": "上門", "name": "素料"}, {"id": 3, "door": "下門", "name": "其他/私人"}, {"id": 4, "door": "下門", "name": "其他/粉類"}];
+const DOORS   = [{ key:'U', label:'上門' }, { key:'D', label:'下門' }];
 
 const $ = id => document.getElementById(id);
 const app = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function floorLabel(fid){
-  const x = FLOORS.find(y => y.id === Number(fid));
-  if (!x) return '（未指定層位）';
-  const peers = FLOORS.filter(y => y.door === x.door);
-  const n = peers.findIndex(y => y.id === x.id) + 1;
-  return x.door + '　第' + n + '層';
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function floorNo(fid){
+  const f = FLOORS.find(x => x.id === Number(fid));
+  if (!f) return '';
+  return FLOORS.filter(x => x.door === f.door).findIndex(x => x.id === f.id) + 1;
 }
 
 let ITEMS = [];
 
 function render(){
-  const inF = [], out = [];
-  ITEMS.forEach(it => {
-    const fid = Number(it.floor);
-    const qty = Number(it.qty) || 0;
-    if (qty > 0 && FLOORS.some(f => f.id === fid)) inF.push(it);
-    else out.push(it);
+  const inF = ITEMS.filter(i => (Number(i.qty)||0) > 0 && FLOORS.some(f => f.id === Number(i.floor)));
+  let html = '<div class="doors">';
+  DOORS.forEach(d => {
+    html += '<section class="door" data-door="' + d.key + '"><div class="door-head">' + d.label + '</div><div class="shelves">';
+    FLOORS.filter(f => f.door === d.label).forEach(f => {
+      const list = inF.filter(i => Number(i.floor) === f.id)
+                      .sort((a,b) => String(a.name||'').localeCompare(String(b.name||''), 'zh-Hant'));
+      html += '<div class="tier"><div class="tier-no">第' + floorNo(f.id) + '層　' + esc(f.name) + '</div><div class="items">';
+      html += list.length
+        ? list.map(it => '<span class="chip">' + esc(it.name) +
+            ((Number(it.qty)||0) > 0 ? '<b>' + esc(it.qty) + esc(it.unit||'') + '</b>' : '') + '</span>').join('')
+        : '<span class="empty">目前空的</span>';
+      html += '</div></div>';
+    });
+    html += '</div></section>';
   });
+  html += '</div>';
+  $('map').innerHTML = html;
 
-  const byFloor = {};
-  inF.forEach(it => { const k = Number(it.floor); (byFloor[k] = byFloor[k] || []).push(it); });
-
-  let html = '';
-  FLOORS.forEach(f => {
-    const list = byFloor[f.id] || [];
-    html += '<div class="floor"><div class="fh"><b>' + esc(floorLabel(f.id)) + '</b>' +
-            (f.name ? '<span>' + esc(f.name) + '</span>' : '') +
-            '<span>・' + (list.length ? list.length + ' 項' : '目前空的') + '</span></div>';
-    html += list.length
-      ? '<div class="items">' + list.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'zh-Hant'))
-          .map(it => '<div class="chip">' + esc(it.name) +
-            '<i>' + esc(it.qty) + esc(it.unit || '') + '</i></div>').join('') + '</div>'
-      : '<div class="empty">（這一層目前沒有登記品項）</div>';
-    html += '</div>';
-  });
-  document.getElementById('floors').innerHTML = html;
-
-  // 食材庫＝冰箱外：常見備品（沒冰的）＋ 其他未指定層位者
   const names = new Set(ITEMS.map(i => i.name));
   const rest = STAPLES.filter(n => !names.has(n));
-  const other = out.map(i => i.name).filter(n => !STAPLES.includes(n));
-  const all = rest.concat(other);
-  const el = document.getElementById('staples');
-  el.innerHTML = all.length
-    ? all.map(n => '<span class="chip">' + esc(n) + '</span>').join('')
-    : '<div class="empty">常備材料都已在冰箱內</div>';
-
-  document.getElementById('upd').textContent = new Date().toLocaleString('zh-TW', { hour12: false });
+  if (rest.length){
+    $('libBox').style.display = '';
+    $('lib').innerHTML = rest.map(n => '<span class="chip">' + esc(n) + '</span>').join('');
+  } else {
+    $('libBox').style.display = 'none';
+  }
+  $('upd').textContent = new Date().toLocaleString('zh-TW', { hour12:false });
 }
 
-signInAnonymously(auth).then(()=>{
+signInAnonymously(auth).then(() => {
   $('status').textContent = '';
-  onSnapshot(query(collection(db,'frozen_items'), orderBy('name')), snap=>{
-    ITEMS = snap.docs.map(d=>({_id:d.id, ...d.data()}));
+  onSnapshot(query(collection(db, 'frozen_items'), orderBy('name')), snap => {
+    ITEMS = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
     render();
-  }, err=>{
+  }, err => {
     $('status').innerHTML = '<div class="warn">讀取失敗：' + esc(err.message) + '</div>';
   });
-}).catch(e=>{
+}).catch(e => {
   $('status').innerHTML = '<div class="warn">無法連線：' + esc(e.message) + '</div>';
 });
 </script>
