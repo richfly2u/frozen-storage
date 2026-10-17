@@ -9,7 +9,7 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;padding:0 0 28px;background:#fbfcfd;color:var(--ink);
        font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
-       font-size:15px;line-height:1.65}
+       font-size:14px;line-height:1.45}
   /* 標題帶 */
   .head{background:linear-gradient(135deg,#1e4d3b,#2f6f57);color:#fff;
         padding:20px 18px 16px;border-radius:0 0 22px 22px;margin-bottom:14px}
@@ -28,11 +28,11 @@
        font-size:10px;font-weight:700;color:#fff;background:#2f6f57;border-radius:6px}
   .tname{font-size:13.5px;font-weight:700;color:#143b2d}
   /* 品項：雙欄、不加框，只用細底線 */
-  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:0 12px}
-  .mi{display:flex;align-items:baseline;gap:5px;min-width:0;
-      border-bottom:1px solid #eef3f1;padding:2px 0}
-  .mn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .mq{margin-left:auto;white-space:nowrap;font-size:12px;color:#5f7d70;
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:0 8px}
+  .mi{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px;min-width:0;
+      border-bottom:1px solid #eef3f1;padding:1px 0}
+  .mn{white-space:nowrap}
+  .mq{margin-left:auto;white-space:nowrap;font-size:11px;color:#5f7d70;
       font-variant-numeric:tabular-nums}
   .empty{color:#b9c6ce;font-size:13.5px}
   /* 食材庫 */
