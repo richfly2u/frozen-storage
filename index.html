@@ -597,7 +597,9 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   header .htools{margin:0;padding:0;flex:0 0 auto;display:flex;align-items:center;gap:5px}
   header .opbar{margin:0;gap:4px}
   #bottomBar .bytoggle .bytl{display:none}             /* 空間有限：只留 👤 圖示（滑過有提示） */
-  #bottomBar #btnRules{padding:3px 8px;font-size:11.5px}
+  #bottomBar #btnRules{padding:3px 6px;font-size:11px;white-space:nowrap;flex:0 0 auto}
+  #bottomBar #btnList{padding:3px 6px;font-size:11px;white-space:nowrap;flex:0 0 auto}   /* 2026-10-16 新增：材料清單 */
+  #bottomBar .bbtools{gap:4px}
   .outside{padding:4px 3px;min-height:0}
   .outside #btnAdd{margin-bottom:5px}
   .outside #osClear{font-size:11px;padding:1px 7px}
@@ -753,6 +755,7 @@ input,textarea,select,[contenteditable]{-webkit-user-select:auto;user-select:aut
   <div class="bbtools">
     <label class="bytoggle" title="勾選後卡片會顯示是誰放的"><input type="checkbox" id="showBy"><span class="byti">👤</span><span class="bytl">顯示經手人</span></label>
     <button type="button" class="btn sm ghost" id="btnRules" title="冷凍庫使用規則">📋 規則</button>
+    <button type="button" class="btn sm ghost" id="btnList" title="材料清單（唯讀，照冰箱結構）">📄 清單</button>
   </div>
 </div>
 
@@ -1610,6 +1613,8 @@ $("#btnAdd").addEventListener("click", () => openEdit(null));
 
 /* 📋 冷凍庫使用規則（前賢 2026-10-06：規則也放在冷凍位置圖這邊） */
 $("#btnRules").addEventListener("click", () => $("#rulesMask").classList.add("on"));
+// 📄 清單：開唯讀材料清單（另開分頁，關掉就回到 App，不會離開位置圖）
+$("#btnList").addEventListener("click", () => window.open("list.html", "_blank", "noopener"));
 $("#btnRulesClose").addEventListener("click", () => $("#rulesMask").classList.remove("on"));
 $("#btnRulesClose2").addEventListener("click", () => $("#rulesMask").classList.remove("on"));
 $("#rulesMask").addEventListener("click", e => { if (e.target.id === "rulesMask") $("#rulesMask").classList.remove("on"); });
@@ -1979,7 +1984,7 @@ setTimeout(() => { if (m) gotoFloor(m); }, 2500);
 <!-- 自動更新：每次改版只改這裡的版本號＋version.json，手機端會自己換成新版（繞過 10 分鐘快取） -->
 <script id="autoVersion">
 (function(){
-  var MY="20261010-130633";
+  var MY="20261017-0935";
   try{
     fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.v&&j.v!==MY){
