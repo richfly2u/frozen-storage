@@ -5,38 +5,50 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>凱德佛堂 冷凍庫 材料清單</title>
 <style>
-  :root{--ink:#12323f;--dim:#6b8299;--green:#1e4d3b;--rule:#dbe6ee}
+  :root{--ink:#12323f;--dim:#7d909e;--green:#1e4d3b;--rule:#e3ebf0}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{margin:0;padding:14px 16px 24px;background:#fff;color:var(--ink);
+  body{margin:0;padding:0 0 28px;background:#fbfcfd;color:var(--ink);
        font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
-       font-size:16px;line-height:1.75}
-  h1{margin:0 0 2px;font-size:20px;color:var(--green)}
-  .sub{margin:0 0 14px;font-size:12.5px;color:var(--dim)}
-  #status{font-size:13px;color:var(--dim)}
+       font-size:15px;line-height:1.65}
+  /* 標題帶 */
+  .head{background:linear-gradient(135deg,#1e4d3b,#2f6f57);color:#fff;
+        padding:20px 18px 16px;border-radius:0 0 22px 22px;margin-bottom:14px}
+  h1{margin:0;font-size:20px;letter-spacing:.5px}
+  .sub{margin:2px 0 0;font-size:12px;color:#cfe3da;letter-spacing:1px}
+  #status{font-size:12.5px;color:#9fb3ab;padding:0 18px 8px}
+  #map{padding:0 18px}
   /* 門 */
   .door{margin:0 0 16px}
-  .dh{font-size:15px;font-weight:700;color:var(--green);
-      border-bottom:2px solid var(--green);padding-bottom:3px;margin-bottom:6px}
+  .dh{font-size:12px;font-weight:700;letter-spacing:3px;color:var(--green);
+      border-bottom:2px solid #dfe9e4;padding-bottom:4px;margin:0 0 9px}
   /* 層 */
-  .tier{margin:0 0 9px}
-  .tn{display:block;font-size:13.5px;font-weight:700;color:#33566b;margin-bottom:1px}
-  .it{display:block;padding-left:10px;word-break:break-all}
-  .it.empty{color:#b3c3cd;font-size:14px}
+  .tier{margin:0 0 11px}
+  .th{display:flex;align-items:center;gap:7px;margin:0 0 5px}
+  .num{flex:0 0 auto;width:17px;height:17px;line-height:17px;text-align:center;
+       font-size:10px;font-weight:700;color:#fff;background:#2f6f57;border-radius:6px}
+  .tname{font-size:13.5px;font-weight:700;color:#143b2d}
+  /* 品項：雙欄、不加框，只用細底線 */
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:0 12px}
+  .mi{display:flex;align-items:baseline;gap:5px;min-width:0;
+      border-bottom:1px solid #eef3f1;padding:2px 0}
+  .mn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mq{margin-left:auto;white-space:nowrap;font-size:12px;color:#5f7d70;
+      font-variant-numeric:tabular-nums}
+  .empty{color:#b9c6ce;font-size:13.5px}
   /* 食材庫 */
-  .lib{margin-top:6px;padding-top:10px;border-top:1px dashed var(--rule)}
-  .lib .tn{color:#7a6a4f}
-  .foot{margin-top:18px;font-size:12px;color:var(--dim);text-align:center}
-  .warn{color:#8a2b2b;font-size:14px;margin-top:10px}
+  .lib{margin:16px 18px 0;padding:14px 0 0;border-top:1px dashed #dbe6ee}
+  .libt{margin:0 0 6px;font-size:13px;font-weight:700;color:#8a7452}
+  .foot{margin:18px 18px 0;font-size:11.5px;color:var(--dim);text-align:center}
+  .warn{color:#8a2b2b;font-size:14px}
 </style>
 </head>
 <body>
-<h1>冷凍庫 材料清單</h1>
-<p class="sub">凱德佛堂　炊事組</p>
+<div class="head"><h1>冷凍庫 材料清單</h1><p class="sub">凱德佛堂　炊事組</p></div>
 <div id="status">連線中…</div>
 <div id="map"></div>
 <div class="lib" id="libBox" style="display:none">
-  <span class="tn">食材庫（常備・尚未冰）</span>
-  <span class="it" id="lib"></span>
+  <p class="libt">食材庫（常備・尚未冰）</p>
+  <div class="items" id="lib"></div>
 </div>
 <p class="foot">更新 <span id="upd">—</span></p>
 
@@ -64,6 +76,12 @@ const byName = (a,b) => String(a.name||'').localeCompare(String(b.name||''), 'zh
 
 let ITEMS = [];
 
+function mi(it){
+  return '<span class="mi"><span class="mn">' + esc(it.name) + '</span>' +
+    ((Number(it.qty)||0) > 0 ? '<span class="mq">' + esc(it.qty) + esc(it.unit||'') + '</span>' : '') +
+    '</span>';
+}
+
 function render(){
   const inF = ITEMS.filter(i => (Number(i.qty)||0) > 0 && FLOORS.some(f => f.id === Number(i.floor)));
   let html = '';
@@ -71,11 +89,11 @@ function render(){
     html += '<div class="door"><div class="dh">' + d.label + '</div>';
     FLOORS.filter(f => f.door === d.label).forEach(f => {
       const list = inF.filter(i => Number(i.floor) === f.id).sort(byName);
-      html += '<div class="tier"><span class="tn">第' + floorNo(f.id) + '層　' + esc(f.name) + '</span>';
+      html += '<div class="tier"><div class="th"><span class="num">' + floorNo(f.id) +
+              '</span><span class="tname">' + esc(f.name) + '</span></div>';
       html += list.length
-        ? '<span class="it">' + list.map(it => esc(it.name) +
-            ((Number(it.qty)||0) > 0 ? ' ' + esc(it.qty) + esc(it.unit||'') : '')).join('、') + '</span>'
-        : '<span class="it empty">（目前空的）</span>';
+        ? '<div class="items">' + list.map(mi).join('') + '</div>'
+        : '<div class="empty">（目前空的）</div>';
       html += '</div>';
     });
     html += '</div>';
@@ -86,7 +104,7 @@ function render(){
   const rest = STAPLES.filter(n => !names.has(n));
   if (rest.length){
     $('libBox').style.display = '';
-    $('lib').textContent = rest.join('、');
+    $('lib').innerHTML = rest.map(n => '<span class="mi"><span class="mn">' + esc(n) + '</span></span>').join('');
   } else {
     $('libBox').style.display = 'none';
   }
