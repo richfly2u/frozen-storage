@@ -27,13 +27,14 @@
   .num{flex:0 0 auto;width:17px;height:17px;line-height:17px;text-align:center;
        font-size:10px;font-weight:700;color:#fff;background:#2f6f57;border-radius:6px}
   .tname{font-size:13.5px;font-weight:700;color:#143b2d}
-  /* 品項：雙欄、不加框，只用細底線 */
-  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:0 8px}
-  .mi{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px;min-width:0;
-      border-bottom:1px solid #eef3f1;padding:1px 0}
-  .mn{white-space:nowrap}
-  .mq{margin-left:auto;white-space:nowrap;font-size:11px;color:#5f7d70;
+  /* 品項明細：名稱＋數量一行，下面小字放放入者／更新時間／備註 */
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:2px 12px}
+  .mi{min-width:0;border-bottom:1px solid #eef3f1;padding:3px 0}
+  .mr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+  .mn{font-weight:600;white-space:nowrap}
+  .mq{margin-left:auto;white-space:nowrap;font-size:12.5px;font-weight:700;color:#1e4d3b;
       font-variant-numeric:tabular-nums}
+  .md{margin-top:2px;font-size:11px;color:#7f939e;line-height:1.35}
   .empty{color:#b9c6ce;font-size:13.5px}
   /* 食材庫 */
   .lib{margin:16px 18px 0;padding:14px 0 0;border-top:1px dashed #dbe6ee}
@@ -76,10 +77,25 @@ const byName = (a,b) => String(a.name||'').localeCompare(String(b.name||''), 'zh
 
 let ITEMS = [];
 
+function fmtT(ms){
+  if (!ms) return '';
+  const d = new Date(Number(ms));
+  const p = n => String(n).padStart(2, '0');
+  return (d.getMonth()+1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
 function mi(it){
-  return '<span class="mi"><span class="mn">' + esc(it.name) + '</span>' +
-    ((Number(it.qty)||0) > 0 ? '<span class="mq">' + esc(it.qty) + esc(it.unit||'') + '</span>' : '') +
-    '</span>';
+  const q = Number(it.qty) || 0;
+  let md = [];
+  if (it.by) md.push('放入 ' + esc(it.by));
+  if (it.updatedAt) md.push('更新 ' + fmtT(it.updatedAt));
+  if (it.note) md.push('備註 ' + esc(it.note));
+  return '<div class="mi">' +
+    '<div class="mr"><span class="mn">' + esc(it.name) + '</span>' +
+    (q > 0 ? '<span class="mq">' + esc(it.qty) + esc(it.unit||'') + '</span>' : '') +
+    '</div>' +
+    (md.length ? '<div class="md">' + md.join('　·　') + '</div>' : '') +
+    '</div>';
 }
 
 function render(){
@@ -104,7 +120,7 @@ function render(){
   const rest = STAPLES.filter(n => !names.has(n));
   if (rest.length){
     $('libBox').style.display = '';
-    $('lib').innerHTML = rest.map(n => '<span class="mi"><span class="mn">' + esc(n) + '</span></span>').join('');
+    $('lib').innerHTML = rest.map(n => '<div class="mi"><div class="mr"><span class="mn">' + esc(n) + '</span></div></div>').join('');
   } else {
     $('libBox').style.display = 'none';
   }
