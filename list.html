@@ -41,20 +41,23 @@
       background:rgba(255,255,255,.6)}
   .dh .cnt{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:0;color:#1e4d3b;
       background:#fff;border-radius:999px;padding:2.5px 11px;white-space:nowrap}
-  .dbody{padding:12px 14px 8px}
-  /* 層 */
-  .tier{margin:0 0 10px}
-  .tier+.tier{border-top:1px dashed #edf2f0;padding-top:9px}
-  .th{display:flex;align-items:center;gap:7px;margin:0 0 5px}
+  .dbody{padding:10px 12px 6px}
+  /* 層：獨立小卡（淺底＋左側綠條） */
+  .tier{background:#f6f9f8;border-radius:11px;border-left:3px solid #cde1d8;
+        padding:8px 10px 7px;margin:0 0 8px}
+  .tier:last-child{margin-bottom:3px}
+  .th{display:flex;align-items:center;gap:7px;margin:0 0 6px}
+  .tc{margin-left:auto;font-size:10.5px;font-weight:600;color:#8aa39a;
+      background:rgba(20,59,45,.05);border-radius:999px;padding:1px 8px}
   .num{flex:0 0 auto;width:17px;height:17px;line-height:17px;text-align:center;
-       font-size:10px;font-weight:700;color:#fff;background:#2f6f57;border-radius:6px}
-  .tname{font-size:13.5px;font-weight:700;color:#143b2d}
+       font-size:10px;font-weight:700;color:#fff;background:#1e4d3b;border-radius:6px}
+  .tname{font-size:13px;font-weight:700;color:#143b2d}
   /* 品項明細：三列，名稱＋數量一行，下面小字更新時間／備註 */
   .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:2px 6px}
-  .mi{min-width:0;border-bottom:1px solid #f0f4f2;padding:3px 0}
-  .mr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px}
-  .mn{font-weight:600;white-space:nowrap}
-  .mq{margin-left:auto;white-space:nowrap;font-size:12.5px;font-weight:700;color:#1e4d3b;
+  .mi{min-width:0;border-bottom:1px solid rgba(20,59,45,.06);padding:3px 0}
+  .mr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 4px}
+  .mn{font-size:13px;font-weight:600;white-space:nowrap}
+  .mq{margin-left:auto;white-space:nowrap;font-size:11.5px;font-weight:700;color:#1e4d3b;
       font-variant-numeric:tabular-nums}
   .md{margin-top:2px;font-size:10.5px;color:#7e929d;line-height:1.25}
   .empty{color:#b9c6ce;font-size:13px}
@@ -151,7 +154,8 @@ function render(){
       if (q && !list.length) return;              /* 搜尋中：沒中的層直接不顯示 */
       nTier++; nItem += list.length;
       body += '<div class="tier"><div class="th"><span class="num">' + floorNo(f.id) +
-              '</span><span class="tname">' + esc(f.name) + '</span></div>';
+              '</span><span class="tname">' + esc(f.name) + '</span>' +
+              '<span class="tc">' + list.length + ' 項</span></div>';
       body += list.length
         ? '<div class="items">' + list.map(mi).join('') + '</div>'
         : '<div class="empty">（目前空的）</div>';
