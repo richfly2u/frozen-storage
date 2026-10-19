@@ -87,7 +87,6 @@ function fmtT(ms){
 function mi(it){
   const q = Number(it.qty) || 0;
   let md = [];
-  if (it.by) md.push('放入 ' + esc(it.by));
   if (it.updatedAt) md.push('更新 ' + fmtT(it.updatedAt));
   if (it.note) md.push('備註 ' + esc(it.note));
   return '<div class="mi">' +
