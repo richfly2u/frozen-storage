@@ -7,49 +7,67 @@
 <style>
   :root{--ink:#12323f;--dim:#7d909e;--green:#1e4d3b;--rule:#e3ebf0}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{margin:0;padding:0 0 28px;background:#fbfcfd;color:var(--ink);
+  body{margin:0;padding:0 0 26px;color:var(--ink);
+       background:linear-gradient(180deg,#eef4f1 0,#f7faf9 220px,#f7faf9 100%);
        font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;
        font-size:14px;line-height:1.45}
-  /* 標題帶 */
-  .head{background:linear-gradient(135deg,#1e4d3b,#2f6f57);color:#fff;
-        padding:20px 18px 16px;border-radius:0 0 22px 22px;margin-bottom:14px}
+  /* 頁首 */
+  .head{background:linear-gradient(135deg,#16382b,#2f6f57 88%);color:#fff;
+        padding:20px 18px 16px;border-radius:0 0 24px 24px;margin-bottom:12px}
   h1{margin:0;font-size:20px;letter-spacing:.5px}
-  .sub{margin:2px 0 0;font-size:12px;color:#cfe3da;letter-spacing:1px}
+  .sub{margin:3px 0 0;font-size:12px;color:#bfd8cd;letter-spacing:1px}
   #status{font-size:12.5px;color:#9fb3ab;padding:0 18px 8px}
-  #map{padding:0 18px}
   /* 搜尋（貼在頂端，捲動時不會跑掉） */
-  .search{position:sticky;top:0;z-index:6;background:#fbfcfd;padding:10px 18px 6px}
-  .search input{width:100%;border:1px solid #dbe6ee;background:#fff;border-radius:12px;
-       padding:9px 12px;font-size:14px;color:var(--ink);outline:none;font-family:inherit;
-       -webkit-appearance:none;appearance:none}
+  .search{position:sticky;top:0;z-index:6;padding:10px 16px 6px;
+          background:linear-gradient(180deg,rgba(247,250,249,.99),rgba(247,250,249,.93))}
+  .search input{width:100%;border:1px solid #e2ebe6;border-radius:14px;
+       padding:10px 14px 10px 38px;font-size:14px;color:var(--ink);outline:none;
+       font-family:inherit;-webkit-appearance:none;appearance:none;
+       box-shadow:0 1px 3px rgba(20,59,45,.05);
+       background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2389a09a' stroke-width='2.2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='M20 20l-4.3-4.3'/></svg>") no-repeat 13px center;background-size:16px 16px}
   .search input::placeholder{color:#a8bac4}
-  .search input:focus{border-color:#2f6f57;box-shadow:0 0 0 3px rgba(47,111,87,.12)}
+  .search input:focus{border-color:#2f6f57;box-shadow:0 0 0 3px rgba(47,111,87,.13)}
   #hits{padding:0 18px;font-size:11.5px;color:#7f939e}
-  #hits:not(:empty){padding:0 18px 6px}
+  #hits:not(:empty){padding:2px 18px 6px}
   mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
-  /* 門 */
-  .door{margin:0 0 16px}
-  .dh{font-size:12px;font-weight:700;letter-spacing:3px;color:var(--green);
-      border-bottom:2px solid #dfe9e4;padding-bottom:4px;margin:0 0 9px}
+  /* 門：獨立區塊卡 */
+  #map{padding:0 10px}
+  .door{background:#fff;border-radius:16px;margin:0 0 14px;overflow:hidden;
+        box-shadow:0 2px 10px rgba(20,59,45,.07)}
+  .dh{display:flex;align-items:center;gap:9px;margin:0;padding:13px 14px;
+      background:linear-gradient(135deg,#1b4636,#3d7f64);color:#fff;
+      font-size:15.5px;font-weight:700;letter-spacing:5px}
+  .dh::before{content:'';flex:0 0 auto;width:4px;height:15px;border-radius:2px;
+      background:rgba(255,255,255,.6)}
+  .dh .cnt{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:0;color:#1e4d3b;
+      background:#fff;border-radius:999px;padding:2.5px 11px;white-space:nowrap}
+  .dbody{padding:12px 14px 8px}
   /* 層 */
-  .tier{margin:0 0 11px}
+  .tier{margin:0 0 10px}
+  .tier+.tier{border-top:1px dashed #edf2f0;padding-top:9px}
   .th{display:flex;align-items:center;gap:7px;margin:0 0 5px}
   .num{flex:0 0 auto;width:17px;height:17px;line-height:17px;text-align:center;
        font-size:10px;font-weight:700;color:#fff;background:#2f6f57;border-radius:6px}
   .tname{font-size:13.5px;font-weight:700;color:#143b2d}
-  /* 品項明細：名稱＋數量一行，下面小字放放入者／更新時間／備註 */
-  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:2px 8px}
-  .mi{min-width:0;border-bottom:1px solid #eef3f1;padding:3px 0}
-  .mr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+  /* 品項明細：三列，名稱＋數量一行，下面小字更新時間／備註 */
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:2px 6px}
+  .mi{min-width:0;border-bottom:1px solid #f0f4f2;padding:3px 0}
+  .mr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px}
   .mn{font-weight:600;white-space:nowrap}
   .mq{margin-left:auto;white-space:nowrap;font-size:12.5px;font-weight:700;color:#1e4d3b;
       font-variant-numeric:tabular-nums}
-  .md{margin-top:2px;font-size:10.5px;color:#7f939e;line-height:1.25}
-  .empty{color:#b9c6ce;font-size:13.5px}
-  /* 食材庫 */
-  .lib{margin:16px 18px 0;padding:14px 0 0;border-top:1px dashed #dbe6ee}
-  .libt{margin:0 0 6px;font-size:13px;font-weight:700;color:#8a7452}
-  .foot{margin:18px 18px 0;font-size:11.5px;color:var(--dim);text-align:center}
+  .md{margin-top:2px;font-size:10.5px;color:#7e929d;line-height:1.25}
+  .empty{color:#b9c6ce;font-size:13px}
+  /* 食材庫：另一張卡（暖色帶） */
+  .lib{margin:2px 10px 0;background:#fff;border-radius:16px;overflow:hidden;
+       box-shadow:0 2px 10px rgba(20,59,45,.06)}
+  .libt{display:flex;align-items:center;margin:0;padding:11px 14px;
+        font-size:13px;font-weight:700;letter-spacing:1px;color:#7a5c2e;
+        background:linear-gradient(135deg,#f2e8d3,#faf5e9)}
+  .lcnt{margin-left:auto;font-size:11px;font-weight:600;letter-spacing:0;color:#8a7452;
+        background:rgba(255,255,255,.7);border-radius:999px;padding:2px 9px}
+  .lib .items{padding:10px 14px 4px}
+  .foot{margin:16px 18px 0;font-size:11.5px;color:#a3b3bd;text-align:center}
   .warn{color:#8a2b2b;font-size:14px}
 </style>
 </head>
@@ -60,7 +78,7 @@
 <div id="status">連線中…</div>
 <div id="map"></div>
 <div class="lib" id="libBox" style="display:none">
-  <p class="libt">食材庫（常備・尚未冰）</p>
+  <p class="libt"><span>食材庫（常備・尚未冰）</span><span class="lcnt" id="libN"></span></p>
   <div class="items" id="lib"></div>
 </div>
 <p class="foot">更新 <span id="upd">—</span></p>
@@ -127,10 +145,11 @@ function render(){
                    .filter(i => hit(i.name) || hit(i.note));
   let html = '';
   DOORS.forEach(d => {
-    let body = '';
+    let body = '', nTier = 0, nItem = 0;
     FLOORS.filter(f => f.door === d.label).forEach(f => {
       const list = inF.filter(i => Number(i.floor) === f.id).sort(byName);
       if (q && !list.length) return;              /* 搜尋中：沒中的層直接不顯示 */
+      nTier++; nItem += list.length;
       body += '<div class="tier"><div class="th"><span class="num">' + floorNo(f.id) +
               '</span><span class="tname">' + esc(f.name) + '</span></div>';
       body += list.length
@@ -138,7 +157,11 @@ function render(){
         : '<div class="empty">（目前空的）</div>';
       body += '</div>';
     });
-    if (body) html += '<div class="door"><div class="dh">' + d.label + '</div>' + body + '</div>';
+    if (body) {
+      html += '<section class="door"><div class="dh"><span class="dl">' + d.label + '</span>' +
+              '<span class="cnt">' + nTier + ' 層 · ' + nItem + ' 項</span></div>' +
+              '<div class="dbody">' + body + '</div></section>';
+    }
   });
   $('map').innerHTML = html;
 
@@ -146,6 +169,7 @@ function render(){
   const rest = STAPLES.filter(n => !names.has(n)).filter(hit);
   if (rest.length){
     $('libBox').style.display = '';
+    $('libN').textContent = rest.length + ' 項';
     $('lib').innerHTML = rest.map(n => '<div class="mi"><div class="mr"><span class="mn">' + hi(n) + '</span></div></div>').join('');
   } else {
     $('lib').innerHTML = '';
