@@ -53,6 +53,9 @@
       background:rgba(20,59,45,.05);border-radius:999px;padding:1px 8px}
   .num{flex:0 0 auto;width:17px;height:17px;line-height:17px;text-align:center;
        font-size:10px;font-weight:700;color:#fff;background:#1e4d3b;border-radius:6px}
+  .pos{flex:0 0 auto;font-size:10.5px;font-weight:700;letter-spacing:0;color:#3f7361;
+       background:#d7e7df;border-radius:5px;padding:1px 6px;white-space:nowrap}
+  .tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tname{font-size:13px;font-weight:700;color:#143b2d}
   /* 品項明細：三列，名稱＋數量一行，下面小字更新時間／備註 */
   .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:2px 6px}
@@ -92,6 +95,16 @@ function floorNo(fid){
   const f = FLOORS.find(x => x.id === Number(fid));
   if (!f) return '';
   return FLOORS.filter(x => x.door === f.door).findIndex(x => x.id === f.id) + 1;
+}
+/* 位置說法：兩層的門＝上層/下層；三層的門＝上層/中層/下層 */
+function floorPos(fid){
+  const f = FLOORS.find(x => x.id === Number(fid));
+  if (!f) return '';
+  const arr = FLOORS.filter(x => x.door === f.door);
+  const i = arr.findIndex(x => x.id === f.id);
+  if (arr.length === 2) return i === 0 ? '上層' : '下層';
+  if (arr.length === 3) return ['上層', '中層', '下層'][i];
+  return '第' + (i + 1) + '層';
 }
 const byName = (a,b) => String(a.name||'').localeCompare(String(b.name||''), 'zh-Hant');
 
@@ -133,7 +146,8 @@ function render(){
       if (q && !list.length) return;              /* 搜尋中：沒中的層直接不顯示 */
       nTier++; nItem += list.length;
       body += '<div class="tier"><div class="th"><span class="num">' + floorNo(f.id) +
-              '</span><span class="tname">' + esc(f.name) + '</span>' +
+              '</span><span class="pos">' + floorPos(f.id) + '</span>' +
+              '<span class="tname">' + esc(f.name) + '</span>' +
               '<span class="tc">' + list.length + ' 項</span></div>';
       body += list.length
         ? '<div class="items">' + list.map(mi).join('') + '</div>'
