@@ -64,15 +64,6 @@
       font-variant-numeric:tabular-nums}
   .md{margin-top:2px;font-size:10.5px;color:#7e929d;line-height:1.25}
   .empty{color:#b9c6ce;font-size:13px}
-  /* 食材庫：另一張卡（暖色帶） */
-  .lib{margin:2px 10px 0;background:#fff;border-radius:16px;overflow:hidden;
-       box-shadow:0 2px 10px rgba(20,59,45,.06)}
-  .libt{display:flex;align-items:center;margin:0;padding:11px 14px;
-        font-size:13px;font-weight:700;letter-spacing:1px;color:#7a5c2e;
-        background:linear-gradient(135deg,#f2e8d3,#faf5e9)}
-  .lcnt{margin-left:auto;font-size:11px;font-weight:600;letter-spacing:0;color:#8a7452;
-        background:rgba(255,255,255,.7);border-radius:999px;padding:2px 9px}
-  .lib .items{padding:10px 14px 4px}
   .warn{color:#8a2b2b;font-size:14px}
 </style>
 </head>
@@ -82,17 +73,12 @@
 <div id="hits"></div>
 <div id="status">連線中…</div>
 <div id="map"></div>
-<div class="lib" id="libBox" style="display:none">
-  <p class="libt"><span>食材庫（常備・尚未冰）</span><span class="lcnt" id="libN"></span></p>
-  <div class="items" id="lib"></div>
-</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const STAPLES = ["當歸", "枸杞", "紅棗", "豆包", "麵腸", "火腿", "素丸子", "牛蒡排", "鱈魚排", "飯巾布", "麵線", "饅頭", "包子", "綠豆沙餡", "小魚干", "紅糟麵腸", "黑豆", "花生仁", "大薏仁", "豆干", "大胖干", "核桃", "腰果", "海帶芽", "味噌"];
 const FLOORS  = [{"id": 1, "door": "上門", "name": "中藥 湯料 五穀堅果"}, {"id": 2, "door": "上門", "name": "素料/餡料"}, {"id": 5, "door": "上門", "name": "素料"}, {"id": 3, "door": "下門", "name": "其他/私人"}, {"id": 4, "door": "下門", "name": "其他/粉類"}];
 const DOORS   = [{ key:'U', label:'上門' }, { key:'D', label:'下門' }];
 
@@ -162,18 +148,7 @@ function render(){
   });
   $('map').innerHTML = html;
 
-  const names = new Set(ITEMS.map(i => i.name));
-  const rest = STAPLES.filter(n => !names.has(n)).filter(hit);
-  if (rest.length){
-    $('libBox').style.display = '';
-    $('libN').textContent = rest.length + ' 項';
-    $('lib').innerHTML = rest.map(n => '<div class="mi"><div class="mr"><span class="mn">' + hi(n) + '</span></div></div>').join('');
-  } else {
-    $('lib').innerHTML = '';
-    $('libBox').style.display = 'none';
-  }
-
-  const n = inF.length + rest.length;
+  const n = inF.length;
   $('hits').textContent = q
     ? (n ? '找到 ' + n + ' 項' : '沒有符合「' + QUERY.trim() + '」的食材')
     : '';
