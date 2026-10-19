@@ -42,12 +42,13 @@
   .dh .cnt{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:0;color:#1e4d3b;
       background:#fff;border-radius:999px;padding:2.5px 11px;white-space:nowrap}
   .dbody{padding:10px 12px 6px}
-  /* 層：獨立小卡（淺底＋左側綠條） */
-  .tier{background:#f6f9f8;border-radius:11px;border-left:3px solid #cde1d8;
-        padding:8px 10px 7px;margin:0 0 8px}
-  .tier:nth-child(even){background:#e9f1ed;border-left-color:#b9d5c9}
+  /* 層：名稱一條帶底色，品項區留白 */
+  .tier{background:#fcfdfd;border:1px solid #e8f0ec;border-radius:11px;
+        overflow:hidden;margin:0 0 9px}
   .tier:last-child{margin-bottom:3px}
-  .th{display:flex;align-items:center;gap:7px;margin:0 0 6px}
+  .th{display:flex;align-items:center;gap:7px;margin:0;padding:7px 10px;
+      background:#e5efe9;border-bottom:1px solid #dae8e1}
+  .tier:nth-child(even) .th{background:#eef3ea;border-bottom-color:#e2e9dd}
   .tc{margin-left:auto;font-size:10.5px;font-weight:600;color:#8aa39a;
       background:rgba(20,59,45,.05);border-radius:999px;padding:1px 8px}
   .num{flex:0 0 auto;width:17px;height:17px;line-height:17px;text-align:center;
@@ -55,6 +56,7 @@
   .tname{font-size:13px;font-weight:700;color:#143b2d}
   /* 品項明細：三列，名稱＋數量一行，下面小字更新時間／備註 */
   .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:2px 6px}
+  .tier .items{padding:7px 10px 5px}
   .mi{min-width:0;border-bottom:1px solid rgba(20,59,45,.06);padding:3px 0}
   .mr{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 4px}
   .mn{font-size:13px;font-weight:600;white-space:nowrap}
