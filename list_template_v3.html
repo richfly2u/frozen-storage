@@ -45,6 +45,7 @@
   /* 層：獨立小卡（淺底＋左側綠條） */
   .tier{background:#f6f9f8;border-radius:11px;border-left:3px solid #cde1d8;
         padding:8px 10px 7px;margin:0 0 8px}
+  .tier:nth-child(even){background:#e9f1ed;border-left-color:#b9d5c9}
   .tier:last-child{margin-bottom:3px}
   .th{display:flex;align-items:center;gap:7px;margin:0 0 6px}
   .tc{margin-left:auto;font-size:10.5px;font-weight:600;color:#8aa39a;
@@ -70,7 +71,6 @@
   .lcnt{margin-left:auto;font-size:11px;font-weight:600;letter-spacing:0;color:#8a7452;
         background:rgba(255,255,255,.7);border-radius:999px;padding:2px 9px}
   .lib .items{padding:10px 14px 4px}
-  .foot{margin:16px 18px 0;font-size:11.5px;color:#a3b3bd;text-align:center}
   .warn{color:#8a2b2b;font-size:14px}
 </style>
 </head>
@@ -84,7 +84,6 @@
   <p class="libt"><span>食材庫（常備・尚未冰）</span><span class="lcnt" id="libN"></span></p>
   <div class="items" id="lib"></div>
 </div>
-<p class="foot">更新 <span id="upd">—</span></p>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -121,17 +120,9 @@ function hi(t){
   return esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length));
 }
 
-function fmtT(ms){
-  if (!ms) return '';
-  const d = new Date(Number(ms));
-  const p = n => String(n).padStart(2, '0');
-  return (d.getMonth()+1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
-}
-
 function mi(it){
   const q = Number(it.qty) || 0;
   let md = [];
-  if (it.updatedAt) md.push('更新 ' + fmtT(it.updatedAt));
   if (it.note) md.push('備註 ' + hi(it.note));
   return '<div class="mi">' +
     '<div class="mr"><span class="mn">' + hi(it.name) + '</span>' +
@@ -184,7 +175,6 @@ function render(){
   $('hits').textContent = q
     ? (n ? '找到 ' + n + ' 項' : '沒有符合「' + QUERY.trim() + '」的食材')
     : '';
-  $('upd').textContent = new Date().toLocaleString('zh-TW', { hour12:false });
 }
 
 $('q').addEventListener('input', () => { QUERY = $('q').value; render(); });
